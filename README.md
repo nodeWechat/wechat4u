@@ -1,5 +1,8 @@
 #wechat4u.js
 
+```
+npm install wechat4u
+```
 
 ##相关项目
 

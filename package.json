@@ -1,6 +1,6 @@
 {
-  "name": "wechat4u.js",
-  "version": "0.1.0",
+  "name": "wechat4u",
+  "version": "0.1.1",
   "description": "web wechat lib",
   "main": "index.js",
   "dependencies": {
@@ -12,7 +12,7 @@
   "devDependencies": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nodeWechat/wechat4u.js.git"
+    "url": "git+https://github.com/nodeWechat/wechat4u.git"
   },
   "keywords": [
     "wechat",
@@ -21,7 +21,7 @@
   "author": "nodeWechat",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/nodeWechat/wechat4u.js/issues"
+    "url": "https://github.com/nodeWechat/wechat4u/issues"
   },
-  "homepage": "https://github.com/nodeWechat/wechat4u.js#readme"
+  "homepage": "https://github.com/nodeWechat/wechat4u#readme"
 }
