@@ -1,20 +1,5 @@
-#微信机器人
+#wechat4u.js
 
-开发前参考了 [WeiXinBot](https://github.com/Urinx/WeixinBot) 和 微信网页版源码。
-
-
-##测试开发
-
-仅尝试功能的话，[点击链接](http://139.129.21.59:3000) 可在demo服务器中测试，支持多用户实例。
-
-如果需要调试开发，首先安装好 node.js 开发环境，运行
-
-```shell
-npm install # 建议使用cnpm
-DEBUG=wechat,app node ./app.js
-```
-
-即可运行实例在 `http://localhost:3000/` 。
 
 ##相关项目
 
