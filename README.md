@@ -1,5 +1,7 @@
 #wechat4u.js
+![](http://7xr8pm.com1.z0.glb.clouddn.com/nodeWechat.png)
 
+##安装使用
 ```
 npm install wechat4u
 ```
