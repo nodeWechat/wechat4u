@@ -1,0 +1,53 @@
+{
+  "name": "wechat_bot",
+  "version": "1.0.0",
+  "description": "a wechat bot demo",
+  "main": "app.js",
+  "dependencies": {
+    "axios": "^0.9.1",
+    "debug": "^2.2.0",
+    "es6-promise": "^3.1.2",
+    "express": "^4.13.4",
+    "jade": "^1.11.0",
+    "vue": "^1.0.16",
+    "vue-resource": "^0.7.0",
+    "vue-router": "^0.7.11"
+  },
+  "devDependencies": {
+    "babel-core": "^6.0.0",
+    "babel-loader": "^6.0.0",
+    "babel-plugin-transform-runtime": "^6.0.0",
+    "babel-preset-es2015": "^6.0.0",
+    "babel-preset-stage-2": "^6.0.0",
+    "babel-runtime": "^5.8.0",
+    "cross-env": "^1.0.6",
+    "css-loader": "^0.23.0",
+    "file-loader": "^0.8.4",
+    "json-loader": "^0.5.4",
+    "url-loader": "^0.5.7",
+    "stylus-loader": "^1.4.0",
+    "vue-hot-reload-api": "^1.2.0",
+    "vue-html-loader": "^1.0.0",
+    "vue-loader": "^8.0.0",
+    "vue-style-loader": "^1.0.0",
+    "webpack": "^1.12.2",
+    "webpack-dev-server": "^1.12.0"
+  },
+  "scripts": {
+    "build-webpack": "cross-env NODE_ENV=production webpack --progress --hide-modules",
+    "build": "npm run build-webpack",
+    "watch": "webpack -w",
+    "start": "npm run watch & npm run debug",
+    "debug": "DEBUG=wechat,app node ./app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stonexer/wechatBot.git"
+  },
+  "license": "MIT",
+  "keywords": [
+    "wechat",
+    "weixin"
+  ],
+  "author": "SToneX"
+}

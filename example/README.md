@@ -1,17 +1,24 @@
-#wechat4u.js
+#微信机器人
 ![](http://7xr8pm.com1.z0.glb.clouddn.com/nodeWechat.png)
 
-##安装使用
-```
-npm install wechat4u
+开发前参考了 [WeiXinBot](https://github.com/Urinx/WeixinBot) 和 微信网页版源码。
+
+
+##测试开发
+
+仅尝试功能的话，可在demo服务器中测试，支持多用户实例。
+
+ * [原始版本(with jQuery)](http://www.sitixi.com:3000) 
+ * [vue版本(新功能)](http://www.sitixi.com:3001) 
+
+如果需要调试开发，首先安装好 node.js 开发环境，运行
+
+```shell
+npm install # 建议使用cnpm
+DEBUG=wechat,app node ./app.js
 ```
 
-##使用Example测试
-```
-cd example
-npm install
-npm run start
-```
+即可运行实例在 `http://localhost:3000/` 。
 
 ##相关项目
 
