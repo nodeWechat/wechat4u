@@ -1,14 +1,14 @@
 var webpack = require('webpack')
 var path = require('path')
-
+console.log(__dirname, __filename, process.cwd())
 module.exports = {
-  entry: path.resolve('public/javascripts/src/main.js'),
+  entry: path.join(__dirname, 'public/javascripts/src/main.js'),
   output: {
-    path: path.resolve('public/javascripts/build'),
+    path: path.join(__dirname, 'public/javascripts/build'),
     filename: "app.js"
   },
   resolveLoader: {
-    root: path.resolve('../node_modules'),
+    root: path.join(__dirname, '../node_modules'),
   },
   module: {
     loaders: [{
