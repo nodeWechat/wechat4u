@@ -6,6 +6,13 @@
 npm install wechat4u
 ```
 
+##使用Example测试
+```
+cd example
+npm install
+npm run start
+```
+
 ##相关项目
 
 关于微信网页端机器人的实现，已经有大量的轮子了。感谢各位大神！（排名不分先后。。收录的肯定也不齐。。）
