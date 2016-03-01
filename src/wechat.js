@@ -34,6 +34,8 @@ const _convertEmoji = (s) => {
     }
   })
 }
+// 这样是不是不太优雅。。。而且有个bug。。。
+// const _contentPrase = (s) => _convertEmoji(s.replace('&lt;', '<').replace('&gt;', '>').replce('<br/>', '\n'))
 
 // Private Property
 const webProp = Symbol()
@@ -45,7 +47,7 @@ const STATE = {
 }
 
 exports = module.exports = class wechat extends EventEmitter {
-  static STATE () {
+  static STATE() {
     return STATE
   }
 
@@ -70,7 +72,19 @@ exports = module.exports = class wechat extends EventEmitter {
     }
     this.state = STATE.init
 
+    this.on('uuid', () => {})
+    this.on('scan', () => {})
+    this.on('confirm', () => {})
+    this.on('login', () => {})
     this.on('logout', () => {})
+    this.on('error', err => debug(err))
+
+    this.on('init-message', () => {})
+    this.on('text-message', msg => this._msgAutoReply(msg)) //默认上机器人！
+    this.on('picture-message', () => {})
+    this.on('voice-message', () => {})
+
+    this.on('mobile-open', () => {})
 
     this.user = [] // 登陆用户
     this.memberList = [] // 所有好友
@@ -466,26 +480,24 @@ exports = module.exports = class wechat extends EventEmitter {
     data['AddMsgList'].forEach((msg) => {
       let type = msg['MsgType']
       let fromUser = this._getUserRemarkName(msg['FromUserName'])
-      let content = msg['Content'].replace('&lt;','<').replace('&gt;','>')
+      let content = msg['Content']
 
       switch (type) {
         case 51:
           debug(' Message: Wechat Init')
+          this.emit('init-message')
           break
         case 1:
           debug(' Text-Message: ', fromUser, ': ', content)
-          this.emit('text-message', fromUser, content)
-
-          // 兼容现在的版本，后续撤掉
-          _msgAutoReply(msg)
+          this.emit('text-message', msg)
           break
         case 3:
           debug(' Picture-Message: ', fromUser, ': ', content)
-          this.emit('Picture-message', fromUser, content)
+          this.emit('picture-message', msg)
           break
         case 34:
           debug(' Voice-Message: ', fromUser, ': ', content)
-          this.emit('Voice-message', fromUser, content)
+          this.emit('voice-message', msg)
           break
       }
     })
@@ -508,6 +520,7 @@ exports = module.exports = class wechat extends EventEmitter {
           })
         } else if (state.selector == '7') {
           debug('Mobile Open')
+          this.emit('mobile-open')
           this.syncPolling()
         } else if (state.selector == '0') {
           debug('Normal')
@@ -560,7 +573,6 @@ exports = module.exports = class wechat extends EventEmitter {
       this.emit('login', memberList)
       return this.syncPolling()
     }).catch(err => {
-      debug(err)
       this.emit('error', err)
       return Promise.reject(err)
     })
@@ -607,7 +619,7 @@ exports = module.exports = class wechat extends EventEmitter {
   _tuning(word) {
     let params = {
       'key': '2ba083ae9f0016664dfb7ed80ba4ffa0',
-      'info': encodeURI(word)
+      'info': word
     }
     return this.axios({
       method: 'GET',
