@@ -40,16 +40,13 @@ const _convertEmoji = (s) => {
 // Private Property
 const webProp = Symbol()
 const STATE = {
-  init: 0,
-  uuid: 1,
-  login: 2,
-  logout: 3
+  init: 'init',
+  uuid: 'uuid',
+  login: 'login',
+  logout: 'logout'
 }
 
 exports = module.exports = class wechat extends EventEmitter {
-  static STATE() {
-    return STATE
-  }
 
   constructor() {
     super()
@@ -647,3 +644,5 @@ exports = module.exports = class wechat extends EventEmitter {
   }
 
 }
+
+wechat.STATE = STATE
