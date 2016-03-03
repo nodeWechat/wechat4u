@@ -70,20 +70,6 @@ class Wechat extends EventEmitter {
     }
     this.state = STATE.init
 
-    this.on('uuid', () => {})
-    this.on('scan', () => {})
-    this.on('confirm', () => {})
-    this.on('login', () => {})
-    this.on('logout', () => {})
-    this.on('error', err => debug(err))
-
-    this.on('init-message', () => {})
-    this.on('text-message', msg => this._msgAutoReply(msg)) //默认上机器人！
-    this.on('picture-message', () => {})
-    this.on('voice-message', () => {})
-
-    this.on('mobile-open', () => {})
-
     this.user = [] // 登陆用户
     this.memberList = [] // 所有好友
 
@@ -91,8 +77,6 @@ class Wechat extends EventEmitter {
     this.groupList = [] // 群
     this.publicList = [] // 公众账号
     this.specialList = [] // 特殊账号
-
-    this.credibleUser = new Set()
 
     this.axios = axios
     if (typeof window == "undefined") {
@@ -134,21 +118,6 @@ class Wechat extends EventEmitter {
     })
 
     return members
-  }
-
-  switchUser(uid) {
-    if (this.credibleUser.has(uid)) {
-      this.credibleUser.delete(uid)
-      this.sendMsg('机器人小助手和您拜拜咯，下次再见！', uid)
-
-      debug('Add', this.credibleUser)
-    } else {
-      this.credibleUser.add(uid)
-      this.sendMsg('我是' + this.user['NickName'] + '的机器人小助手，欢迎调戏！如有打扰请多多谅解', uid)
-
-      debug('Add', this.credibleUser)
-    }
-    return Promise.resolve()
   }
 
   sendMsg(msg, to) {
@@ -597,10 +566,6 @@ class Wechat extends EventEmitter {
     this[webProp].API_synccheck = "https://" + webpushUri + "/cgi-bin/mmwebwx-bin/synccheck"
   }
 
-  _checkCredible(uid) {
-    return this.credibleUser.has(uid)
-  }
-
   _getUserRemarkName(uid) {
     let name = ''
 
@@ -611,36 +576,6 @@ class Wechat extends EventEmitter {
     })
 
     return name
-  }
-
-  _tuning(word) {
-    let params = {
-      'key': '2ba083ae9f0016664dfb7ed80ba4ffa0',
-      'info': word
-    }
-    return this.axios({
-      method: 'GET',
-      url: 'http://www.tuling123.com/openapi/api',
-      params: params
-    }).then(res => {
-      const data = res.data
-      if (data.code == 100000) {
-        return data.text + '[微信机器人]'
-      }
-      return "现在思路很乱，最好联系下我哥 T_T..."
-    }).catch(err => {
-      debug(err)
-      return "现在思路很乱，最好联系下我哥 T_T..."
-    })
-  }
-
-  _msgAutoReply(msg) {
-    if (this._checkCredible(msg['FromUserName'])) {
-      this._tuning(msg['Content']).then((reply) => {
-        this.sendMsg(reply, msg['FromUserName'])
-        debug('Auto Reply ', reply)
-      })
-    }
   }
 
 }

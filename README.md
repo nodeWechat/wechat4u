@@ -11,6 +11,26 @@ npm install wechat4u
 npm run example
 ```
 
+## API 说明
+
+```
+	事件
+	// this.on('uuid', () => {})
+	// this.on('scan', () => {})
+	// this.on('confirm', () => {})
+	// this.on('login', () => {})
+	// this.on('logout', () => {})
+	// this.on('error', err => debug(err))
+
+	// this.on('init-message', () => {})
+	// this.on('text-message', () => {})
+	// this.on('picture-message', () => {})
+	// this.on('voice-message', () => {})
+
+	// this.on('mobile-open', () => {})
+```
+
+
 ##相关项目
 
 关于微信网页端机器人的实现，已经有大量的轮子了。感谢各位大神！（排名不分先后。。收录的肯定也不齐。。）
