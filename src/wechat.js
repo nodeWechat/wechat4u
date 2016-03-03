@@ -11,6 +11,7 @@ axios.defaults.paramsSerializer = (params) => {
     qs.push(`${key}=${params[key]}`)
   return encodeURI(qs.join('&'))
 }
+axios.defaults.headers.common['user-agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36'
 
 // Private Method
 const _getTime = () => new Date().getTime()
@@ -46,7 +47,7 @@ const STATE = {
   logout: 'logout'
 }
 
-exports = module.exports = class wechat extends EventEmitter {
+class Wechat extends EventEmitter {
 
   constructor() {
     super()
@@ -96,7 +97,6 @@ exports = module.exports = class wechat extends EventEmitter {
     this.axios = axios
     if (typeof window == "undefined") {
       this.cm = new CM()
-      this.axios.defaults.headers.common['user-agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36'
       this.axios.interceptors.request.use(config => {
         config.headers['cookie'] = decodeURIComponent(this.cm.prepare(config.url))
         return config
@@ -645,4 +645,6 @@ exports = module.exports = class wechat extends EventEmitter {
 
 }
 
-wechat.STATE = STATE
+Wechat.STATE = STATE
+
+exports = module.exports = Wechat

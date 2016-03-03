@@ -20,7 +20,8 @@ router.get('/uuid', (req, res) => {
 router.get('/instance/:uuid', (req, res) => {
   let bot = botInstanceArr[req.params.uuid]
 
-  if (bot) {
+  debug(req.params.uuid, !!bot)
+  if(bot && bot.state === wechat.STATE.login) {
     res.sendStatus(200)
   } else {
     res.sendStatus(404)
