@@ -10,7 +10,7 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 
 // 静态文件
-app.use('/static', express.static('public'));
+app.use('/static', express.static(__dirname + '/public'));
 
 app.get('/', (req, res) => {
   res.render('layout')
