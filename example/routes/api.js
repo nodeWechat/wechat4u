@@ -1,6 +1,6 @@
 "use strict"
 const express = require('express')
-const wechat = require('../../index.js')
+const WxBot = require('../lib/wxbot')
 const debug = require('debug')('app')
 
 const router = express.Router()
@@ -8,7 +8,7 @@ const router = express.Router()
 let botInstanceArr = {}
 
 router.get('/uuid', (req, res) => {
-  let bot = new wechat()
+  let bot = new WxBot()
 
   bot.getUUID().then((uuid) => {
     res.send(uuid)
@@ -21,7 +21,7 @@ router.get('/instance/:uuid', (req, res) => {
   let bot = botInstanceArr[req.params.uuid]
 
   debug(req.params.uuid, !!bot)
-  if(bot && bot.state === wechat.STATE.login) {
+  if (bot && bot.state === WxBot.STATE().login) {
     res.sendStatus(200)
   } else {
     res.sendStatus(404)
@@ -65,11 +65,28 @@ router.get('/members/:uuid', (req, res) => {
 router.get('/members/:uuid/:uid', (req, res) => {
   let bot = botInstanceArr[req.params.uuid]
 
-  bot.switchUser(req.params.uid).then(() => {
-    res.sendStatus(200)
-  }).catch(err => {
-    res.sendStatus(404)
-  })
+  if (bot.replyUsers.has(req.params.uid)) {
+    bot.replyUsers.delete(req.params.uid)
+    debug('删除自动回复用户', req.params.uid)
+  } else {
+    bot.replyUsers.add(req.params.uid)
+    debug('增加自动回复用户', req.params.uid)
+  }
+  res.sendStatus(200)
+
+})
+
+router.get('/timing/:uuid/:uid', (req, res) => {
+  let bot = botInstanceArr[req.params.uuid]
+
+  if (bot.superviseUsers.has(req.params.uid)) {
+    bot.superviseUsers.delete(req.params.uid)
+    debug('删除监督用户', req.params.uid)
+  } else {
+    bot.superviseUsers.add(req.params.uid)
+    debug('增加监督用户', req.params.uid)
+  }
+  res.sendStatus(200)
 
 })
 
