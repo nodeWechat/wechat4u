@@ -21,7 +21,7 @@ router.get('/instance/:uuid', (req, res) => {
   let bot = botInstanceArr[req.params.uuid]
 
   debug(req.params.uuid, !!bot)
-  if (bot && bot.state === WxBot.STATE().login) {
+  if (bot && bot.state === WxBot.STATE.login) {
     res.sendStatus(200)
   } else {
     res.sendStatus(404)
@@ -76,7 +76,7 @@ router.get('/members/:uuid/:uid', (req, res) => {
 
 })
 
-router.get('/timing/:uuid/:uid', (req, res) => {
+router.get('/supervise/:uuid/:uid', (req, res) => {
   let bot = botInstanceArr[req.params.uuid]
 
   if (bot.superviseUsers.has(req.params.uid)) {

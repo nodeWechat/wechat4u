@@ -27,6 +27,10 @@ service.getMembers = () => {
 	})
 }
 
-service.switchMember = (memberId) => {
+service.switchAutoReply = (memberId) => {
 	return axios.get('/api/members/'+uuid+'/'+memberId)
+}
+
+service.switchSupervise = (memberId) => {
+	return axios.get('/api/supervise/'+uuid+'/'+memberId)
 }

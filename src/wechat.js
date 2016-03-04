@@ -444,9 +444,7 @@ class Wechat extends EventEmitter {
 
     data['AddMsgList'].forEach((msg) => {
       let type = msg['MsgType']
-      debug(type)
       let fromUser = this._getUserRemarkName(msg['FromUserName'])
-      debug(fromUser)
       let content = msg['Content']
 
       switch (type) {
@@ -472,7 +470,6 @@ class Wechat extends EventEmitter {
 
   syncPolling() {
     this.syncCheck().then(state => {
-      debug('Message', state)
       if (state.retcode == '1100' || state.retcode == '1101') {
         this.state = STATE.logout
         debug(state.retcode == '1100' ? '你登出了微信' : '你在其他地方登录了 WEB 版微信')

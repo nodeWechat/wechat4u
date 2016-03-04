@@ -46,9 +46,11 @@ class WxBot extends Wechat {
   }
 
   _botSupervise() {
+    debug('自动监督', this.superviseUsers)
     const message = '我的主人玩微信' + ++this.openTimes + '次啦！'
-    for (let user in this.superviseUsers) {
-      bot.sendMsg(message, user)
+    for (let user of this.superviseUsers.values()) {
+      debug(user)
+      this.sendMsg(message, user)
     }
   }
 

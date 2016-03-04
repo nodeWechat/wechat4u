@@ -4,6 +4,7 @@ import Router from 'vue-router'
 import App from './components/App.vue'
 import LoginView from './components/LoginView.vue'
 import MembersView from './components/MembersView.vue'
+import SuperviseView from './components/SuperviseView.vue'
 
 // install router & resource
 Vue.use(Router)
@@ -16,6 +17,9 @@ router.map({
   },
   '/members': {
   	component: MembersView
+  },
+  '/supervise': {
+  	component: SuperviseView
   }
 })
 
