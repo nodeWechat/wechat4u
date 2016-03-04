@@ -403,7 +403,6 @@ class Wechat extends EventEmitter {
           synckeylist.push(e[o]['Key'] + "_" + e[o]['Val'])
         this[webProp].formateSyncKey = synckeylist.join("|")
       }
-
       return data
     }).catch(err => {
       debug(err)
@@ -445,7 +444,9 @@ class Wechat extends EventEmitter {
 
     data['AddMsgList'].forEach((msg) => {
       let type = msg['MsgType']
+      debug(type)
       let fromUser = this._getUserRemarkName(msg['FromUserName'])
+      debug(fromUser)
       let content = msg['Content']
 
       switch (type) {
@@ -470,8 +471,8 @@ class Wechat extends EventEmitter {
   }
 
   syncPolling() {
-    this.state = STATE.login
     this.syncCheck().then(state => {
+      debug('Message', state)
       if (state.retcode == '1100' || state.retcode == '1101') {
         this.state = STATE.logout
         debug(state.retcode == '1100' ? '你登出了微信' : '你在其他地方登录了 WEB 版微信')
@@ -491,10 +492,15 @@ class Wechat extends EventEmitter {
         } else if (state.selector == '0') {
           debug('Normal')
           this.syncPolling()
+        } else if (state.selector == '6') {
+          debug('Others')
+          this.syncPolling()
+        } else {
+          throw new Error('未知的State Selector')
         }
       }
     }).catch(err => {
-      debug(err, 'logout')
+      debug(err)
     })
   }
 
@@ -537,6 +543,7 @@ class Wechat extends EventEmitter {
       return this.getContact()
     }).then(memberList => {
       this.emit('login', memberList)
+      this.state = STATE.login
       return this.syncPolling()
     }).catch(err => {
       this.emit('error', err)
