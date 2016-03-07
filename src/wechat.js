@@ -35,8 +35,7 @@ const _convertEmoji = (s) => {
     }
   })
 }
-// 这样是不是不太优雅。。。而且有个bug。。。
-// const _contentPrase = (s) => _convertEmoji(s.replace('&lt;', '<').replace('&gt;', '>').replce('<br/>', '\n'))
+const _contentPrase = (s) => _convertEmoji(s.replace('&lt;', '<').replace('&gt;', '>').replce('<br/>', '\n'))
 
 // Private Property
 const webProp = Symbol()
@@ -104,7 +103,7 @@ class Wechat extends EventEmitter {
     this.groupList.forEach((member) => {
       members.push({
         username: member['UserName'],
-        nickname: '群聊: ' + _convertEmoji(member['NickName']),
+        nickname: '群聊: ' + member['NickName'],
         switch: false
       })
     })
@@ -112,7 +111,7 @@ class Wechat extends EventEmitter {
     this.contactList.forEach((member) => {
       members.push({
         username: member['UserName'],
-        nickname: member['RemarkName'] ? _convertEmoji(member['RemarkName']) : _convertEmoji(member['NickName']),
+        nickname: member['RemarkName'] ? member['RemarkName'] : member['NickName'],
         switch: false
       })
     })
@@ -307,10 +306,6 @@ class Wechat extends EventEmitter {
   }
 
   notifyMobile() {
-    let params = {
-      'lang': 'zh_CN',
-      'pass_ticket': this[webProp].passTicket,
-    }
     let data = {
       'BaseRequest': this[webProp].baseRequest,
       'Code': 3,
@@ -352,15 +347,18 @@ class Wechat extends EventEmitter {
       let data = res.data
       this.memberList = data['MemberList']
 
-      for (let member in this.memberList) {
-        if (this.memberList[member]['VerifyFlag'] & 8) {
-          this.publicList.push(this.memberList[member])
-        } else if (this[webProp].specialUserNames.indexOf(this.memberList[member]['UserName']) > -1) {
-          this.specialList.push(this.memberList[member])
-        } else if (this.memberList[member]['UserName'].indexOf('@@') > -1) {
-          this.groupList.push(this.memberList[member])
+      for (let member of this.memberList) {
+        member['NickName'] = _convertEmoji(member['NickName'])
+        member['RemarkName'] = _convertEmoji(member['RemarkName'])
+        
+        if (member['VerifyFlag'] & 8) {
+          this.publicList.push(member)
+        } else if (this[webProp].specialUserNames.indexOf(member['UserName']) > -1) {
+          this.specialList.push(member)
+        } else if (member['UserName'].indexOf('@@') > -1) {
+          this.groupList.push(member)
         } else {
-          this.contactList.push(this.memberList[member])
+          this.contactList.push(member)
         }
       }
 
@@ -507,11 +505,11 @@ class Wechat extends EventEmitter {
         type: 0,
         skey: this[webProp].skey
       }
-      // data加上会出错，不加data也能登出
-    let data = {
-      sid: this[webProp].sid,
-      uin: this[webProp].uin
-    }
+    // data加上会出错，不加data也能登出
+    // let data = {
+    //   sid: this[webProp].sid,
+    //   uin: this[webProp].uin
+    // }
     return this.axios({
       method: 'POST',
       url: '/webwxlogout',
