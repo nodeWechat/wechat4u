@@ -104,7 +104,7 @@ class Wechat extends EventEmitter {
       members.push({
         username: member['UserName'],
         nickname: '群聊: ' + member['NickName'],
-        switch: false
+        py: member['RemarkPYQuanPin'] ? member['RemarkPYQuanPin'] : member['PYQuanPin'],
       })
     })
 
@@ -112,7 +112,7 @@ class Wechat extends EventEmitter {
       members.push({
         username: member['UserName'],
         nickname: member['RemarkName'] ? member['RemarkName'] : member['NickName'],
-        switch: false
+        py: member['RemarkPYQuanPin'] ? member['RemarkPYQuanPin'] : member['PYQuanPin'],
       })
     })
 

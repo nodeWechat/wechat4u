@@ -6,6 +6,8 @@ class WxBot extends Wechat {
 
   constructor() {
     super()
+    
+    this.memberInfoList = []
 
     this.replyUsers = new Set()
     this.on('text-message', msg => this._botReply(msg))
@@ -13,6 +15,52 @@ class WxBot extends Wechat {
     this.superviseUsers = new Set()
     this.openTimes = 0
     this.on('mobile-open', () => this._botSupervise())
+  }
+  
+  get replyUsersList() {
+    let members = []
+
+    this.groupList.forEach(member => {
+      members.push({
+        username: member['UserName'],
+        nickname: '群聊: ' + member['NickName'],
+        py: member['RemarkPYQuanPin'] ? member['RemarkPYQuanPin'] : member['PYQuanPin'],
+        switch: this.replyUsers.has(member['UserName'])
+      })
+    })
+
+    this.contactList.forEach(member => {
+      members.push({
+        username: member['UserName'],
+        nickname: member['RemarkName'] ? member['RemarkName'] : member['NickName'],
+        py: member['RemarkPYQuanPin'] ? member['RemarkPYQuanPin'] : member['PYQuanPin'],
+        switch: this.replyUsers.has(member['UserName'])
+      })
+    })
+
+    return members
+  }
+  
+  get superviseUsersList() {
+    let members = []
+
+    this.groupList.forEach(member => {
+      members.push({
+        username: member['UserName'],
+        nickname: '群聊: ' + member['NickName'],
+        switch: this.superviseUsers.has(member['UserName'])
+      })
+    })
+
+    this.contactList.forEach(member => {
+      members.push({
+        username: member['UserName'],
+        nickname: member['RemarkName'] ? member['RemarkName'] : member['NickName'],
+        switch: this.superviseUsers.has(member['UserName'])
+      })
+    })
+
+    return members
   }
 
   _tuning(word) {
@@ -36,7 +84,6 @@ class WxBot extends Wechat {
   }
 
   _botReply(msg) {
-    debug('自动回复')
     if (this.replyUsers.has(msg['FromUserName'])) {
       this._tuning(msg['Content']).then((reply) => {
         this.sendMsg(reply, msg['FromUserName'])
@@ -46,11 +93,10 @@ class WxBot extends Wechat {
   }
 
   _botSupervise() {
-    debug('自动监督', this.superviseUsers)
     const message = '我的主人玩微信' + ++this.openTimes + '次啦！'
     for (let user of this.superviseUsers.values()) {
-      debug(user)
       this.sendMsg(message, user)
+      debug(message)
     }
   }
 

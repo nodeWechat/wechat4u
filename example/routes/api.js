@@ -54,8 +54,8 @@ router.get('/login/:uuid', (req, res) => {
 router.get('/members/:uuid', (req, res) => {
   let bot = botInstanceArr[req.params.uuid]
 
-  if (bot) {
-    res.send(bot.friendList)
+  if (bot && bot.state === WxBot.STATE.login) {
+    res.send(bot.replyUsersList)
   } else {
     res.sendStatus(404)
   }

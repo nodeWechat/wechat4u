@@ -1,6 +1,6 @@
 {
   "name": "wechat4u",
-  "version": "0.2.1",
+  "version": "0.2.4",
   "description": "web wechat lib",
   "main": "lib/wechat.js",
   "scripts": {
@@ -34,6 +34,7 @@
     "vue-html-loader": "^1.0.0",
     "vue-loader": "^8.0.0",
     "vue-router": "^0.7.11",
+    "vue-strap": "^1.0.7",
     "vue-style-loader": "^1.0.0",
     "webpack": "^1.12.2"
   },

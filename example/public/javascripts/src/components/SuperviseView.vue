@@ -2,7 +2,7 @@
   <div>
     <nav class="navbar navbar-default">
       <div class="navbar-header">
-        <a class="navbar-brand" href="#">监督</a>
+        <a class="navbar-brand">监督</a>
       </div>
 
       <form class="navbar-form navbar-left" role="search">
