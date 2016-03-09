@@ -37,8 +37,10 @@ const _convertEmoji = (s) => {
 }
 const _contentPrase = (s) => _convertEmoji(s.replace('&lt;', '<').replace('&gt;', '>').replce('<br/>', '\n'))
 
-// Private Property
-const webProp = Symbol()
+// Private
+const PROP = Symbol()
+const API = Symbol()
+const SPECIALUSERS = ['newsapp', 'fmessage', 'filehelper', 'weibo', 'qqmail', 'fmessage', 'tmessage', 'qmessage', 'qqsync', 'floatbottle', 'lbsapp', 'shakeapp', 'medianote', 'qqfriend', 'readerapp', 'blogapp', 'facebookapp', 'masssendapp', 'meishiapp', 'feedsapp', 'voip', 'blogappweixin', 'weixin', 'brandsessionholder', 'weixinreminder', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'officialaccounts', 'notification_messages', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'wxitil', 'userexperience_alarm', 'notification_messages']
 const STATE = {
   init: 'init',
   uuid: 'uuid',
@@ -50,10 +52,8 @@ class Wechat extends EventEmitter {
 
   constructor() {
     super()
-    this[webProp] = {
+    this[PROP] = {
       uuid: '',
-      baseUri: '',
-      rediUri: '',
       uin: '',
       sid: '',
       skey: '',
@@ -61,12 +61,21 @@ class Wechat extends EventEmitter {
       formateSyncKey: '',
       deviceId: 'e' + Math.random().toString().substring(2, 17),
 
-      API_synccheck: '',
-
       baseRequest: {},
       syncKey: {},
-      specialUserNames: ['newsapp', 'fmessage', 'filehelper', 'weibo', 'qqmail', 'fmessage', 'tmessage', 'qmessage', 'qqsync', 'floatbottle', 'lbsapp', 'shakeapp', 'medianote', 'qqfriend', 'readerapp', 'blogapp', 'facebookapp', 'masssendapp', 'meishiapp', 'feedsapp', 'voip', 'blogappweixin', 'weixin', 'brandsessionholder', 'weixinreminder', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'officialaccounts', 'notification_messages', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'wxitil', 'userexperience_alarm', 'notification_messages'],
     }
+    
+    this[API] = {
+      baseUri: '',
+      rediUri: '',
+      
+      jsLogin: "https://login.weixin.qq.com/jslogin",
+      login: "https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login",
+      synccheck: "",
+      webwxdownloadmedia: "",
+      webwxuploadmedia: ""
+    }
+    
     this.state = STATE.init
 
     this.user = [] // 登陆用户
@@ -119,38 +128,6 @@ class Wechat extends EventEmitter {
     return members
   }
 
-  sendMsg(msg, to) {
-    let params = {
-      'pass_ticket': this[webProp].passTicket
-    }
-    let clientMsgId = _getTime() + '0' + Math.random().toString().substring(2, 5)
-    let data = {
-      'BaseRequest': this[webProp].baseRequest,
-      'Msg': {
-        'Type': 1,
-        'Content': msg,
-        'FromUserName': this.user['UserName'],
-        'ToUserName': to,
-        'LocalID': clientMsgId,
-        'ClientMsgId': clientMsgId
-      }
-    }
-    this.axios({
-      method: 'POST',
-      url: '/webwxsendmsg',
-      baseURL: this[webProp].baseUri,
-      params: params,
-      data: data
-    }).then(res => {
-      let data = res.data
-      if (data['BaseResponse']['Ret'] !== 0)
-        throw new Error(data['BaseResponse']['Ret'])
-    }).catch(err => {
-      debug(err)
-      throw new Error('发送信息失败')
-    })
-  }
-
   getUUID() {
     let params = {
       'appid': 'wx782c26e4c19acffb',
@@ -159,7 +136,7 @@ class Wechat extends EventEmitter {
     }
     return this.axios({
       method: 'POST',
-      url: 'https://login.weixin.qq.com/jslogin',
+      url: this[API].jsLogin,
       params: params
     }).then(res => {
       this.emit('uuid')
@@ -171,7 +148,7 @@ class Wechat extends EventEmitter {
         throw new Error("GET UUID ERROR")
       }
       let code = pm[1]
-      let uuid = this[webProp].uuid = pm[2]
+      let uuid = this[PROP].uuid = pm[2]
 
       if (code != 200) {
         throw new Error("GET UUID ERROR")
@@ -187,11 +164,11 @@ class Wechat extends EventEmitter {
   checkScan() {
     let params = {
       'tip': 1,
-      'uuid': this[webProp].uuid,
+      'uuid': this[PROP].uuid,
     }
     return this.axios({
       method: 'GET',
-      url: 'https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login',
+      url: this[API].login,
       params: params
     }).then(res => {
       let re = /window.code=(\d+);/
@@ -214,11 +191,11 @@ class Wechat extends EventEmitter {
   checkLogin() {
     let params = {
       'tip': 0,
-      'uuid': this[webProp].uuid,
+      'uuid': this[PROP].uuid,
     }
     return this.axios({
       method: 'GET',
-      url: 'https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login',
+      url: this[API].login,
       params: params
     }).then(res => {
       let re = /window.code=(\d+);/
@@ -228,11 +205,11 @@ class Wechat extends EventEmitter {
       if (code == 200) {
         let re = /window.redirect_uri="(\S+?)";/
         let pm = res.data.match(re)
-        this[webProp].rediUri = pm[1] + '&fun=new'
-        this[webProp].baseUri = this[webProp].rediUri.substring(0, this[webProp].rediUri.lastIndexOf("/"))
+        this[API].rediUri = pm[1] + '&fun=new'
+        this[API].baseUri = this[API].rediUri.substring(0, this[API].rediUri.lastIndexOf("/"))
 
-        // webpush 接口更新
-        this._webpushUpdate(this[webProp].baseUri)
+        // 接口更新
+        this._APIUpdate(this[API].baseUri)
 
         return code
       } else {
@@ -248,18 +225,18 @@ class Wechat extends EventEmitter {
   login() {
     return this.axios({
       method: 'GET',
-      url: this[webProp].rediUri
+      url: this[API].rediUri
     }).then(res => {
-      this[webProp].skey = res.data.match(/<skey>(.*)<\/skey>/)[1]
-      this[webProp].sid = res.data.match(/<wxsid>(.*)<\/wxsid>/)[1]
-      this[webProp].uin = res.data.match(/<wxuin>(.*)<\/wxuin>/)[1]
-      this[webProp].passTicket = res.data.match(/<pass_ticket>(.*)<\/pass_ticket>/)[1]
+      this[PROP].skey = res.data.match(/<skey>(.*)<\/skey>/)[1]
+      this[PROP].sid = res.data.match(/<wxsid>(.*)<\/wxsid>/)[1]
+      this[PROP].uin = res.data.match(/<wxuin>(.*)<\/wxuin>/)[1]
+      this[PROP].passTicket = res.data.match(/<pass_ticket>(.*)<\/pass_ticket>/)[1]
 
-      this[webProp].baseRequest = {
-        'Uin': parseInt(this[webProp].uin, 10),
-        'Sid': this[webProp].sid,
-        'Skey': this[webProp].skey,
-        'DeviceID': this[webProp].deviceId
+      this[PROP].baseRequest = {
+        'Uin': parseInt(this[PROP].uin, 10),
+        'Sid': this[PROP].sid,
+        'Skey': this[PROP].skey,
+        'DeviceID': this[PROP].deviceId
       }
 
       debug('login Success')
@@ -271,28 +248,28 @@ class Wechat extends EventEmitter {
 
   init() {
     let params = {
-      'pass_ticket': this[webProp].passTicket,
-      'skey': this[webProp].skey,
+      'pass_ticket': this[PROP].passTicket,
+      'skey': this[PROP].skey,
       'r': _getTime()
     }
     let data = {
-      BaseRequest: this[webProp].baseRequest
+      BaseRequest: this[PROP].baseRequest
     }
     return this.axios({
       method: 'POST',
       url: '/webwxinit',
-      baseURL: this[webProp].baseUri,
+      baseURL: this[API].baseUri,
       params: params,
       data: data
     }).then(res => {
       let data = res.data
-      this[webProp].syncKey = data['SyncKey']
+      this[PROP].syncKey = data['SyncKey']
       this.user = data['User']
 
       let synckeylist = []
-      for (let e = this[webProp].syncKey['List'], o = 0, n = e.length; n > o; o++)
+      for (let e = this[PROP].syncKey['List'], o = 0, n = e.length; n > o; o++)
         synckeylist.push(e[o]['Key'] + "_" + e[o]['Val'])
-      this[webProp].formateSyncKey = synckeylist.join("|")
+      this[PROP].formateSyncKey = synckeylist.join("|")
 
       debug('wechatInit Success')
 
@@ -307,7 +284,7 @@ class Wechat extends EventEmitter {
 
   notifyMobile() {
     let data = {
-      'BaseRequest': this[webProp].baseRequest,
+      'BaseRequest': this[PROP].baseRequest,
       'Code': 3,
       'FromUserName': this.user['UserName'],
       'ToUserName': this.user['UserName'],
@@ -316,7 +293,7 @@ class Wechat extends EventEmitter {
     return this.axios({
       method: 'POST',
       url: '/webwxstatusnotify',
-      baseURL: this[webProp].baseUri,
+      baseURL: this[API].baseUri,
       data: data
     }).then(res => {
       let data = res.data
@@ -333,15 +310,15 @@ class Wechat extends EventEmitter {
   getContact() {
     let params = {
       'lang': 'zh_CN',
-      'pass_ticket': this[webProp].passTicket,
+      'pass_ticket': this[PROP].passTicket,
       'seq': 0,
-      'skey': this[webProp].skey,
+      'skey': this[PROP].skey,
       'r': _getTime()
     }
     return this.axios({
       method: 'POST',
       url: '/webwxgetcontact',
-      baseURL: this[webProp].baseUri,
+      baseURL: this[API].baseUri,
       params: params
     }).then(res => {
       let data = res.data
@@ -353,7 +330,7 @@ class Wechat extends EventEmitter {
         
         if (member['VerifyFlag'] & 8) {
           this.publicList.push(member)
-        } else if (this[webProp].specialUserNames.indexOf(member['UserName']) > -1) {
+        } else if (SPECIALUSERS.indexOf(member['UserName']) > -1) {
           this.specialList.push(member)
         } else if (member['UserName'].indexOf('@@') > -1) {
           this.groupList.push(member)
@@ -377,29 +354,29 @@ class Wechat extends EventEmitter {
 
   sync() {
     let params = {
-      'sid': this[webProp].sid,
-      'skey': this[webProp].skey,
-      'pass_ticket': this[webProp].passTicket
+      'sid': this[PROP].sid,
+      'skey': this[PROP].skey,
+      'pass_ticket': this[PROP].passTicket
     }
     let data = {
-      'BaseRequest': this[webProp].baseRequest,
-      "SyncKey": this[webProp].syncKey,
+      'BaseRequest': this[PROP].baseRequest,
+      "SyncKey": this[PROP].syncKey,
       'rr': ~_getTime()
     }
     return this.axios({
       method: 'POST',
       url: '/webwxsync',
-      baseURL: this[webProp].baseUri,
+      baseURL: this[API].baseUri,
       params: params,
       data: data
     }).then(res => {
       let data = res.data
       if (data['BaseResponse']['Ret'] == 0) {
-        this[webProp].syncKey = data['SyncKey']
+        this[PROP].syncKey = data['SyncKey']
         let synckeylist = []
-        for (let e = this[webProp].syncKey['List'], o = 0, n = e.length; n > o; o++)
+        for (let e = this[PROP].syncKey['List'], o = 0, n = e.length; n > o; o++)
           synckeylist.push(e[o]['Key'] + "_" + e[o]['Val'])
-        this[webProp].formateSyncKey = synckeylist.join("|")
+        this[PROP].formateSyncKey = synckeylist.join("|")
       }
       return data
     }).catch(err => {
@@ -411,15 +388,15 @@ class Wechat extends EventEmitter {
   syncCheck() {
     let params = {
       'r': _getTime(),
-      'sid': this[webProp].sid,
-      'uin': this[webProp].uin,
-      'skey': this[webProp].skey,
-      'deviceid': this[webProp].deviceId,
-      'synckey': this[webProp].formateSyncKey
+      'sid': this[PROP].sid,
+      'uin': this[PROP].uin,
+      'skey': this[PROP].skey,
+      'deviceid': this[PROP].deviceId,
+      'synckey': this[PROP].formateSyncKey
     }
     return this.axios({
       method: 'GET',
-      url: this[webProp].API_synccheck,
+      url: this[API].synccheck,
       params: params,
     }).then(res => {
       let re = /window.synccheck={retcode:"(\d+)",selector:"(\d+)"}/
@@ -481,17 +458,15 @@ class Wechat extends EventEmitter {
             throw err
           })
         } else if (state.selector == '7') {
-          debug('Mobile Open')
+          debug('WebSync Mobile Open')
           this.emit('mobile-open')
           this.syncPolling()
         } else if (state.selector == '0') {
-          debug('Normal')
-          this.syncPolling()
-        } else if (state.selector == '6') {
-          debug('Others')
+          debug('WebSync Normal')
           this.syncPolling()
         } else {
-          throw new Error('未知的State Selector')
+          debug('WebSync Others', state.selector)
+          this.syncPolling()
         }
       }
     }).catch(err => {
@@ -503,17 +478,17 @@ class Wechat extends EventEmitter {
     let params = {
         redirect: 1,
         type: 0,
-        skey: this[webProp].skey
+        skey: this[PROP].skey
       }
     // data加上会出错，不加data也能登出
     // let data = {
-    //   sid: this[webProp].sid,
-    //   uin: this[webProp].uin
+    //   sid: this[PROP].sid,
+    //   uin: this[PROP].uin
     // }
     return this.axios({
       method: 'POST',
       url: '/webwxlogout',
-      baseURL: this[webProp].baseUri,
+      baseURL: this[API].baseUri,
       params: params
     }).then(res => {
       return '登出成功'
@@ -544,28 +519,55 @@ class Wechat extends EventEmitter {
       this.emit('error', err)
       return Promise.reject(err)
     })
-  }
+  } 
 
-  _webpushUpdate(hostUri) {
-    let webpushUri = "webpush.weixin.qq.com"
-
-    if (hostUri.indexOf("wx2.qq.com") > -1) {
-      webpushUri = "webpush2.weixin.qq.com"
-    } else if (hostUri.indexOf("qq.com") > -1) {
-      webpushUri = "webpush.weixin.qq.com"
-    } else if (hostUri.indexOf("web1.wechat.com") > -1) {
-      webpushUri = "webpush1.wechat.com"
-    } else if (hostUri.indexOf("web2.wechat.com") > -1) {
-      webpushUri = "webpush2.wechat.com"
-    } else if (hostUri.indexOf("wechat.com") > -1) {
-      webpushUri = "webpush.wechat.com"
-    } else if (hostUri.indexOf("web1.wechatapp.com") > -1) {
-      webpushUri = "webpush1.wechatapp.com"
-    } else {
-      webpushUri = "webpush.wechatapp.com"
+  sendMsg(msg, to) {
+    let params = {
+      'pass_ticket': this[PROP].passTicket
     }
-
-    this[webProp].API_synccheck = "https://" + webpushUri + "/cgi-bin/mmwebwx-bin/synccheck"
+    let clientMsgId = _getTime() + '0' + Math.random().toString().substring(2, 5)
+    let data = {
+      'BaseRequest': this[PROP].baseRequest,
+      'Msg': {
+        'Type': 1,
+        'Content': msg,
+        'FromUserName': this.user['UserName'],
+        'ToUserName': to,
+        'LocalID': clientMsgId,
+        'ClientMsgId': clientMsgId
+      }
+    }
+    this.axios({
+      method: 'POST',
+      url: '/webwxsendmsg',
+      baseURL: this[API].baseUri,
+      params: params,
+      data: data
+    }).then(res => {
+      let data = res.data
+      if (data['BaseResponse']['Ret'] !== 0)
+        throw new Error(data['BaseResponse']['Ret'])
+    }).catch(err => {
+      debug(err)
+      throw new Error('发送信息失败')
+    })
+  }
+  
+  _APIUpdate(hostUri) {
+    let fileUri = ""
+    let webpushUri = ""
+    
+    hostUri.indexOf("wx2.qq.com") > -1 ? (fileUri = "file2.wx.qq.com", webpushUri = "webpush2.weixin.qq.com") 
+    : hostUri.indexOf("qq.com") > -1 ? (fileUri = "file.wx.qq.com", webpushUri = "webpush.weixin.qq.com") 
+    : hostUri.indexOf("web1.wechat.com") > -1 ? (fileUri = "file1.wechat.com", webpushUri = "webpush1.wechat.com") 
+    : hostUri.indexOf("web2.wechat.com") > -1 ? (fileUri = "file2.wechat.com", webpushUri = "webpush2.wechat.com") 
+    : hostUri.indexOf("wechat.com") > -1 ? (fileUri = "file.wechat.com", webpushUri = "webpush.wechat.com") 
+    : hostUri.indexOf("web1.wechatapp.com") > -1 ? (fileUri = "file1.wechatapp.com", webpushUri = "webpush1.wechatapp.com") 
+    : (fileUri = "file.wechatapp.com", webpushUri = "webpush.wechatapp.com");
+    
+    this[API].webwxdownloadmedia = "https://" + fileUri + "/cgi-bin/mmwebwx-bin/webwxgetmedia",
+    this[API].webwxuploadmedia = "https://" + fileUri + "/cgi-bin/mmwebwx-bin/webwxuploadmedia",
+    this[API].synccheck = "https://" + webpushUri + "/cgi-bin/mmwebwx-bin/synccheck"
   }
 
   _getUserRemarkName(uid) {
@@ -573,7 +575,8 @@ class Wechat extends EventEmitter {
 
     this.memberList.forEach((member) => {
       if (member['UserName'] == uid) {
-        name = member['RemarkName'] ? member['RemarkName'] : member['NickName']
+        name = member['RemarkName'] ? member['RemarkName'] 
+        : member['NickName']
       }
     })
 
