@@ -68,7 +68,7 @@ class WxBot extends Wechat {
       'key': '2ba083ae9f0016664dfb7ed80ba4ffa0',
       'info': word
     }
-    return this.axios({
+    return this.axios.request({
       method: 'GET',
       url: 'http://www.tuling123.com/openapi/api',
       params: params
