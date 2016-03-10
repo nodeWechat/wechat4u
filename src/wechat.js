@@ -86,7 +86,7 @@ class Wechat extends EventEmitter {
     this.publicList = [] // 公众账号
     this.specialList = [] // 特殊账号
 
-    this.axios = axios.create()
+    this.axios = axios
     if (typeof window == "undefined") {
       this.cm = new CM()
       this.axios.interceptors.request.use(config => {
