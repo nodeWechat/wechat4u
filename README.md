@@ -16,7 +16,7 @@ npm run example
 ```javascript
   const wechat4u = require('wechat4u')
   
-	let wechat = new wechat4u()
+  let wechat = new wechat4u()
   
   wechat.getUUID().then(uuid => {/*处理uuid*/}
   wechat.start() // 完成登陆过程，需手机端通过网页版登陆验证
@@ -31,17 +31,17 @@ npm run example
   wechat.publicList // 公众账号
   wechat.specialList // 特殊账号
   
-	wechat.on('uuid', () => {})
-	wechat.on('scan', () => {})
-	wechat.on('confirm', () => {})
-	wechat.on('login', () => {})
-	wechat.on('logout', () => {})
-	wechat.on('error', err => debug(err))
-	wechat.on('init-message', () => {})
-	wechat.on('text-message', () => {})
-	wechat.on('picture-message', () => {})
-	wechat.on('voice-message', () => {})
-	wechat.on('mobile-open', () => {})
+  wechat.on('uuid', () => {})
+  wechat.on('scan', () => {})
+  wechat.on('confirm', () => {})
+  wechat.on('login', () => {})
+  wechat.on('logout', () => {})
+  wechat.on('error', err => debug(err))
+  wechat.on('init-message', () => {})
+  wechat.on('text-message', () => {})
+  wechat.on('picture-message', () => {})
+  wechat.on('voice-message', () => {})
+  wechat.on('mobile-open', () => {})
   
   wechat.state === wechat4u.STATE.init === 'init'
   wechat.state === wechat4u.STATE.uuid === 'uuid'
