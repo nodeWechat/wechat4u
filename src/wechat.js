@@ -469,7 +469,7 @@ class Wechat extends EventEmitter {
           debug('WebSync Normal')
           this.syncPolling()
         } else {
-          debug('WebSync Others', state.selector)
+          // debug('WebSync Others', state.selector)
           this.syncPolling()
         }
       }
