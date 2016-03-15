@@ -13,21 +13,40 @@ npm run example
 
 ## API 说明
 
-```
-	事件
-	// this.on('uuid', () => {})
-	// this.on('scan', () => {})
-	// this.on('confirm', () => {})
-	// this.on('login', () => {})
-	// this.on('logout', () => {})
-	// this.on('error', err => debug(err))
-
-	// this.on('init-message', () => {})
-	// this.on('text-message', () => {})
-	// this.on('picture-message', () => {})
-	// this.on('voice-message', () => {})
-
-	// this.on('mobile-open', () => {})
+```javascript
+  const wechat4u = require('wechat4u')
+  
+	let wechat = new wechat4u()
+  
+  wechat.getUUID().then(uuid => {/*处理uuid*/}
+  wechat.start() // 完成登陆过程，需手机端通过网页版登陆验证
+  
+  wechat.sendMsg(msg, to) // 发送文字消息
+  
+  wechat.friendList // 好友列表
+  wechat.user // 登陆用户
+  wechat.memberList // 所有好友
+  wechat.contactList // 个人好友
+  wechat.groupList // 群
+  wechat.publicList // 公众账号
+  wechat.specialList // 特殊账号
+  
+	wechat.on('uuid', () => {})
+	wechat.on('scan', () => {})
+	wechat.on('confirm', () => {})
+	wechat.on('login', () => {})
+	wechat.on('logout', () => {})
+	wechat.on('error', err => debug(err))
+	wechat.on('init-message', () => {})
+	wechat.on('text-message', () => {})
+	wechat.on('picture-message', () => {})
+	wechat.on('voice-message', () => {})
+	wechat.on('mobile-open', () => {})
+  
+  wechat.state === wechat4u.STATE.init === 'init'
+  wechat.state === wechat4u.STATE.uuid === 'uuid'
+  wechat.state === wechat4u.STATE.login === 'login'
+  wechat.state === wechat4u.STATE.logout === 'logout'
 ```
 
 
