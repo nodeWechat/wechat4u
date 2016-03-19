@@ -1,16 +1,7 @@
 "use strict"
 const EventEmitter = require('events')
-const axios = require('axios')
+const request = require('./request.js')
 const debug = require('debug')('wechat')
-const CM = require('cookie-manager')
-
-// Setting
-const _defaultParamsSerializer = (params) => {
-  let qs = []
-  for (let key in params)
-    qs.push(`${key}=${params[key]}`)
-  return encodeURI(qs.join('&'))
-}
 
 // Private Method
 const _getTime = () => new Date().getTime()
@@ -85,31 +76,7 @@ class Wechat extends EventEmitter {
     this.publicList = [] // 公众账号
     this.specialList = [] // 特殊账号
 
-    this.axios = axios.create({
-      headers: {
-        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36'
-      }
-    })
-
-    this.axios.defaults.paramsSerializer = _defaultParamsSerializer
-
-    if (typeof window == "undefined") {
-      this.cm = new CM()
-      this.axios.interceptors.request.use(config => {
-        config.headers['cookie'] = decodeURIComponent(this.cm.prepare(config.url))
-        return config
-      }, err => {
-        return Promise.reject(err)
-      })
-      this.axios.interceptors.response.use(res => {
-        let cookies = res.headers['set-cookie']
-        if (cookies)
-          this.cm.store(res.config.url, cookies)
-        return res
-      }, err => {
-        return Promise.reject(err)
-      })
-    }
+    this.request = request.create()
   }
 
   get friendList() {
@@ -140,7 +107,7 @@ class Wechat extends EventEmitter {
       'fun': 'new',
       'lang': 'zh_CN'
     }
-    return this.axios.request({
+    return this.request({
       method: 'POST',
       url: this[API].jsLogin,
       params: params
@@ -172,7 +139,7 @@ class Wechat extends EventEmitter {
       'tip': 1,
       'uuid': this[PROP].uuid,
     }
-    return this.axios.request({
+    return this.request({
       method: 'GET',
       url: this[API].login,
       params: params
@@ -199,7 +166,7 @@ class Wechat extends EventEmitter {
       'tip': 0,
       'uuid': this[PROP].uuid,
     }
-    return this.axios.request({
+    return this.request({
       method: 'GET',
       url: this[API].login,
       params: params
@@ -229,7 +196,7 @@ class Wechat extends EventEmitter {
   }
 
   login() {
-    return this.axios.request({
+    return this.request({
       method: 'GET',
       url: this[API].rediUri
     }).then(res => {
@@ -261,7 +228,7 @@ class Wechat extends EventEmitter {
     let data = {
       BaseRequest: this[PROP].baseRequest
     }
-    return this.axios.request({
+    return this.request({
       method: 'POST',
       url: '/webwxinit',
       baseURL: this[API].baseUri,
@@ -296,7 +263,7 @@ class Wechat extends EventEmitter {
       'ToUserName': this.user['UserName'],
       'ClientMsgId': _getTime()
     }
-    return this.axios.request({
+    return this.request({
       method: 'POST',
       url: '/webwxstatusnotify',
       baseURL: this[API].baseUri,
@@ -321,7 +288,7 @@ class Wechat extends EventEmitter {
       'skey': this[PROP].skey,
       'r': _getTime()
     }
-    return this.axios.request({
+    return this.request({
       method: 'POST',
       url: '/webwxgetcontact',
       baseURL: this[API].baseUri,
@@ -369,7 +336,7 @@ class Wechat extends EventEmitter {
       "SyncKey": this[PROP].syncKey,
       'rr': ~_getTime()
     }
-    return this.axios.request({
+    return this.request({
       method: 'POST',
       url: '/webwxsync',
       baseURL: this[API].baseUri,
@@ -400,7 +367,7 @@ class Wechat extends EventEmitter {
       'deviceid': this[PROP].deviceId,
       'synckey': this[PROP].formateSyncKey
     }
-    return this.axios.request({
+    return this.request({
       method: 'GET',
       url: this[API].synccheck,
       params: params,
@@ -491,7 +458,7 @@ class Wechat extends EventEmitter {
       //   sid: this[PROP].sid,
       //   uin: this[PROP].uin
       // }
-    return this.axios.request({
+    return this.request({
       method: 'POST',
       url: '/webwxlogout',
       baseURL: this[API].baseUri,
@@ -543,7 +510,7 @@ class Wechat extends EventEmitter {
         'ClientMsgId': clientMsgId
       }
     }
-    this.axios.request({
+    this.request({
       method: 'POST',
       url: '/webwxsendmsg',
       baseURL: this[API].baseUri,
