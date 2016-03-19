@@ -4,7 +4,7 @@
   "description": "web wechat lib",
   "main": "lib/wechat.js",
   "scripts": {
-    "example": "webpack --config=./example/webpack.config.js && DEBUG=wxbot,wechat,app node ./example/app.js",
+    "example": "webpack --config=./example/webpack.config.js && node ./example/app.js",
     "compile": "babel src -d lib -s",
     "prepublish": "npm run compile",
     "lint": "eslint src",

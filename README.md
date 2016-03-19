@@ -47,6 +47,8 @@ npm run example
   wechat.state === wechat4u.STATE.uuid === 'uuid'
   wechat.state === wechat4u.STATE.login === 'login'
   wechat.state === wechat4u.STATE.logout === 'logout'
+  
+  wechat.request() // 自带的 request（默认为axios），包含cookie
 ```
 
 
