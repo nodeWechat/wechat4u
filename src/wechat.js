@@ -63,18 +63,18 @@ class Wechat extends EventEmitter {
       baseRequest: {},
       syncKey: {},
     }
-    
+
     this[API] = {
       baseUri: '',
       rediUri: '',
-      
+
       jsLogin: "https://login.weixin.qq.com/jslogin",
       login: "https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login",
       synccheck: "",
       webwxdownloadmedia: "",
       webwxuploadmedia: ""
     }
-    
+
     this.state = STATE.init
 
     this.user = [] // 登陆用户
@@ -86,11 +86,13 @@ class Wechat extends EventEmitter {
     this.specialList = [] // 特殊账号
 
     this.axios = axios.create({
-      headers: {'user-agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36'}
+      headers: {
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36'
+      }
     })
-    
+
     this.axios.defaults.paramsSerializer = _defaultParamsSerializer
-    
+
     if (typeof window == "undefined") {
       this.cm = new CM()
       this.axios.interceptors.request.use(config => {
@@ -331,7 +333,7 @@ class Wechat extends EventEmitter {
       for (let member of this.memberList) {
         member['NickName'] = _convertEmoji(member['NickName'])
         member['RemarkName'] = _convertEmoji(member['RemarkName'])
-        
+
         if (member['VerifyFlag'] & 8) {
           this.publicList.push(member)
         } else if (SPECIALUSERS.indexOf(member['UserName']) > -1) {
@@ -484,11 +486,11 @@ class Wechat extends EventEmitter {
         type: 0,
         skey: this[PROP].skey
       }
-    // data加上会出错，不加data也能登出
-    // let data = {
-    //   sid: this[PROP].sid,
-    //   uin: this[PROP].uin
-    // }
+      // data加上会出错，不加data也能登出
+      // let data = {
+      //   sid: this[PROP].sid,
+      //   uin: this[PROP].uin
+      // }
     return this.axios.request({
       method: 'POST',
       url: '/webwxlogout',
@@ -523,7 +525,7 @@ class Wechat extends EventEmitter {
       this.emit('error', err)
       return Promise.reject(err)
     })
-  } 
+  }
 
   sendMsg(msg, to) {
     let params = {
@@ -556,22 +558,16 @@ class Wechat extends EventEmitter {
       throw new Error('发送信息失败')
     })
   }
-  
+
   _APIUpdate(hostUri) {
-    let fileUri = ""
-    let webpushUri = ""
-    
-    hostUri.indexOf("wx2.qq.com") > -1 ? (fileUri = "file2.wx.qq.com", webpushUri = "webpush2.weixin.qq.com") 
-    : hostUri.indexOf("qq.com") > -1 ? (fileUri = "file.wx.qq.com", webpushUri = "webpush.weixin.qq.com") 
-    : hostUri.indexOf("web1.wechat.com") > -1 ? (fileUri = "file1.wechat.com", webpushUri = "webpush1.wechat.com") 
-    : hostUri.indexOf("web2.wechat.com") > -1 ? (fileUri = "file2.wechat.com", webpushUri = "webpush2.wechat.com") 
-    : hostUri.indexOf("wechat.com") > -1 ? (fileUri = "file.wechat.com", webpushUri = "webpush.wechat.com") 
-    : hostUri.indexOf("web1.wechatapp.com") > -1 ? (fileUri = "file1.wechatapp.com", webpushUri = "webpush1.wechatapp.com") 
-    : (fileUri = "file.wechatapp.com", webpushUri = "webpush.wechatapp.com");
-    
-    this[API].webwxdownloadmedia = "https://" + fileUri + "/cgi-bin/mmwebwx-bin/webwxgetmedia",
-    this[API].webwxuploadmedia = "https://" + fileUri + "/cgi-bin/mmwebwx-bin/webwxuploadmedia",
-    this[API].synccheck = "https://" + webpushUri + "/cgi-bin/mmwebwx-bin/synccheck"
+    let fileUri = ''
+    let webpushUri = ''
+
+    hostUri.indexOf('wx2.qq.com') > -1 ? (fileUri = 'file2.wx.qq.com', webpushUri = 'webpush2.weixin.qq.com') : hostUri.indexOf('qq.com') > -1 ? (fileUri = 'file.wx.qq.com', webpushUri = 'webpush.weixin.qq.com') : hostUri.indexOf('web1.wechat.com') > -1 ? (fileUri = 'file1.wechat.com', webpushUri = 'webpush1.wechat.com') : hostUri.indexOf('web2.wechat.com') > -1 ? (fileUri = 'file2.wechat.com', webpushUri = 'webpush2.wechat.com') : hostUri.indexOf('wechat.com') > -1 ? (fileUri = 'file.wechat.com', webpushUri = 'webpush.wechat.com') : hostUri.indexOf('web1.wechatapp.com') > -1 ? (fileUri = 'file1.wechatapp.com', webpushUri = 'webpush1.wechatapp.com') : (fileUri = 'file.wechatapp.com', webpushUri = 'webpush.wechatapp.com')
+
+    this[API].webwxdownloadmedia = 'https://' + fileUri + '/cgi-bin/mmwebwx-bin/webwxgetmedia'
+    this[API].webwxuploadmedia = 'https://' + fileUri + '/cgi-bin/mmwebwx-bin/webwxuploadmedia'
+    this[API].synccheck = 'https://' + webpushUri + '/cgi-bin/mmwebwx-bin/synccheck'
   }
 
   _getUserRemarkName(uid) {
@@ -579,8 +575,7 @@ class Wechat extends EventEmitter {
 
     this.memberList.forEach((member) => {
       if (member['UserName'] == uid) {
-        name = member['RemarkName'] ? member['RemarkName'] 
-        : member['NickName']
+        name = member['RemarkName'] ? member['RemarkName'] : member['NickName']
       }
     })
 
