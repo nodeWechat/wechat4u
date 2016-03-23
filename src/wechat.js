@@ -2,9 +2,8 @@
 const EventEmitter = require('events')
 const request = require('./request.js')
 const debug = require('debug')('wechat')
-const fs = require('fs')
-const path = require('path')
 const FormData = require('form-data')
+const Pass = require('stream').PassThrough
 
 // Private Method
 const _getTime = () => new Date().getTime()
@@ -52,6 +51,7 @@ class Wechat extends EventEmitter {
       skey: '',
       passTicket: '',
       formateSyncKey: '',
+      webwx_data_ticket: '',
       deviceId: 'e' + Math.random().toString().substring(2, 17),
 
       baseRequest: {},
@@ -66,8 +66,7 @@ class Wechat extends EventEmitter {
       login: "https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login",
       synccheck: "",
       webwxdownloadmedia: "",
-      webwxuploadmedia: "",
-      fileUri: ''
+      webwxuploadmedia: ""
     }
     this.mediaSend = 0
     this.state = STATE.init
@@ -81,6 +80,14 @@ class Wechat extends EventEmitter {
     this.specialList = [] // 特殊账号
 
     this.request = new request()
+  }
+
+  setProp(key, val) {
+    this[PROP][key] = val
+  }
+
+  getProp(key) {
+    return this[PROP][key]
   }
 
   get friendList() {
@@ -208,7 +215,12 @@ class Wechat extends EventEmitter {
       this[PROP].sid = res.data.match(/<wxsid>(.*)<\/wxsid>/)[1]
       this[PROP].uin = res.data.match(/<wxuin>(.*)<\/wxuin>/)[1]
       this[PROP].passTicket = res.data.match(/<pass_ticket>(.*)<\/pass_ticket>/)[1]
-
+      if (res.headers['set-cookie']) {
+        res.headers['set-cookie'].forEach(item => {
+          if (item.indexOf('webwx_data_ticket') != -1)
+            this[PROP].webwx_data_ticket = item.split('; ').shift().split('=').pop()
+        })
+      }
       this[PROP].baseRequest = {
         'Uin': parseInt(this[PROP].uin, 10),
         'Sid': this[PROP].sid,
@@ -529,87 +541,88 @@ class Wechat extends EventEmitter {
       throw new Error('发送信息失败')
     })
   }
-  
-  sendImage(filePath, to) {
-    return this._uploadMedia(filePath).then(result => {
-      let mediaId = result['MediaId']
-      if(!mediaId) {
-        throw new Error('MediaId获取失败')
-      }
-      this._sendImage(mediaId, to)
+
+  sendImage(to, file, type, size) {
+    return this._uploadMedia(file, type, size).then(mediaId => this._sendImage(mediaId, to)).catch(err => {
+      debug(err)
+      throw new Error('发送图片信息失败')
     })
   }
-  
-  _uploadMedia(filePath) {
-    const fileType = {
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      png: 'image/png',
-      gif: 'image/gif'
-    }
-    
+
+  // file: Buffer, Stream, File, Blob
+  _uploadMedia(file, type, size) {
+    type = type || file.type || ''
+    size = size || file.size || file.length || 0
     let mediaId = this.mediaSend++
-    let stats = fs.statSync(filePath)
-    let fileName = path.basename(filePath)
-    let fileExt = fileName.split('.').pop()
-    
-    let clientMsgId = _getTime() + '0' + Math.random().toString().substring(2, 5)
-    
+      let clientMsgId = _getTime() + '0' + Math.random().toString().substring(2, 5)
+
     let uploadMediaRequest = JSON.stringify({
       BaseRequest: this[PROP].baseRequest,
       ClientMediaId: clientMsgId,
-      TotalLen: stats.size,
+      TotalLen: size,
       StartPos: 0,
-      DataLen: stats.size,
+      DataLen: size,
       MediaType: 4
     })
-    
-    let cookieItems = this.cm.prepare(this[API].baseUri).split('; ')
-    let ticket = ""
-    for (let item of cookieItems) {
-      if (item.indexOf("webwx_data_ticket") != -1) {
-        ticket = item.split("=").pop()
-      }
-    }
-    
+
     let form = new FormData()
     form.append('id', 'WU_FILE_' + mediaId)
-    form.append('name', fileName)
-    form.append('type', fileType[fileExt])
-    form.append('lastModifieDate',  'Thu Mar 17 2016 00:55:10 GMT+0800 (CST)')
-    form.append('size', stats.size)
+    form.append('name', 'filename')
+    form.append('type', type)
+    form.append('lastModifieDate', new Date().toGMTString())
+    form.append('size', size)
     form.append('mediatype', 'pic')
     form.append('uploadmediarequest', uploadMediaRequest)
-    form.append('webwx_data_ticket', ticket)
+    form.append('webwx_data_ticket', this[PROP].webwx_data_ticket)
     form.append('pass_ticket', encodeURI(this[PROP].passTicket))
-    form.append('filename', fs.createReadStream(filePath))
+    form.append('filename', file, {
+      filename: 'filename',
+      contentType: type,
+      knownLength: size
+    })
 
-    let headers = {
-			'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:42.0) Gecko/20100101 Firefox/42.0',
-			'Accept': '*/*',
-			'Accept-Language': 'zh-CN,zh;q=0.8',
-			'Accept-Encoding': 'gzip, deflate'
+    let params = {
+      f: 'json'
     }
-    
+
+    let headers = typeof form.getHeaders == 'function' ? form.getHeaders() : null
+
     return new Promise((resolve, reject) => {
-      
-      form.submit({
-        host: this[API].fileUri,
-        path: '/cgi-bin/mmwebwx-bin/webwxuploadmedia?f=json',
-        headers: headers
-      }, function(err, res) {
-        let body = ''
-        res.on('data', function(chunk) {
-          body += chunk
-        })
-        res.on('end', function() {
-          let data = JSON.parse(body)
-          resolve(data)
-        })
+      if (typeof form.pipe != 'function')
+        resolve(form)
+
+      let pass = new Pass()
+      let buf = []
+      pass.on('data', chunk => {
+        buf.push(chunk)
       })
+      pass.on('end', () => {
+        let arr = new Uint8Array(Buffer.concat(buf))
+        resolve(arr.buffer)
+      })
+      pass.on('error', err => {
+        reject(err)
+      })
+      form.pipe(pass)
+    }).then(data => {
+      return this.request({
+        url: this[API].webwxuploadmedia,
+        method: 'POST',
+        headers: headers,
+        params: params,
+        data: data
+      })
+    }).then(res => {
+      let mediaId = res.data.MediaId
+      if (!mediaId)
+        throw new Error('MediaId获取失败')
+      return mediaId
+    }).catch(err => {
+      debug(err)
+      throw new Error('上传图片失败')
     })
   }
-  
+
   _sendImage(mediaId, to) {
     let params = {
       'pass_ticket': this[PROP].passTicket,
@@ -628,9 +641,9 @@ class Wechat extends EventEmitter {
         'ClientMsgId': clientMsgId
       }
     }
-    this.request({
+    return this.request({
       method: 'POST',
-      url: '/cgi-bin/mmwebwx-bin/webwxsendmsgimg',
+      url: '/webwxsendmsgimg',
       baseURL: this[API].baseUri,
       params: params,
       data: data
@@ -638,6 +651,7 @@ class Wechat extends EventEmitter {
       let data = res.data
       if (data['BaseResponse']['Ret'] != 0)
         throw new Error(data['BaseResponse']['Ret'])
+      return
     }).catch(err => {
       debug(err)
       throw new Error('发送图片失败')
@@ -649,7 +663,6 @@ class Wechat extends EventEmitter {
     let webpushUri = ''
 
     hostUri.indexOf('wx2.qq.com') > -1 ? (fileUri = 'file2.wx.qq.com', webpushUri = 'webpush2.weixin.qq.com') : hostUri.indexOf('qq.com') > -1 ? (fileUri = 'file.wx.qq.com', webpushUri = 'webpush.weixin.qq.com') : hostUri.indexOf('web1.wechat.com') > -1 ? (fileUri = 'file1.wechat.com', webpushUri = 'webpush1.wechat.com') : hostUri.indexOf('web2.wechat.com') > -1 ? (fileUri = 'file2.wechat.com', webpushUri = 'webpush2.wechat.com') : hostUri.indexOf('wechat.com') > -1 ? (fileUri = 'file.wechat.com', webpushUri = 'webpush.wechat.com') : hostUri.indexOf('web1.wechatapp.com') > -1 ? (fileUri = 'file1.wechatapp.com', webpushUri = 'webpush1.wechatapp.com') : (fileUri = 'file.wechatapp.com', webpushUri = 'webpush.wechatapp.com')
-    this[API].fileUri = fileUri;
     this[API].webwxdownloadmedia = 'https://' + fileUri + '/cgi-bin/mmwebwx-bin/webwxgetmedia'
     this[API].webwxuploadmedia = 'https://' + fileUri + '/cgi-bin/mmwebwx-bin/webwxuploadmedia'
     this[API].synccheck = 'https://' + webpushUri + '/cgi-bin/mmwebwx-bin/synccheck'
