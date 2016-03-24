@@ -76,7 +76,7 @@ class Wechat extends EventEmitter {
     this.publicList = [] // 公众账号
     this.specialList = [] // 特殊账号
 
-    this.request = request.create()
+    this.request = new request()
   }
 
   get friendList() {

@@ -15,6 +15,8 @@ class WxBot extends Wechat {
     this.superviseUsers = new Set()
     this.openTimes = 0
     this.on('mobile-open', () => this._botSupervise())
+
+    this.on('error', err => console.log(err))
   }
   
   get replyUsersList() {
@@ -68,7 +70,7 @@ class WxBot extends Wechat {
       'key': '2ba083ae9f0016664dfb7ed80ba4ffa0',
       'info': word
     }
-    return this.axios.request({
+    return this.request({
       method: 'GET',
       url: 'http://www.tuling123.com/openapi/api',
       params: params
