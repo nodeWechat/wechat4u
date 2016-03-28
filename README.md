@@ -18,7 +18,7 @@ npm run example
   
   let wechat = new wechat4u()
   
-  wechat.getUUID().then(uuid => {/*处理uuid*/}
+  wechat.getUUID().then(uuid => {/*处理uuid*/})
   wechat.start() // 完成登陆过程，需手机端通过网页版登陆验证
   
   wechat.sendMsg(msg, to) // 发送文字消息
