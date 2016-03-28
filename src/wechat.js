@@ -71,12 +71,13 @@ class Wechat extends EventEmitter {
     this.mediaSend = 0
     this.state = STATE.init
 
-    this.user = [] // 登陆用户
-    this.memberList = [] // 所有好友
+    this.user = []       // 登陆账号
+    this.memberList = [] // 所有联系人
 
-    this.contactList = [] // 个人好友
-    this.groupList = [] // 群
-    this.publicList = [] // 公众账号
+    this.contactList = [] // 个人联系人
+    this.groupList = []   // 已保存群聊
+    this.groupMemberList = [] // 所有群聊内联系人
+    this.publicList = []  // 公众账号
     this.specialList = [] // 特殊账号
 
     this.request = new request()
@@ -90,6 +91,7 @@ class Wechat extends EventEmitter {
     return this[PROP][key]
   }
 
+  // 通讯录好友
   get friendList() {
     let members = []
 
@@ -123,9 +125,6 @@ class Wechat extends EventEmitter {
       url: this[API].jsLogin,
       params: params
     }).then(res => {
-      this.emit('uuid')
-      this.state = STATE.uuid
-
       let re = /window.QRLogin.code = (\d+); window.QRLogin.uuid = "(\S+?)"/
       let pm = res.data.match(re)
       if (!pm) {
@@ -133,6 +132,9 @@ class Wechat extends EventEmitter {
       }
       let code = pm[1]
       let uuid = this[PROP].uuid = pm[2]
+      
+      this.emit('uuid', uuid)
+      this.state = STATE.uuid
 
       if (code != 200) {
         throw new Error("GET UUID ERROR")
@@ -340,6 +342,37 @@ class Wechat extends EventEmitter {
       throw new Error('获取通讯录失败')
     })
   }
+  
+  batchGetContact() {
+    let params = {
+      'pass_ticket': this[PROP].passTicket,
+      'type': 'e',
+      'r': _getTime()
+    }
+    let data = {
+      'BaseRequest': this[PROP].baseRequest,
+      "Count": this.groupList.length,
+      'List': this.groupList.map(member => {return {'UserName':member['UserName'],'EncryChatRoomId':''}})
+    }
+    return this.request({
+      method: 'POST',
+      url: '/webwxbatchgetcontact',
+      baseURL: this[API].baseUri,
+      params: params,
+      data: data
+    }).then(res => {
+      let data = res.data
+      let contactList = data['ContactList']
+      
+      for(let group of contactList) {
+        for(let member of group['MemberList']) {
+          this.groupMemberList.push(member)
+        }
+      }
+      
+      debug('batchGetContact', this.groupMemberList.length)
+    })
+  }
 
   sync() {
     let params = {
@@ -503,6 +536,7 @@ class Wechat extends EventEmitter {
     }).then(memberList => {
       this.emit('login', memberList)
       this.state = STATE.login
+      this.batchGetContact()
       return this.syncPolling()
     }).catch(err => {
       this.emit('error', err)
@@ -554,7 +588,7 @@ class Wechat extends EventEmitter {
     type = type || file.type || ''
     size = size || file.size || file.length || 0
     let mediaId = this.mediaSend++
-      let clientMsgId = _getTime() + '0' + Math.random().toString().substring(2, 5)
+    let clientMsgId = _getTime() + '0' + Math.random().toString().substring(2, 5)
 
     let uploadMediaRequest = JSON.stringify({
       BaseRequest: this[PROP].baseRequest,

@@ -28,19 +28,20 @@ npm run example
   // let imgStats = fs.statSync(imgPath)
   // wechat.sendImage(user['UserName'], fs.createReadStream(imgPath), imgStats.type, imgStats.size)
   
-  wechat.friendList // 好友列表
-  wechat.user // 登陆用户
-  wechat.memberList // 所有好友
-  wechat.contactList // 个人好友
-  wechat.groupList // 群
-  wechat.publicList // 公众账号
+  wechat.user        // 登陆账号
+  wechat.memberList  // 所有联系人
+  wechat.friendList  // 通讯录（个人联系人，群聊）
+  wechat.contactList // 个人联系人
+  wechat.groupList   // 已保存群聊
+  wechat.groupMemberList // 所有群聊内联系人
+  wechat.publicList  // 公众账号
   wechat.specialList // 特殊账号
   
-  wechat.on('uuid', () => {})
+  wechat.on('uuid', uuid => {})
   wechat.on('scan', () => {})
   wechat.on('confirm', () => {})
-  wechat.on('login', () => {})
-  wechat.on('logout', () => {})
+  wechat.on('login', memberList => {})
+  wechat.on('logout', msg => {})
   wechat.on('error', err => debug(err))
   wechat.on('init-message', () => {})
   wechat.on('text-message', () => {})
@@ -53,7 +54,7 @@ npm run example
   wechat.state === wechat4u.STATE.login === 'login'
   wechat.state === wechat4u.STATE.logout === 'logout'
   
-  wechat.request() // 自带的 request，包含cookie
+  wechat.request() // 包含相关 cookie 的 request，目前使用 axios
 ```
 
 
