@@ -1,6 +1,7 @@
 "use strict"
 const Wechat = require('../../index')
 const debug = require('debug')('wxbot')
+const fs = require('fs')
 
 class WxBot extends Wechat {
 
@@ -17,6 +18,11 @@ class WxBot extends Wechat {
     this.on('mobile-open', () => this._botSupervise())
 
     this.on('error', err => console.log(err))
+    this.on('login', () => {
+      let imgPath = __dirname + '/../public/images/nodeWechat.png'
+      let imgStats = fs.statSync(imgPath)
+      this.sendImage(this.user['UserName'], fs.createReadStream(imgPath), imgStats.type, imgStats.size)
+    })
   }
   
   get replyUsersList() {

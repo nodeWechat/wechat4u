@@ -22,6 +22,11 @@ npm run example
   wechat.start() // 完成登陆过程，需手机端通过网页版登陆验证
   
   wechat.sendMsg(msg, to) // 发送文字消息
+  wechat.sendImage(to, fileStream, type, size) // 发送图片消息
+  // 使用 fs 的 createdReadStream 的样例：
+  // let imgPath = __dirname + '/../public/images/nodeWechat.png'
+  // let imgStats = fs.statSync(imgPath)
+  // wechat.sendImage(user['UserName'], fs.createReadStream(imgPath), imgStats.type, imgStats.size)
   
   wechat.friendList // 好友列表
   wechat.user // 登陆用户
@@ -48,7 +53,7 @@ npm run example
   wechat.state === wechat4u.STATE.login === 'login'
   wechat.state === wechat4u.STATE.logout === 'logout'
   
-  wechat.request() // 自带的 request（默认为axios），包含cookie
+  wechat.request() // 自带的 request，包含cookie
 ```
 
 
