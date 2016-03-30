@@ -20,8 +20,7 @@ class WxBot extends Wechat {
     this.on('error', err => console.log(err))
     this.on('login', () => {
       let imgPath = __dirname + '/../public/images/nodeWechat.png'
-      let imgStats = fs.statSync(imgPath)
-      this.sendImage(this.user['UserName'], fs.createReadStream(imgPath), imgStats.type, imgStats.size)
+      this.sendImage(this.user['UserName'], fs.createReadStream(imgPath))
     })
   }
   

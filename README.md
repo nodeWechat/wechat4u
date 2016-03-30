@@ -26,7 +26,7 @@ npm run example
   // 使用 fs 的 createdReadStream 的样例：
   // let imgPath = __dirname + '/../public/images/nodeWechat.png'
   // let imgStats = fs.statSync(imgPath)
-  // wechat.sendImage(user['UserName'], fs.createReadStream(imgPath), imgStats.type, imgStats.size)
+  // wechat.sendImage(user['UserName'], fs.createReadStream(imgPath))
   
   wechat.user        // 登陆账号
   wechat.memberList  // 所有联系人

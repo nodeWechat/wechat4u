@@ -1,8 +1,10 @@
 "use strict"
 const EventEmitter = require('events')
+const fs = require('fs')
 const request = require('./request.js')
 const debug = require('debug')('wechat')
 const FormData = require('form-data')
+const mime = require('mime')
 const Pass = require('stream').PassThrough
 
 // Private Method
@@ -132,7 +134,7 @@ class Wechat extends EventEmitter {
       }
       let code = pm[1]
       let uuid = this[PROP].uuid = pm[2]
-      
+
       this.emit('uuid', uuid)
       this.state = STATE.uuid
 
@@ -342,7 +344,7 @@ class Wechat extends EventEmitter {
       throw new Error('获取通讯录失败')
     })
   }
-  
+
   batchGetContact() {
     let params = {
       'pass_ticket': this[PROP].passTicket,
@@ -352,7 +354,7 @@ class Wechat extends EventEmitter {
     let data = {
       'BaseRequest': this[PROP].baseRequest,
       "Count": this.groupList.length,
-      'List': this.groupList.map(member => {return {'UserName':member['UserName'],'EncryChatRoomId':''}})
+      'List': this.groupList.map(member => { return { 'UserName': member['UserName'], 'EncryChatRoomId': '' } })
     }
     return this.request({
       method: 'POST',
@@ -363,13 +365,13 @@ class Wechat extends EventEmitter {
     }).then(res => {
       let data = res.data
       let contactList = data['ContactList']
-      
-      for(let group of contactList) {
-        for(let member of group['MemberList']) {
+
+      for (let group of contactList) {
+        for (let member of group['MemberList']) {
           this.groupMemberList.push(member)
         }
       }
-      
+
       debug('batchGetContact', this.groupMemberList.length)
     })
   }
@@ -498,15 +500,15 @@ class Wechat extends EventEmitter {
 
   logout() {
     let params = {
-        redirect: 1,
-        type: 0,
-        skey: this[PROP].skey
-      }
-      // data加上会出错，不加data也能登出
-      // let data = {
-      //   sid: this[PROP].sid,
-      //   uin: this[PROP].uin
-      // }
+      redirect: 1,
+      type: 0,
+      skey: this[PROP].skey
+    }
+    // data加上会出错，不加data也能登出
+    // let data = {
+    //   sid: this[PROP].sid,
+    //   uin: this[PROP].uin
+    // }
     return this.request({
       method: 'POST',
       url: '/webwxlogout',
@@ -577,16 +579,19 @@ class Wechat extends EventEmitter {
   }
 
   sendImage(to, file, type, size) {
-    return this._uploadMedia(file, type, size).then(mediaId => this._sendImage(mediaId, to)).catch(err => {
-      debug(err)
-      throw new Error('发送图片信息失败')
-    })
+    return this._uploadMedia(file, type, size)
+      .then(mediaId => this._sendImage(mediaId, to))
+      .catch(err => {
+        debug(err)
+        throw new Error('发送图片信息失败')
+      })
   }
 
   // file: Buffer, Stream, File, Blob
   _uploadMedia(file, type, size) {
-    type = type || file.type || ''
-    size = size || file.size || file.length || 0
+    type = type || file.type || (file.path ? mime.lookup(file.path) : null) ||  ''
+    size = size || file.size || (file.path ? fs.statSync(file.path).size : null) || file.length || 0
+
     let mediaId = this.mediaSend++
     let clientMsgId = _getTime() + '0' + Math.random().toString().substring(2, 5)
 
