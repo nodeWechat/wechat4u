@@ -8,7 +8,6 @@ const mime = require('mime')
 const Pass = require('stream').PassThrough
 
 // Private Method
-const _getTime = () => new Date().getTime()
 const _convertEmoji = (s) => {
   return s.replace(/<span.*?class="emoji emoji(.*?)"><\/span>/g, (a, b) => {
     try {
@@ -243,7 +242,7 @@ class Wechat extends EventEmitter {
     let params = {
       'pass_ticket': this[PROP].passTicket,
       'skey': this[PROP].skey,
-      'r': _getTime()
+      'r': +new Date()
     }
     let data = {
       BaseRequest: this[PROP].baseRequest
@@ -281,7 +280,7 @@ class Wechat extends EventEmitter {
       'Code': 3,
       'FromUserName': this.user['UserName'],
       'ToUserName': this.user['UserName'],
-      'ClientMsgId': _getTime()
+      'ClientMsgId': +new Date()
     }
     return this.request({
       method: 'POST',
@@ -306,7 +305,7 @@ class Wechat extends EventEmitter {
       'pass_ticket': this[PROP].passTicket,
       'seq': 0,
       'skey': this[PROP].skey,
-      'r': _getTime()
+      'r': +new Date()
     }
     return this.request({
       method: 'POST',
@@ -349,7 +348,7 @@ class Wechat extends EventEmitter {
     let params = {
       'pass_ticket': this[PROP].passTicket,
       'type': 'e',
-      'r': _getTime()
+      'r': +new Date()
     }
     let data = {
       'BaseRequest': this[PROP].baseRequest,
@@ -385,7 +384,7 @@ class Wechat extends EventEmitter {
     let data = {
       'BaseRequest': this[PROP].baseRequest,
       "SyncKey": this[PROP].syncKey,
-      'rr': ~_getTime()
+      'rr': ~new Date()
     }
     return this.request({
       method: 'POST',
@@ -411,7 +410,7 @@ class Wechat extends EventEmitter {
 
   syncCheck() {
     let params = {
-      'r': _getTime(),
+      'r': +new Date(),
       'sid': this[PROP].sid,
       'uin': this[PROP].uin,
       'skey': this[PROP].skey,
@@ -550,7 +549,7 @@ class Wechat extends EventEmitter {
     let params = {
       'pass_ticket': this[PROP].passTicket
     }
-    let clientMsgId = _getTime() + '0' + Math.random().toString().substring(2, 5)
+    let clientMsgId = +new Date() + '0' + Math.random().toString().substring(2, 5)
     let data = {
       'BaseRequest': this[PROP].baseRequest,
       'Msg': {
@@ -593,7 +592,7 @@ class Wechat extends EventEmitter {
     size = size || file.size || (file.path ? fs.statSync(file.path).size : null) || file.length || 0
 
     let mediaId = this.mediaSend++
-    let clientMsgId = _getTime() + '0' + Math.random().toString().substring(2, 5)
+    let clientMsgId = +new Date() + '0' + Math.random().toString().substring(2, 5)
 
     let uploadMediaRequest = JSON.stringify({
       BaseRequest: this[PROP].baseRequest,
@@ -668,7 +667,7 @@ class Wechat extends EventEmitter {
       'fun': 'async',
       'f': 'json'
     }
-    let clientMsgId = _getTime() + '0' + Math.random().toString().substring(2, 5)
+    let clientMsgId = +new Date() + '0' + Math.random().toString().substring(2, 5)
     let data = {
       'BaseRequest': this[PROP].baseRequest,
       'Msg': {
