@@ -126,10 +126,9 @@ class Wechat extends EventEmitter {
       url: this[API].jsLogin,
       params: params
     }).then(res => {
-      let re = /window.QRLogin.code = (\d+); window.QRLogin.uuid = "(\S+?)"/
-      let pm = res.data.match(re)
+      let pm = res.data.match(/window.QRLogin.code = (\d+); window.QRLogin.uuid = "(\S+?)"/)
       if (!pm) {
-        throw new Error("GET UUID ERROR")
+        throw new Error("UUID错误: 格式错误")
       }
       let code = pm[1]
       let uuid = this[PROP].uuid = pm[2]
@@ -138,7 +137,7 @@ class Wechat extends EventEmitter {
       this.state = STATE.uuid
 
       if (code != 200) {
-        throw new Error("GET UUID ERROR")
+        throw new Error("UUID错误: " + code)
       }
 
       return uuid
@@ -158,16 +157,11 @@ class Wechat extends EventEmitter {
       url: this[API].login,
       params: params
     }).then(res => {
-      let re = /window.code=(\d+);/
-      let pm = res.data.match(re)
+      let pm = res.data.match(/window.code=(\d+);/)
       let code = pm[1]
 
-      if (code == 201) {
-        return code
-      } else if (code == 408) {
-        throw new Error(code)
-      } else {
-        throw new Error(code)
+      if (code != 201) {
+        throw new Error('扫描状态code错误: ' + code)
       }
     }).catch(err => {
       debug(err)
@@ -185,24 +179,19 @@ class Wechat extends EventEmitter {
       url: this[API].login,
       params: params
     }).then(res => {
-      let re = /window.code=(\d+);/
-      let pm = res.data.match(re)
+      let pm = res.data.match(/window.code=(\d+);/)
       let code = pm[1]
 
-      if (code == 200) {
-        let re = /window.redirect_uri="(\S+?)";/
-        let pm = res.data.match(re)
-        this[API].rediUri = pm[1] + '&fun=new'
-        this[API].baseUri = this[API].rediUri.substring(0, this[API].rediUri.lastIndexOf("/"))
-
-        // 接口更新
-        this._APIUpdate(this[API].baseUri)
-
-        return code
-      } else {
-        throw new Error(code)
+      if (code != 200) {
+        throw new Error('登陆确认code错误: ' + code)
       }
+      
+      pm = res.data.match(/window.redirect_uri="(\S+?)";/)
+      this[API].rediUri = pm[1] + '&fun=new'
+      this[API].baseUri = this[API].rediUri.substring(0, this[API].rediUri.lastIndexOf("/"))
 
+      // 接口更新
+      this._APIUpdate(this[API].baseUri)
     }).catch(err => {
       debug(err)
       throw new Error('获取确认登录信息失败')
@@ -230,8 +219,6 @@ class Wechat extends EventEmitter {
         'Skey': this[PROP].skey,
         'DeviceID': this[PROP].deviceId
       }
-
-      debug('login Success')
     }).catch(err => {
       debug(err)
       throw new Error('登录失败')
@@ -262,12 +249,9 @@ class Wechat extends EventEmitter {
       for (let e = this[PROP].syncKey['List'], o = 0, n = e.length; n > o; o++)
         synckeylist.push(e[o]['Key'] + "_" + e[o]['Val'])
       this[PROP].formateSyncKey = synckeylist.join("|")
-
-      debug('wechatInit Success')
-
+      
       if (data['BaseResponse']['Ret'] !== 0)
-        throw new Error(data['BaseResponse']['Ret'])
-      return true
+        throw new Error('微信初始化Ret错误' + data['BaseResponse']['Ret'])
     }).catch(err => {
       debug(err)
       throw new Error('微信初始化失败')
@@ -289,10 +273,8 @@ class Wechat extends EventEmitter {
       data: data
     }).then(res => {
       let data = res.data
-      debug('notifyMobile Success')
       if (data['BaseResponse']['Ret'] !== 0)
-        throw new Error(data['BaseResponse']['Ret'])
-      return true
+        throw new Error('微信初始化Ret错误' + data['BaseResponse']['Ret'])
     }).catch(err => {
       debug(err)
       throw new Error('开启状态通知失败')
@@ -330,13 +312,7 @@ class Wechat extends EventEmitter {
           this.contactList.push(member)
         }
       }
-
-      debug(this.memberList.length, ' contacts detected')
-      debug(this.publicList.length, ' publicList')
-      debug(this.specialList.length, ' specialList')
-      debug(this.groupList.length, ' groupList')
-      debug(this.contactList.length, ' contactList')
-
+      debug('好友数量：' + this.memberList.length)
       return this.memberList
     }).catch(err => {
       debug(err)
@@ -370,8 +346,11 @@ class Wechat extends EventEmitter {
           this.groupMemberList.push(member)
         }
       }
-
-      debug('batchGetContact', this.groupMemberList.length)
+      debug('群组好友总数：', this.groupMemberList.length)
+      return this.groupMemberList
+    }).catch(err => {
+      debug(err)
+      throw new Error('获取群组通讯录失败')
     })
   }
 
@@ -570,7 +549,7 @@ class Wechat extends EventEmitter {
     }).then(res => {
       let data = res.data
       if (data['BaseResponse']['Ret'] !== 0)
-        throw new Error(data['BaseResponse']['Ret'])
+        throw new Error('发送信息Ret错误: ' + data['BaseResponse']['Ret'])
     }).catch(err => {
       debug(err)
       throw new Error('发送信息失败')
@@ -688,8 +667,7 @@ class Wechat extends EventEmitter {
     }).then(res => {
       let data = res.data
       if (data['BaseResponse']['Ret'] != 0)
-        throw new Error(data['BaseResponse']['Ret'])
-      return
+        throw new Error('发送图片信息Ret错误: ' + data['BaseResponse']['Ret'])
     }).catch(err => {
       debug(err)
       throw new Error('发送图片失败')
@@ -711,11 +689,9 @@ class Wechat extends EventEmitter {
 
     this.memberList.forEach((member) => {
       if (member['UserName'] == uid) {
-        name = member['RemarkName'] ? member['RemarkName'] : member['NickName']
+        return member['RemarkName'] ? member['RemarkName'] : member['NickName']      
       }
     })
-
-    return name
   }
 
 }
