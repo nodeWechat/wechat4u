@@ -73,13 +73,13 @@ class Wechat extends EventEmitter {
     this.mediaSend = 0
     this.state = STATE.init
 
-    this.user = []       // 登陆账号
+    this.user = [] // 登陆账号
     this.memberList = [] // 所有联系人
 
     this.contactList = [] // 个人联系人
-    this.groupList = []   // 已保存群聊
+    this.groupList = [] // 已保存群聊
     this.groupMemberList = [] // 所有群聊内联系人
-    this.publicList = []  // 公众账号
+    this.publicList = [] // 公众账号
     this.specialList = [] // 特殊账号
 
     this.request = new request()
@@ -354,7 +354,12 @@ class Wechat extends EventEmitter {
     let data = {
       'BaseRequest': this[PROP].baseRequest,
       "Count": this.groupList.length,
-      'List': this.groupList.map(member => { return { 'UserName': member['UserName'], 'EncryChatRoomId': '' } })
+      'List': this.groupList.map(member => {
+        return {
+          'UserName': member['UserName'],
+          'EncryChatRoomId': ''
+        }
+      })
     }
     return this.request({
       method: 'POST',
@@ -469,28 +474,38 @@ class Wechat extends EventEmitter {
 
   syncPolling() {
     this.syncCheck().then(state => {
-      if (state.retcode == '1100' || state.retcode == '1101') {
-        this.state = STATE.logout
-        debug(state.retcode == '1100' ? '你登出了微信' : '你在其他地方登录了 WEB 版微信')
-        this.emit('logout', state.retcode == '1100' ? '你登出了微信' : '你在其他地方登录了 WEB 版微信')
-      } else if (state.retcode == '0') {
-        if (state.selector == '2') {
-          this.sync().then(data => {
-            this.handleMsg(data)
+      if ('0' != state.retcode) {
+        //double check
+        return this.syncCheck().then(state => {
+          if ('0' != state.retcode) {
+            debug('你登出了微信')
+            this.state = STATE.logout
+            this.emit('logout', '你登出了微信')
+          } else {
             this.syncPolling()
-          }).catch(err => {
-            throw err
+          }
+        })
+      } else {
+        if ('0' != state.selector) {
+          return this.sync().then(data => {
+            switch (state.selector) {
+              case '2':
+                this.handleMsg(data)
+                break;
+              case '7':
+                this.emit('mobile-open')
+                break;
+              default:
+                debug('WebSync Others', state.selector)
+                break;
+            }
+            this.syncPolling()
           })
-        } else if (state.selector == '7') {
-          debug('WebSync Mobile Open')
-          this.emit('mobile-open')
-          this.syncPolling()
-        } else if (state.selector == '0') {
-          debug('WebSync Normal')
-          this.syncPolling()
         } else {
-          // debug('WebSync Others', state.selector)
-          this.syncPolling()
+          debug('WebSync Normal')
+          setTimeout(() => {
+            this.syncPolling()
+          }, 1000)
         }
       }
     }).catch(err => {
@@ -504,11 +519,12 @@ class Wechat extends EventEmitter {
       type: 0,
       skey: this[PROP].skey
     }
-    // data加上会出错，不加data也能登出
-    // let data = {
-    //   sid: this[PROP].sid,
-    //   uin: this[PROP].uin
-    // }
+
+    //data加上会出错，不加data也能登出
+    //let data = {
+    //  sid: this[PROP].sid,
+    //  uin: this[PROP].uin
+    //}
     return this.request({
       method: 'POST',
       url: '/webwxlogout',
@@ -589,7 +605,7 @@ class Wechat extends EventEmitter {
 
   // file: Buffer, Stream, File, Blob
   _uploadMedia(file, type, size) {
-    type = type || file.type || (file.path ? mime.lookup(file.path) : null) ||  ''
+    type = type || file.type || (file.path ? mime.lookup(file.path) : null) || ''
     size = size || file.size || (file.path ? fs.statSync(file.path).size : null) || file.length || 0
 
     let mediaId = this.mediaSend++
