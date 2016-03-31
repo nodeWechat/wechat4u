@@ -588,7 +588,7 @@ class Wechat extends EventEmitter {
 
   // file: Buffer, Stream, File, Blob
   _uploadMedia(file, type, size) {
-    type = type || file.type || (file.path ? mime.lookup(file.path) : null) ||  ''
+    type = type || file.type || (file.path ? mime.lookup(file.path) : null) || ''
     size = size || file.size || (file.path ? fs.statSync(file.path).size : null) || file.length || 0
 
     let mediaId = this.mediaSend++

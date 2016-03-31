@@ -4,6 +4,6 @@
  * MIT Licensed
  */
 
-'use strict';
+'use strict'
 
-module.exports = require('./src/wechat');
+module.exports = require('./src/wechat')
