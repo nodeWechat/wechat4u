@@ -6,6 +6,7 @@ const debug = require('debug')('wechat')
 const FormData = require('form-data')
 const mime = require('mime')
 const Pass = require('stream').PassThrough
+const updateAPI = require('./webwxapi.js')
 
 // Private Method
 const _convertEmoji = (s) => {
@@ -60,14 +61,8 @@ class Wechat extends EventEmitter {
     }
 
     this[API] = {
-      baseUri: '',
-      rediUri: '',
-
       jsLogin: "https://login.weixin.qq.com/jslogin",
       login: "https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login",
-      synccheck: "",
-      webwxdownloadmedia: "",
-      webwxuploadmedia: ""
     }
     this.mediaSend = 0
     this.state = STATE.init
@@ -191,7 +186,7 @@ class Wechat extends EventEmitter {
       this[API].baseUri = this[API].rediUri.substring(0, this[API].rediUri.lastIndexOf("/"))
 
       // 接口更新
-      this._APIUpdate(this[API].baseUri)
+      updateAPI(this[API])
     }).catch(err => {
       debug(err)
       throw new Error('获取确认登录信息失败')
@@ -236,8 +231,7 @@ class Wechat extends EventEmitter {
     }
     return this.request({
       method: 'POST',
-      url: '/webwxinit',
-      baseURL: this[API].baseUri,
+      url: this[API].webwxinit,
       params: params,
       data: data
     }).then(res => {
@@ -268,8 +262,7 @@ class Wechat extends EventEmitter {
     }
     return this.request({
       method: 'POST',
-      url: '/webwxstatusnotify',
-      baseURL: this[API].baseUri,
+      url: this[API].webwxstatusnotify,
       data: data
     }).then(res => {
       let data = res.data
@@ -291,8 +284,7 @@ class Wechat extends EventEmitter {
     }
     return this.request({
       method: 'POST',
-      url: '/webwxgetcontact',
-      baseURL: this[API].baseUri,
+      url: this[API].webwxgetcontact,
       params: params
     }).then(res => {
       let data = res.data
@@ -333,8 +325,7 @@ class Wechat extends EventEmitter {
     }
     return this.request({
       method: 'POST',
-      url: '/webwxbatchgetcontact',
-      baseURL: this[API].baseUri,
+      url: this[API].webwxbatchgetcontact,
       params: params,
       data: data
     }).then(res => {
@@ -367,8 +358,7 @@ class Wechat extends EventEmitter {
     }
     return this.request({
       method: 'POST',
-      url: '/webwxsync',
-      baseURL: this[API].baseUri,
+      url: this[API].webwxsync,
       params: params,
       data: data
     }).then(res => {
@@ -489,8 +479,7 @@ class Wechat extends EventEmitter {
     // }
     return this.request({
       method: 'POST',
-      url: '/webwxlogout',
-      baseURL: this[API].baseUri,
+      url: this[API].webwxlogout,
       params: params
     }).then(res => {
       return '登出成功'
@@ -542,8 +531,7 @@ class Wechat extends EventEmitter {
     }
     this.request({
       method: 'POST',
-      url: '/webwxsendmsg',
-      baseURL: this[API].baseUri,
+      url: this[API].webwxsendmsg,
       params: params,
       data: data
     }).then(res => {
@@ -660,8 +648,7 @@ class Wechat extends EventEmitter {
     }
     return this.request({
       method: 'POST',
-      url: '/webwxsendmsgimg',
-      baseURL: this[API].baseUri,
+      url: this[API].webwxsendmsgimg,
       params: params,
       data: data
     }).then(res => {
@@ -672,16 +659,6 @@ class Wechat extends EventEmitter {
       debug(err)
       throw new Error('发送图片失败')
     })
-  }
-
-  _APIUpdate(hostUri) {
-    let fileUri = ''
-    let webpushUri = ''
-
-    hostUri.indexOf('wx2.qq.com') > -1 ? (fileUri = 'file2.wx.qq.com', webpushUri = 'webpush2.weixin.qq.com') : hostUri.indexOf('qq.com') > -1 ? (fileUri = 'file.wx.qq.com', webpushUri = 'webpush.weixin.qq.com') : hostUri.indexOf('web1.wechat.com') > -1 ? (fileUri = 'file1.wechat.com', webpushUri = 'webpush1.wechat.com') : hostUri.indexOf('web2.wechat.com') > -1 ? (fileUri = 'file2.wechat.com', webpushUri = 'webpush2.wechat.com') : hostUri.indexOf('wechat.com') > -1 ? (fileUri = 'file.wechat.com', webpushUri = 'webpush.wechat.com') : hostUri.indexOf('web1.wechatapp.com') > -1 ? (fileUri = 'file1.wechatapp.com', webpushUri = 'webpush1.wechatapp.com') : (fileUri = 'file.wechatapp.com', webpushUri = 'webpush.wechatapp.com')
-    this[API].webwxdownloadmedia = 'https://' + fileUri + '/cgi-bin/mmwebwx-bin/webwxgetmedia'
-    this[API].webwxuploadmedia = 'https://' + fileUri + '/cgi-bin/mmwebwx-bin/webwxuploadmedia'
-    this[API].synccheck = 'https://' + webpushUri + '/cgi-bin/mmwebwx-bin/synccheck'
   }
 
   _getUserRemarkName(uid) {
