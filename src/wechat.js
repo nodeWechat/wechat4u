@@ -685,13 +685,13 @@ class Wechat extends EventEmitter {
   }
 
   _getUserRemarkName(uid) {
-    let name = ''
-
-    this.memberList.forEach((member) => {
+    for (let member of this.memberList) {
       if (member['UserName'] == uid) {
         return member['RemarkName'] ? member['RemarkName'] : member['NickName']      
       }
-    })
+    }
+    debug('不存在用户', uid)
+    return uid
   }
 
 }
