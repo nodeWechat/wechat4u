@@ -7,6 +7,8 @@ const FormData = require('form-data')
 const mime = require('mime')
 const Pass = require('stream').PassThrough
 
+const CONF = require('./conf.js')
+
 // Private Method
 const _convertEmoji = (s) => {
   return s.replace(/<span.*?class="emoji emoji(.*?)"><\/span>/g, (a, b) => {
@@ -425,19 +427,19 @@ class Wechat extends EventEmitter {
       let content = msg['Content']
 
       switch (type) {
-        case 51:
+        case CONF.MSGTYPE_STATUSNOTIFY:
           debug(' Message: Wechat Init')
           this.emit('init-message')
           break
-        case 1:
+        case CONF.MSGTYPE_TEXT:
           debug(' Text-Message: ', fromUser, ': ', content)
           this.emit('text-message', msg)
           break
-        case 3:
+        case CONF.MSGTYPE_IMAGE:
           debug(' Picture-Message: ', fromUser, ': ', content)
           this.emit('picture-message', msg)
           break
-        case 34:
+        case CONF.MSGTYPE_VOICE:
           debug(' Voice-Message: ', fromUser, ': ', content)
           this.emit('voice-message', msg)
           break
