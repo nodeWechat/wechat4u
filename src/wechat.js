@@ -30,7 +30,7 @@ const _convertEmoji = (s) => {
     }
   })
 }
-const _contentPrase = (s) => _convertEmoji(s.replace('&lt;', '<').replace('&gt;', '>').replce('<br/>', '\n'))
+const _contentPrase = (s) => _convertEmoji(s.replace('&lt;', '<').replace('&gt;', '>').replace('<br/>', '\n'))
 
 // Private
 const PROP = Symbol()
@@ -429,11 +429,11 @@ class Wechat extends EventEmitter {
     data['AddMsgList'].forEach((msg) => {
       let type = +msg['MsgType']
       let fromUser = this._getUserRemarkName(msg['FromUserName'])
-      let content = msg['Content']
+      let content = _contentPrase(msg['Content'])
 
       switch (type) {
         case CONF.MSGTYPE_STATUSNOTIFY:
-          debug(' Message: Wechat Init')
+          debug(' Message: Init')
           this.emit('init-message')
           break
         case CONF.MSGTYPE_TEXT:
@@ -447,6 +447,10 @@ class Wechat extends EventEmitter {
         case CONF.MSGTYPE_VOICE:
           debug(' Voice-Message: ', fromUser, ': ', content)
           this.emit('voice-message', msg)
+          break
+        case CONF.MSGTYPE_VERIFYMSG:
+          debug(' Message: Add Friend')
+          this.emit('verify-message', msg)
           break
       }
     })
