@@ -410,9 +410,9 @@ class Wechat extends EventEmitter {
     }).then(res => {
       let re = /window.synccheck={retcode:"(\d+)",selector:"(\d+)"}/
       let pm = res.data.match(re)
-
-      let retcode = pm[1]
-      let selector = pm[2]
+      
+      let retcode = +pm[1]
+      let selector = +pm[2]
 
       return {
         retcode, selector
@@ -427,7 +427,7 @@ class Wechat extends EventEmitter {
     debug('Receive ', data['AddMsgList'].length, 'Message')
 
     data['AddMsgList'].forEach((msg) => {
-      let type = msg['MsgType']
+      let type = +msg['MsgType']
       let fromUser = this._getUserRemarkName(msg['FromUserName'])
       let content = msg['Content']
 
@@ -454,10 +454,10 @@ class Wechat extends EventEmitter {
 
   syncPolling() {
     this.syncCheck().then(state => {
-      if ('0' != state.retcode) {
+      if (state.retcode !== CONF.SYNCCHECK_RET_SUCCESS) {
         //double check
         return this.syncCheck().then(state => {
-          if ('0' != state.retcode) {
+          if (state.retcode !== CONF.SYNCCHECK_RET_SUCCESS) {
             debug('你登出了微信')
             this.state = STATE.logout
             this.emit('logout', '你登出了微信')
@@ -466,13 +466,13 @@ class Wechat extends EventEmitter {
           }
         })
       } else {
-        if ('0' != state.selector) {
+        if (state.selector !== CONF.SYNCCHECK_SELECTOR_NORMAL) {
           return this.sync().then(data => {
             switch (state.selector) {
-              case '2':
+              case CONF.SYNCCHECK_SELECTOR_MSG:
                 this.handleMsg(data)
                 break;
-              case '7':
+              case CONF.SYNCCHECK_SELECTOR_MOBILEOPEN:
                 this.emit('mobile-open')
                 break;
               default:
