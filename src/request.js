@@ -1,12 +1,12 @@
 'use strict'
-
 const axios = require('axios')
 const CM = require('cookie-manager')
 
 const paramsSerializer = (params) => {
   let qs = []
-  for (let key in params)
+  for (let key in params) {
     qs.push(`${key}=${params[key]}`)
+  }
   return encodeURI(qs.join('&'))
 }
 
@@ -26,8 +26,9 @@ module.exports = function(defaults) {
     })
     this.axios.interceptors.response.use(res => {
       let setCookie = res.headers['set-cookie']
-      if (setCookie)
+      if (setCookie) {
         this.cm.store(res.config.url, setCookie)
+      }
       return res
     }, err => {
       return Promise.reject(err)

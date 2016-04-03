@@ -65,7 +65,13 @@
   },
   "eslintConfig": {
     "parser": "babel-eslint",
-    "rules": {},
+    "rules": {
+      "camelcase": 2,
+      "curly": 2,
+      "brace-style": [2, "1tbs"],
+      "quotes": [2, "single"],
+      "space-infix-ops": 2
+    },
     "env": {
       "browser": true,
       "node": true

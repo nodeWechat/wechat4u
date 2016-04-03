@@ -1,4 +1,4 @@
-"use strict"
+'use strict'
 const EventEmitter = require('events')
 const fs = require('fs')
 const request = require('./request.js')
@@ -54,7 +54,7 @@ class Wechat extends EventEmitter {
       skey: '',
       passTicket: '',
       formateSyncKey: '',
-      webwx_data_ticket: '',
+      webwxDataTicket: '',
       deviceId: 'e' + Math.random().toString().substring(2, 17),
 
       baseRequest: {},
@@ -65,11 +65,11 @@ class Wechat extends EventEmitter {
       baseUri: '',
       rediUri: '',
 
-      jsLogin: "https://login.weixin.qq.com/jslogin",
-      login: "https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login",
-      synccheck: "",
-      webwxdownloadmedia: "",
-      webwxuploadmedia: ""
+      jsLogin: 'https://login.weixin.qq.com/jslogin',
+      login: 'https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login',
+      synccheck: '',
+      webwxdownloadmedia: '',
+      webwxuploadmedia: ''
     }
     this.mediaSend = 0
     this.state = STATE.init
@@ -130,16 +130,16 @@ class Wechat extends EventEmitter {
     }).then(res => {
       let pm = res.data.match(/window.QRLogin.code = (\d+); window.QRLogin.uuid = "(\S+?)"/)
       if (!pm) {
-        throw new Error("UUID错误: 格式错误")
+        throw new Error('UUID错误: 格式错误')
       }
-      let code = pm[1]
+      let code = +pm[1]
       let uuid = this[PROP].uuid = pm[2]
 
       this.emit('uuid', uuid)
       this.state = STATE.uuid
 
-      if (code != 200) {
-        throw new Error("UUID错误: " + code)
+      if (code !== 200) {
+        throw new Error('UUID错误: ' + code)
       }
 
       return uuid
@@ -160,9 +160,9 @@ class Wechat extends EventEmitter {
       params: params
     }).then(res => {
       let pm = res.data.match(/window.code=(\d+);/)
-      let code = pm[1]
+      let code = +pm[1]
 
-      if (code != 201) {
+      if (code !== 201) {
         throw new Error('扫描状态code错误: ' + code)
       }
     }).catch(err => {
@@ -187,10 +187,10 @@ class Wechat extends EventEmitter {
       if (code != 200) {
         throw new Error('登陆确认code错误: ' + code)
       }
-      
+
       pm = res.data.match(/window.redirect_uri="(\S+?)";/)
       this[API].rediUri = pm[1] + '&fun=new'
-      this[API].baseUri = this[API].rediUri.substring(0, this[API].rediUri.lastIndexOf("/"))
+      this[API].baseUri = this[API].rediUri.substring(0, this[API].rediUri.lastIndexOf('/'))
 
       // 接口更新
       this._APIUpdate(this[API].baseUri)
@@ -211,8 +211,9 @@ class Wechat extends EventEmitter {
       this[PROP].passTicket = res.data.match(/<pass_ticket>(.*)<\/pass_ticket>/)[1]
       if (res.headers['set-cookie']) {
         res.headers['set-cookie'].forEach(item => {
-          if (item.indexOf('webwx_data_ticket') != -1)
-            this[PROP].webwx_data_ticket = item.split('; ').shift().split('=').pop()
+          if (item.indexOf('webwxDataTicket') !== -1) {
+            this[PROP].webwxDataTicket = item.split('; ').shift().split('=').pop()
+          }
         })
       }
       this[PROP].baseRequest = {
@@ -248,12 +249,14 @@ class Wechat extends EventEmitter {
       this.user = data['User']
 
       let synckeylist = []
-      for (let e = this[PROP].syncKey['List'], o = 0, n = e.length; n > o; o++)
-        synckeylist.push(e[o]['Key'] + "_" + e[o]['Val'])
-      this[PROP].formateSyncKey = synckeylist.join("|")
-      
-      if (data['BaseResponse']['Ret'] !== 0)
+      for (let e = this[PROP].syncKey['List'], o = 0, n = e.length; n > o; o++) {
+        synckeylist.push(e[o]['Key'] + '_' + e[o]['Val'])
+      }
+      this[PROP].formateSyncKey = synckeylist.join('|')
+
+      if (data['BaseResponse']['Ret'] !== 0) {
         throw new Error('微信初始化Ret错误' + data['BaseResponse']['Ret'])
+      }
     }).catch(err => {
       debug(err)
       throw new Error('微信初始化失败')
@@ -275,8 +278,9 @@ class Wechat extends EventEmitter {
       data: data
     }).then(res => {
       let data = res.data
-      if (data['BaseResponse']['Ret'] !== 0)
+      if (data['BaseResponse']['Ret'] !== 0) {
         throw new Error('微信初始化Ret错误' + data['BaseResponse']['Ret'])
+      }
     }).catch(err => {
       debug(err)
       throw new Error('开启状态通知失败')
@@ -330,7 +334,7 @@ class Wechat extends EventEmitter {
     }
     let data = {
       'BaseRequest': this[PROP].baseRequest,
-      "Count": this.groupList.length,
+      'Count': this.groupList.length,
       'List': this.groupList.map(member => {
         return {
           'UserName': member['UserName'],
@@ -369,7 +373,7 @@ class Wechat extends EventEmitter {
     }
     let data = {
       'BaseRequest': this[PROP].baseRequest,
-      "SyncKey": this[PROP].syncKey,
+      'SyncKey': this[PROP].syncKey,
       'rr': ~new Date()
     }
     return this.request({
@@ -383,9 +387,10 @@ class Wechat extends EventEmitter {
       if (data['BaseResponse']['Ret'] == 0) {
         this[PROP].syncKey = data['SyncKey']
         let synckeylist = []
-        for (let e = this[PROP].syncKey['List'], o = 0, n = e.length; n > o; o++)
-          synckeylist.push(e[o]['Key'] + "_" + e[o]['Val'])
-        this[PROP].formateSyncKey = synckeylist.join("|")
+        for (let e = this[PROP].syncKey['List'], o = 0, n = e.length; n > o; o++) {
+          synckeylist.push(e[o]['Key'] + '_' + e[o]['Val'])
+        }
+        this[PROP].formateSyncKey = synckeylist.join('|')
       }
       return data
     }).catch(err => {
@@ -410,7 +415,7 @@ class Wechat extends EventEmitter {
     }).then(res => {
       let re = /window.synccheck={retcode:"(\d+)",selector:"(\d+)"}/
       let pm = res.data.match(re)
-      
+
       let retcode = +pm[1]
       let selector = +pm[2]
 
@@ -570,8 +575,9 @@ class Wechat extends EventEmitter {
       data: data
     }).then(res => {
       let data = res.data
-      if (data['BaseResponse']['Ret'] !== 0)
+      if (data['BaseResponse']['Ret'] !== 0) {
         throw new Error('发送信息Ret错误: ' + data['BaseResponse']['Ret'])
+      }
     }).catch(err => {
       debug(err)
       throw new Error('发送信息失败')
@@ -612,7 +618,7 @@ class Wechat extends EventEmitter {
     form.append('size', size)
     form.append('mediatype', 'pic')
     form.append('uploadmediarequest', uploadMediaRequest)
-    form.append('webwx_data_ticket', this[PROP].webwx_data_ticket)
+    form.append('webwx_data_ticket', this[PROP].webwxDataTicket)
     form.append('pass_ticket', encodeURI(this[PROP].passTicket))
     form.append('filename', file, {
       filename: 'filename',
@@ -627,9 +633,9 @@ class Wechat extends EventEmitter {
     let headers = typeof form.getHeaders == 'function' ? form.getHeaders() : null
 
     return new Promise((resolve, reject) => {
-      if (typeof form.pipe != 'function')
+      if (typeof form.pipe != 'function') {
         resolve(form)
-
+      }
       let pass = new Pass()
       let buf = []
       pass.on('data', chunk => {
@@ -653,8 +659,9 @@ class Wechat extends EventEmitter {
       })
     }).then(res => {
       let mediaId = res.data.MediaId
-      if (!mediaId)
+      if (!mediaId) {
         throw new Error('MediaId获取失败')
+      }
       return mediaId
     }).catch(err => {
       debug(err)
@@ -688,8 +695,9 @@ class Wechat extends EventEmitter {
       data: data
     }).then(res => {
       let data = res.data
-      if (data['BaseResponse']['Ret'] != 0)
+      if (data['BaseResponse']['Ret'] != 0) {
         throw new Error('发送图片信息Ret错误: ' + data['BaseResponse']['Ret'])
+      }
     }).catch(err => {
       debug(err)
       throw new Error('发送图片失败')
@@ -709,7 +717,7 @@ class Wechat extends EventEmitter {
   _getUserRemarkName(uid) {
     for (let member of this.memberList) {
       if (member['UserName'] == uid) {
-        return member['RemarkName'] ? member['RemarkName'] : member['NickName']      
+        return member['RemarkName'] ? member['RemarkName'] : member['NickName']
       }
     }
     debug('不存在用户', uid)

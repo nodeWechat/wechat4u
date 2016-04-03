@@ -1,4 +1,4 @@
-"use strict"
+'use strict'
 const Wechat = require('../../index')
 const debug = require('debug')('wxbot')
 const fs = require('fs')
@@ -7,7 +7,7 @@ class WxBot extends Wechat {
 
   constructor() {
     super()
-    
+
     this.memberInfoList = []
 
     this.replyUsers = new Set()
@@ -23,7 +23,7 @@ class WxBot extends Wechat {
       this.sendImage(this.user['UserName'], fs.createReadStream(imgPath))
     })
   }
-  
+
   get replyUsersList() {
     let members = []
 
@@ -47,7 +47,7 @@ class WxBot extends Wechat {
 
     return members
   }
-  
+
   get superviseUsersList() {
     let members = []
 
@@ -83,10 +83,10 @@ class WxBot extends Wechat {
       const data = res.data
       if (data.code == 100000) {
         return data.text + '[微信机器人]'
-      }      throw new Error("tuning返回值code错误", data)
+      } throw new Error('tuning返回值code错误', data)
     }).catch(err => {
       debug(err)
-      return "现在思路很乱，最好联系下我哥 T_T..."
+      return '现在思路很乱，最好联系下我哥 T_T...'
     })
   }
 
