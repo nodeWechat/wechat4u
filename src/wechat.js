@@ -248,11 +248,7 @@ class Wechat extends EventEmitter {
       this[PROP].syncKey = data['SyncKey']
       this.user = data['User']
 
-      let synckeylist = []
-      for (let e = this[PROP].syncKey['List'], o = 0, n = e.length; n > o; o++) {
-        synckeylist.push(e[o]['Key'] + '_' + e[o]['Val'])
-      }
-      this[PROP].formateSyncKey = synckeylist.join('|')
+      this._formateSyncKey()
 
       if (data['BaseResponse']['Ret'] !== 0) {
         throw new Error('微信初始化Ret错误' + data['BaseResponse']['Ret'])
@@ -386,11 +382,7 @@ class Wechat extends EventEmitter {
       let data = res.data
       if (data['BaseResponse']['Ret'] == 0) {
         this[PROP].syncKey = data['SyncKey']
-        let synckeylist = []
-        for (let e = this[PROP].syncKey['List'], o = 0, n = e.length; n > o; o++) {
-          synckeylist.push(e[o]['Key'] + '_' + e[o]['Val'])
-        }
-        this[PROP].formateSyncKey = synckeylist.join('|')
+        this._formateSyncKey()
       }
       return data
     }).catch(err => {
@@ -723,7 +715,14 @@ class Wechat extends EventEmitter {
     debug('不存在用户', uid)
     return uid
   }
-
+  
+  _formateSyncKey() {
+    let synckeylist = []
+      for (let e = this[PROP].syncKey['List'], o = 0, n = e.length; n > o; o++) {
+      synckeylist.push(e[o]['Key'] + '_' + e[o]['Val'])
+    }
+    this[PROP].formateSyncKey = synckeylist.join('|')
+  }
 }
 
 Wechat.STATE = STATE
