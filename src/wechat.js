@@ -245,10 +245,9 @@ class Wechat extends EventEmitter {
       data: data
     }).then(res => {
       let data = res.data
-      this[PROP].syncKey = data['SyncKey']
       this.user = data['User']
 
-      this._formateSyncKey()
+      this._updateSyncKey(data['SyncKey'])
 
       if (data['BaseResponse']['Ret'] !== 0) {
         throw new Error('微信初始化Ret错误' + data['BaseResponse']['Ret'])
@@ -380,10 +379,18 @@ class Wechat extends EventEmitter {
       data: data
     }).then(res => {
       let data = res.data
-      if (data['BaseResponse']['Ret'] == 0) {
-        this[PROP].syncKey = data['SyncKey']
-        this._formateSyncKey()
+      if (data['BaseResponse']['Ret'] !== 0) {
+        throw new Error('data.BaseResponse.Ret: ' + data['BaseResponse']['Ret'])
       }
+
+      this._updateSyncKey(data['SyncKey'])
+
+      /*
+      debug('Profile', data.Profile)
+      debug('DelContactList', data.DelContactList)
+      debug('ModContactList', data.ModContactList)
+      */
+
       return data
     }).catch(err => {
       debug(err)
@@ -480,7 +487,9 @@ class Wechat extends EventEmitter {
                 debug('WebSync Others', state.selector)
                 break;
             }
-            this.syncPolling()
+            setTimeout(() => {
+              this.syncPolling()
+            }, 1000)
           })
         } else {
           debug('WebSync Normal')
@@ -715,10 +724,11 @@ class Wechat extends EventEmitter {
     debug('不存在用户', uid)
     return uid
   }
-  
-  _formateSyncKey() {
+
+  _updateSyncKey(syncKey) {
+    this[PROP].syncKey = syncKey
     let synckeylist = []
-      for (let e = this[PROP].syncKey['List'], o = 0, n = e.length; n > o; o++) {
+    for (let e = this[PROP].syncKey['List'], o = 0, n = e.length; n > o; o++) {
       synckeylist.push(e[o]['Key'] + '_' + e[o]['Val'])
     }
     this[PROP].formateSyncKey = synckeylist.join('|')
