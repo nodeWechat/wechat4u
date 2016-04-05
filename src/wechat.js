@@ -445,12 +445,24 @@ class Wechat extends EventEmitter {
           this.emit('text-message', msg)
           break
         case CONF.MSGTYPE_IMAGE:
-          debug(' Picture-Message: ', fromUser, ': ', content)
-          this.emit('picture-message', msg)
+          debug(' Image-Message: ', fromUser, ': ', content)
+          this._getMsgImg(msg.MsgId).then(image => {
+            msg.Content = image
+            this.emit('image-message', msg)
+          }).catch(err => {
+            debug(err)
+            this.emit('error', err)
+          })
           break
         case CONF.MSGTYPE_VOICE:
           debug(' Voice-Message: ', fromUser, ': ', content)
-          this.emit('voice-message', msg)
+          this._getVoice(msg.MsgId).then(voice => {
+            msg.Content = voice
+            this.emit('voice-message', msg)
+          }).catch(err => {
+            debug(err)
+            this.emit('error', err)
+          })
           break
         case CONF.MSGTYPE_VERIFYMSG:
           debug(' Message: Add Friend')
@@ -713,6 +725,52 @@ class Wechat extends EventEmitter {
     this[API].webwxdownloadmedia = 'https://' + fileUri + '/cgi-bin/mmwebwx-bin/webwxgetmedia'
     this[API].webwxuploadmedia = 'https://' + fileUri + '/cgi-bin/mmwebwx-bin/webwxuploadmedia'
     this[API].synccheck = 'https://' + webpushUri + '/cgi-bin/mmwebwx-bin/synccheck'
+  }
+
+  _getMsgImg(msgId) {
+    let params = {
+      MsgID: msgId,
+      skey: this[PROP].skey
+    }
+
+    return this.request({
+      method: 'GET',
+      url: '/webwxgetmsgimg',
+      baseURL: this[API].baseUri,
+      params: params,
+      responseType: 'arraybuffer'
+    }).then(res => {
+      return {
+        data: res.data,
+        type: res.headers['content-type']
+      }
+    }).catch(err => {
+      debug(err)
+      throw new Error('获取图片失败')
+    })
+  }
+
+  _getVoice(msgId) {
+    let params = {
+      MsgID: msgId,
+      skey: this[PROP].skey
+    }
+
+    return this.request({
+      method: 'GET',
+      url: '/webwxgetvoice',
+      baseURL: this[API].baseUri,
+      params: params,
+      responseType: 'arraybuffer'
+    }).then(res => {
+      return {
+        data: res.data,
+        type: res.headers['content-type']
+      }
+    }).catch(err => {
+      debug(err)
+      throw new Error('获取声音失败')
+    })
   }
 
   _getUserRemarkName(uid) {
