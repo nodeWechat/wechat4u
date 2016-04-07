@@ -6,43 +6,15 @@ const debug = require('debug')('wechat')
 const FormData = require('form-data')
 const mime = require('mime')
 const Pass = require('stream').PassThrough
-const updateAPI = require('./webwxapi.js')
 
-const CONF = require('./conf.js')
-
-// Private Method
-const _convertEmoji = (s) => {
-  return s.replace(/<span.*?class="emoji emoji(.*?)"><\/span>/g, (a, b) => {
-    try {
-      let s = null
-      if (b.length == 4 || b.length == 5) {
-        s = ['0x' + b]
-      } else if (b.length == 8) {
-        s = ['0x' + b.slice(0, 4), '0x' + b.slice(4, 8)]
-      } else if (b.length == 10) {
-        s = ['0x' + b.slice(0, 5), '0x' + b.slice(5, 10)]
-      } else {
-        throw new Error('unknown emoji characters')
-      }
-      return String.fromCodePoint.apply(null, s)
-    } catch (err) {
-      debug(b, err)
-      return ' '
-    }
-  })
-}
-const _contentPrase = (s) => _convertEmoji(s.replace('&lt;', '<').replace('&gt;', '>').replace('<br/>', '\n'))
+const updateAPI = require('./utils').updateAPI
+const CONF = require('./utils').CONF
+const convertEmoji = require('./utils').convertEmoji
+const contentPrase = require('./utils').contentPrase
 
 // Private
 const PROP = Symbol()
 const API = Symbol()
-const SPECIALUSERS = ['newsapp', 'fmessage', 'filehelper', 'weibo', 'qqmail', 'fmessage', 'tmessage', 'qmessage', 'qqsync', 'floatbottle', 'lbsapp', 'shakeapp', 'medianote', 'qqfriend', 'readerapp', 'blogapp', 'facebookapp', 'masssendapp', 'meishiapp', 'feedsapp', 'voip', 'blogappweixin', 'weixin', 'brandsessionholder', 'weixinreminder', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'officialaccounts', 'notification_messages', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'wxitil', 'userexperience_alarm', 'notification_messages']
-const STATE = {
-  init: 'init',
-  uuid: 'uuid',
-  login: 'login',
-  logout: 'logout'
-}
 
 class Wechat extends EventEmitter {
 
@@ -68,7 +40,7 @@ class Wechat extends EventEmitter {
     }
     
     this.mediaSend = 0
-    this.state = STATE.init
+    this.state = CONF.STATE.init
 
     this.user = [] // 登陆账号
     this.memberList = [] // 所有联系人
@@ -132,7 +104,7 @@ class Wechat extends EventEmitter {
       let uuid = this[PROP].uuid = pm[2]
 
       this.emit('uuid', uuid)
-      this.state = STATE.uuid
+      this.state = CONF.STATE.uuid
 
       if (code !== 200) {
         throw new Error('UUID错误: ' + code)
@@ -293,12 +265,12 @@ class Wechat extends EventEmitter {
       this.memberList = data['MemberList']
 
       for (let member of this.memberList) {
-        member['NickName'] = _convertEmoji(member['NickName'])
-        member['RemarkName'] = _convertEmoji(member['RemarkName'])
+        member['NickName'] = convertEmoji(member['NickName'])
+        member['RemarkName'] = convertEmoji(member['RemarkName'])
 
         if (member['VerifyFlag'] & 8) {
           this.publicList.push(member)
-        } else if (SPECIALUSERS.indexOf(member['UserName']) > -1) {
+        } else if (CONF.SPECIALUSERS.indexOf(member['UserName']) > -1) {
           this.specialList.push(member)
         } else if (member['UserName'].indexOf('@@') > -1) {
           this.groupList.push(member)
@@ -424,7 +396,7 @@ class Wechat extends EventEmitter {
     data['AddMsgList'].forEach((msg) => {
       let type = +msg['MsgType']
       let fromUser = this._getUserRemarkName(msg['FromUserName'])
-      let content = _contentPrase(msg['Content'])
+      let content = contentPrase(msg['Content'])
 
       switch (type) {
         case CONF.MSGTYPE_STATUSNOTIFY:
@@ -470,7 +442,7 @@ class Wechat extends EventEmitter {
         return this.syncCheck().then(state => {
           if (state.retcode !== CONF.SYNCCHECK_RET_SUCCESS) {
             debug('你登出了微信')
-            this.state = STATE.logout
+            this.state = CONF.STATE.logout
             this.emit('logout', '你登出了微信')
           } else {
             this.syncPolling()
@@ -490,9 +462,7 @@ class Wechat extends EventEmitter {
                 debug('WebSync Others', state.selector)
                 break;
             }
-            setTimeout(() => {
-              this.syncPolling()
-            }, 1000)
+            this.syncPolling()
           })
         } else {
           debug('WebSync Normal')
@@ -545,7 +515,7 @@ class Wechat extends EventEmitter {
       return this.getContact()
     }).then(memberList => {
       this.emit('login', memberList)
-      this.state = STATE.login
+      this.state = CONF.STATE.login
       this.batchGetContact()
       return this.syncPolling()
     }).catch(err => {
@@ -769,6 +739,6 @@ class Wechat extends EventEmitter {
   }
 }
 
-Wechat.STATE = STATE
+Wechat.STATE = CONF.STATE
 
 exports = module.exports = Wechat
