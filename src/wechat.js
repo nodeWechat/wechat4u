@@ -38,7 +38,8 @@ class Wechat extends EventEmitter {
       jsLogin: 'https://login.weixin.qq.com/jslogin',
       login: 'https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login'
     }
-    
+
+    this.syncErrorCount = 0
     this.mediaSend = 0
     this.state = CONF.STATE.init
 
@@ -343,7 +344,7 @@ class Wechat extends EventEmitter {
     }).then(res => {
       let data = res.data
       if (data['BaseResponse']['Ret'] !== 0) {
-        throw new Error('data.BaseResponse.Ret: ' + data['BaseResponse']['Ret'])
+        throw new Error('拉取消息Ret错误: ' + data['BaseResponse']['Ret'])
       }
 
       this._updateSyncKey(data['SyncKey'])
@@ -436,33 +437,24 @@ class Wechat extends EventEmitter {
   }
 
   syncPolling() {
+    if (this.state !== CONF.STATE.login) {
+      debug(this.state)
+      let err = new Error('未登录, 不能同步')
+      debug(err)
+      this.emit('error', err)
+      return
+    }
+
     this.syncCheck().then(state => {
       if (state.retcode !== CONF.SYNCCHECK_RET_SUCCESS) {
-        //double check
-        return this.syncCheck().then(state => {
-          if (state.retcode !== CONF.SYNCCHECK_RET_SUCCESS) {
-            debug('你登出了微信')
-            this.state = CONF.STATE.logout
-            this.emit('logout', '你登出了微信')
-          } else {
-            this.syncPolling()
-          }
-        })
+        throw new Error('你登出了微信')
       } else {
         if (state.selector !== CONF.SYNCCHECK_SELECTOR_NORMAL) {
           return this.sync().then(data => {
-            switch (state.selector) {
-              case CONF.SYNCCHECK_SELECTOR_MSG:
-                this.handleMsg(data)
-                break;
-              case CONF.SYNCCHECK_SELECTOR_MOBILEOPEN:
-                this.emit('mobile-open')
-                break;
-              default:
-                debug('WebSync Others', state.selector)
-                break;
-            }
-            this.syncPolling()
+            setTimeout(() => {
+              this.syncPolling()
+            }, 1000)
+            this.handleMsg(data)
           })
         } else {
           debug('WebSync Normal')
@@ -472,7 +464,15 @@ class Wechat extends EventEmitter {
         }
       }
     }).catch(err => {
-      debug(err)
+      if (++this.syncErrorCount > 3) {
+        debug(err)
+        this.state = CONF.STATE.logout
+        this.emit('logout', err)
+      } else {
+        setTimeout(() => {
+          this.syncPolling()
+        }, 1000)
+      }
     })
   }
 
@@ -517,10 +517,7 @@ class Wechat extends EventEmitter {
       this.emit('login', memberList)
       this.state = CONF.STATE.login
       this.batchGetContact()
-      return this.syncPolling()
-    }).catch(err => {
-      this.emit('error', err)
-      return Promise.reject(err)
+      this.syncPolling()
     })
   }
 
