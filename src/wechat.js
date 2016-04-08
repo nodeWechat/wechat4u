@@ -428,6 +428,16 @@ class Wechat extends EventEmitter {
             this.emit('error', err)
           })
           break
+        case CONF.MSGTYPE_EMOTICON:
+          debug(' Emoticon-Message: ', fromUser, ': ', content)
+          this._getEmoticon(content).then(emoticon => {
+            msg.Content = emoticon
+            this.emit('emoticon-message', msg)
+          }).catch(err => {
+            debug(err)
+            this.emit('error', err)
+          })
+          break;
         case CONF.MSGTYPE_VERIFYMSG:
           debug(' Message: Add Friend')
           this.emit('verify-message', msg)
@@ -713,6 +723,25 @@ class Wechat extends EventEmitter {
     }).catch(err => {
       debug(err)
       throw new Error('获取声音失败')
+    })
+  }
+
+  _getEmoticon(content) {
+    return Promise.resolve().then(() => {
+      return this.request({
+        method: 'GET',
+        url: content.match(/cdnurl="(.*?)"/)[1],
+        responseType: 'arraybuffer'
+      })
+    }).then(res => {
+      return {
+        data: res.data,
+        type: res.headers['content-type'],
+        url: res.config.url
+      }
+    }).catch(err => {
+      debug(err)
+      throw new Error('获取表情失败')
     })
   }
 

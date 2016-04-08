@@ -17,7 +17,7 @@ class WxBot extends Wechat {
     this.openTimes = 0
     this.on('init-message', () => this._botSupervise())
 
-    this.on('error', err => console.log(err))
+    this.on('error', err => debug(err))
   }
 
   get replyUsersList() {
@@ -79,7 +79,8 @@ class WxBot extends Wechat {
       const data = res.data
       if (data.code == 100000) {
         return data.text + '[微信机器人]'
-      } throw new Error('tuning返回值code错误', data)
+      }
+      throw new Error('tuning返回值code错误', data)
     }).catch(err => {
       debug(err)
       return '现在思路很乱，最好联系下我哥 T_T...'
