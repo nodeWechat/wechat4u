@@ -5,7 +5,6 @@ const request = require('./request.js')
 const debug = require('debug')('wechat')
 const FormData = require('form-data')
 const mime = require('mime')
-const Pass = require('stream').PassThrough
 
 const updateAPI = require('./utils').updateAPI
 const CONF = require('./utils').CONF
@@ -599,33 +598,11 @@ class Wechat extends EventEmitter {
       f: 'json'
     }
 
-    let headers = typeof form.getHeaders == 'function' ? form.getHeaders() : null
-
-    return new Promise((resolve, reject) => {
-      if (typeof form.pipe != 'function') {
-        resolve(form)
-      }
-      let pass = new Pass()
-      let buf = []
-      pass.on('data', chunk => {
-        buf.push(chunk)
-      })
-      pass.on('end', () => {
-        let arr = new Uint8Array(Buffer.concat(buf))
-        resolve(arr.buffer)
-      })
-      pass.on('error', err => {
-        reject(err)
-      })
-      form.pipe(pass)
-    }).then(data => {
-      return this.request({
-        url: this[API].webwxuploadmedia,
-        method: 'POST',
-        headers: headers,
-        params: params,
-        data: data
-      })
+    return this.request({
+      url: this[API].webwxuploadmedia,
+      method: 'POST',
+      params: params,
+      data: form
     }).then(res => {
       let mediaId = res.data.MediaId
       if (!mediaId) {
