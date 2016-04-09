@@ -15,13 +15,9 @@ class WxBot extends Wechat {
 
     this.superviseUsers = new Set()
     this.openTimes = 0
-    this.on('mobile-open', () => this._botSupervise())
+    this.on('init-message', () => this._botSupervise())
 
     this.on('error', err => console.log(err))
-    this.on('login', () => {
-      let imgPath = __dirname + '/../public/images/nodeWechat.png'
-      this.sendImage(this.user['UserName'], fs.createReadStream(imgPath))
-    })
   }
 
   get replyUsersList() {
