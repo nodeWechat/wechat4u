@@ -13,50 +13,102 @@ npm run example
 
 ## API 说明
 
+####引入 wechat4u
+
 ```javascript
-  const wechat4u = require('wechat4u')
-  
-  let wechat = new wechat4u()
-  
-  wechat.getUUID().then(uuid => {/*处理uuid*/})
-  wechat.start() // 完成登陆过程，需手机端通过网页版登陆验证
-  
-  wechat.sendMsg(msg, to) // 发送文字消息
-  wechat.sendImage(to, fileStream, type, size) // 发送图片消息
-  // 使用 fs 的 createdReadStream 的样例：
-  // let imgPath = __dirname + '/../public/images/nodeWechat.png'
-  // let imgStats = fs.statSync(imgPath)
-  // wechat.sendImage(user['UserName'], fs.createReadStream(imgPath))
-  
-  wechat.user        // 登陆账号
-  wechat.memberList  // 所有联系人
-  wechat.friendList  // 通讯录（个人联系人，群聊）
-  wechat.contactList // 个人联系人
-  wechat.groupList   // 已保存群聊
-  wechat.groupMemberList // 所有群聊内联系人
-  wechat.publicList  // 公众账号
-  wechat.specialList // 特殊账号
-  
-  wechat.on('uuid', uuid => {})
-  wechat.on('scan', () => {})
-  wechat.on('confirm', () => {})
-  wechat.on('login', memberList => {})
-  wechat.on('logout', msg => {})
-  wechat.on('error', err => debug(err))
-  wechat.on('init-message', () => {})
-  wechat.on('text-message', () => {})
-  wechat.on('picture-message', () => {})
-  wechat.on('voice-message', () => {})
-  wechat.on('mobile-open', () => {})
-  
-  wechat.state === wechat4u.STATE.init === 'init'
-  wechat.state === wechat4u.STATE.uuid === 'uuid'
-  wechat.state === wechat4u.STATE.login === 'login'
-  wechat.state === wechat4u.STATE.logout === 'logout'
-  
-  wechat.request() // 包含相关 cookie 的 request，目前使用 axios
+const wechat4u = require('wechat4u')
 ```
 
+####生成实例
+
+```javascript
+let wechat = new wechat4u()
+```
+
+####启动（分两种方式）
+
+```javascript
+// 1. 分布启动
+wechat.getUUID().then(uuid => {/*处理uuid*/})
+let hasUUID = true
+wechat.start(hasUUID) // 返回一个 Promise 对象
+  
+// 2. 直接启动
+wechat.start(） // 通过事件获得uuid等信息  
+```
+
+####实例状态判断
+
+```javascript
+wechat.state === wechat4u.STATE.init === 'init' // 初始化状态
+wechat.state === wechat4u.STATE.uuid === 'uuid' // 已获取 UUID
+wechat.state === wechat4u.STATE.login === 'login' // 已登录
+wechat.state === wechat4u.STATE.logout === 'logout' // 已退出登录
+```
+
+####联系人接口
+
+```javascript
+wechat.user        // 登陆账号
+wechat.memberList  // 所有联系人
+wechat.friendList  // 通讯录（个人联系人，群聊）
+wechat.contactList // 个人联系人
+wechat.groupList   // 已保存群聊
+wechat.groupMemberList // 所有群聊内联系人
+wechat.publicList  // 公众账号
+wechat.specialList // 特殊账号
+```
+
+####消息发送接口
+
+```javascript
+wechat.sendMsg(msg, to) // 发送文字消息
+wechat.sendImage(to, fileStream, type, size) // 发送图片消息
+// 使用 fs 的 createdReadStream 的样例：
+// let imgPath = __dirname + '/../public/images/nodeWechat.png'
+// let imgStats = fs.statSync(imgPath)
+// wechat.sendImage(user['UserName'], fs.createReadStream(imgPath))
+```
+
+####Events
+
+```javascript
+wechat.on('uuid', uuid => {})
+wechat.on('scan', () => {})
+wechat.on('confirm', () => {})
+wechat.on('login', memberList => {})
+wechat.on('logout', msg => {})
+wechat.on('error', err => debug(err))
+
+wechat.on('init-message', () => {})
+wechat.on('text-message', msg => {})
+wechat.on('picture-message', msg => {})
+wechat.on('voice-message', msg => {})
+wechat.on('emoticon-message', msg => {})
+wechat.on('verify-message', msg => {})
+```
+
+####消息收取接口
+
+```javascript
+wechat.on('text-message', msg => {
+  msg['Content'] // '你好！'
+})
+wechat.on('picture-message', msg => {
+  msg['Content'] // {type:'image/jpeg',data:...buf...}
+}) 
+wechat.on('voice-message', msg => {
+  msg['Content'] // {type:'audio/mp3'',data:...buf...}
+})
+```
+
+####请求接口
+
+```javascript
+wechat.request() // 包含相关 cookie 的 request，目前使用 axios
+```
+
+*如无特别强调，接口皆返回一个 promise 对象
 
 ##相关项目
 
