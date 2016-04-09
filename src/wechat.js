@@ -133,6 +133,8 @@ class Wechat extends EventEmitter {
       if (code !== 201) {
         throw new Error('扫描状态code错误: ' + code)
       }
+
+      this.emit('scan')
     }).catch(err => {
       debug(err)
       throw new Error('获取扫描状态信息失败')
@@ -162,6 +164,8 @@ class Wechat extends EventEmitter {
 
       // 接口更新
       updateAPI(this[API])
+
+      this.emit('confirm')
     }).catch(err => {
       debug(err)
       throw new Error('获取确认登录信息失败')
@@ -242,6 +246,9 @@ class Wechat extends EventEmitter {
       if (data['BaseResponse']['Ret'] !== 0) {
         throw new Error('微信初始化Ret错误' + data['BaseResponse']['Ret'])
       }
+
+      this.state = CONF.STATE.login
+      this.emit('login')
     }).catch(err => {
       debug(err)
       throw new Error('开启状态通知失败')
@@ -447,11 +454,10 @@ class Wechat extends EventEmitter {
 
   syncPolling() {
     if (this.state !== CONF.STATE.login) {
-      debug(this.state)
       let err = new Error('未登录, 不能同步')
       debug(err)
       this.emit('error', err)
-      return
+      return false
     }
 
     this.syncCheck().then(state => {
@@ -475,14 +481,15 @@ class Wechat extends EventEmitter {
     }).catch(err => {
       if (++this.syncErrorCount > 3) {
         debug(err)
-        this.state = CONF.STATE.logout
-        this.emit('logout', err)
+        this.emit('error', err)
+        this.logout()
       } else {
         setTimeout(() => {
           this.syncPolling()
         }, 1000)
       }
     })
+    return true
   }
 
   logout() {
@@ -502,19 +509,29 @@ class Wechat extends EventEmitter {
       url: this[API].webwxlogout,
       params: params
     }).then(res => {
+      this.state = CONF.STATE.logout
+      this.emit('logout')
       return '登出成功'
     }).catch(err => {
       debug(err)
+      this.state = CONF.STATE.logout
+      this.emit('logout')
       throw new Error('可能登出成功')
     })
   }
 
-  start() {
-    return this.checkScan().then(() => {
-      this.emit('scan')
+  start(getuuid) {
+    return Promise.resolve().then(() => {
+      if (getuuid) {
+        return getuuid()
+      } else {
+        return
+      }
+    }).then(() => {
+      return this.checkScan()
+    }).then(() => {
       return this.checkLogin()
     }).then(() => {
-      this.emit('confirm')
       return this.login()
     }).then(() => {
       return this.init()
@@ -522,12 +539,21 @@ class Wechat extends EventEmitter {
       return this.notifyMobile()
     }).then(() => {
       return this.getContact()
-    }).then(memberList => {
-      this.emit('login', memberList)
-      this.state = CONF.STATE.login
-      this.batchGetContact()
-      this.syncPolling()
+    }).then(() => {
+      return this.batchGetContact()
+    }).then(() => {
+      if (!this.syncPolling()) {
+        throw new Error('syncPolling失败')
+      }
+    }).catch(err => {
+      debug(err)
+      this.logout()
+      throw new Error('启动失败')
     })
+  }
+
+  stop() {
+    return logout()
   }
 
   sendMsg(msg, to) {
