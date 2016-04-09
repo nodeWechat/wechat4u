@@ -1,6 +1,7 @@
 'use strict'
 const axios = require('axios')
 const CM = require('cookie-manager')
+const Pass = require('stream').PassThrough
 
 const paramsSerializer = (params) => {
   let qs = []
@@ -35,7 +36,31 @@ module.exports = function(defaults) {
     })
   }
   this.request = (options) => {
-    return this.axios.request(options)
+    return new Promise((resolve, reject) => {
+      if (options.data && typeof options.data.pipe == 'function') {
+        let pass = new Pass()
+        let buf = []
+        if (typeof options.data.getHeaders == 'function') {
+          options.headers = options.data.getHeaders(options.headers)
+        }
+        pass.on('data', chunk => {
+          buf.push(chunk)
+        })
+        pass.on('end', () => {
+          let arr = new Uint8Array(Buffer.concat(buf))
+          options.data = arr.buffer
+          resolve(options)
+        })
+        pass.on('error', err => {
+          reject(err)
+        })
+        options.data.pipe(pass)
+      } else {
+        resolve(options)
+      }
+    }).then(options => {
+      return this.axios.request(options)
+    })
   }
   return this.request
 }
