@@ -1,4 +1,4 @@
-"use strict"
+'use strict'
 const express = require('express')
 const WxBot = require('../lib/wxbot')
 const debug = require('debug')('app')
@@ -32,7 +32,7 @@ router.get('/instance/:uuid', (req, res) => {
 router.get('/login/:uuid', (req, res) => {
   let bot = botInstanceArr[req.params.uuid]
 
-  bot.start()
+  bot.start(true)
     .then(() => {
       // 绑定 Logout 事件
       bot.on('logout', () => {

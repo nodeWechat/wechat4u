@@ -103,12 +103,12 @@ class Wechat extends EventEmitter {
       let code = +pm[1]
       let uuid = this[PROP].uuid = pm[2]
 
-      this.emit('uuid', uuid)
-      this.state = CONF.STATE.uuid
-
       if (code !== 200) {
         throw new Error('UUID错误: ' + code)
       }
+      
+      this.emit('uuid', uuid)
+      this.state = CONF.STATE.uuid
 
       return uuid
     }).catch(err => {
@@ -118,6 +118,7 @@ class Wechat extends EventEmitter {
   }
 
   checkScan() {
+    debug('CheckScan')
     let params = {
       'tip': 1,
       'uuid': this[PROP].uuid,
@@ -133,6 +134,8 @@ class Wechat extends EventEmitter {
       if (code !== 201) {
         throw new Error('扫描状态code错误: ' + code)
       }
+
+      this.emit('scan')
     }).catch(err => {
       debug(err)
       throw new Error('获取扫描状态信息失败')
@@ -162,6 +165,8 @@ class Wechat extends EventEmitter {
 
       // 接口更新
       updateAPI(this[API])
+
+      this.emit('confirm')
     }).catch(err => {
       debug(err)
       throw new Error('获取确认登录信息失败')
@@ -263,6 +268,13 @@ class Wechat extends EventEmitter {
     }).then(res => {
       let data = res.data
       this.memberList = data['MemberList']
+      
+      if(this.memberList.length === 0) {
+        throw new Error('通讯录获取异常')
+      }
+      
+      this.state = CONF.STATE.login
+      this.emit('login')
 
       for (let member of this.memberList) {
         member['NickName'] = convertEmoji(member['NickName'])
@@ -324,146 +336,17 @@ class Wechat extends EventEmitter {
     })
   }
 
-  sync() {
-    let params = {
-      'sid': this[PROP].sid,
-      'skey': this[PROP].skey,
-      'pass_ticket': this[PROP].passTicket
-    }
-    let data = {
-      'BaseRequest': this[PROP].baseRequest,
-      'SyncKey': this[PROP].syncKey,
-      'rr': ~new Date()
-    }
-    return this.request({
-      method: 'POST',
-      url: this[API].webwxsync,
-      params: params,
-      data: data
-    }).then(res => {
-      let data = res.data
-      if (data['BaseResponse']['Ret'] !== 0) {
-        throw new Error('拉取消息Ret错误: ' + data['BaseResponse']['Ret'])
-      }
-
-      this._updateSyncKey(data['SyncKey'])
-
-      /*
-      debug('Profile', data.Profile)
-      debug('DelContactList', data.DelContactList)
-      debug('ModContactList', data.ModContactList)
-      */
-
-      return data
-    }).catch(err => {
-      debug(err)
-      throw new Error('获取新信息失败')
-    })
-  }
-
-  syncCheck() {
-    let params = {
-      'r': +new Date(),
-      'sid': this[PROP].sid,
-      'uin': this[PROP].uin,
-      'skey': this[PROP].skey,
-      'deviceid': this[PROP].deviceId,
-      'synckey': this[PROP].formateSyncKey
-    }
-    return this.request({
-      method: 'GET',
-      url: this[API].synccheck,
-      params: params,
-    }).then(res => {
-      let re = /window.synccheck={retcode:"(\d+)",selector:"(\d+)"}/
-      let pm = res.data.match(re)
-
-      let retcode = +pm[1]
-      let selector = +pm[2]
-
-      return {
-        retcode, selector
-      }
-    }).catch(err => {
-      debug(err)
-      throw new Error('同步失败')
-    })
-  }
-
-  handleMsg(data) {
-    debug('Receive ', data['AddMsgList'].length, 'Message')
-
-    data['AddMsgList'].forEach((msg) => {
-      let type = +msg['MsgType']
-      let fromUser = this._getUserRemarkName(msg['FromUserName'])
-      let content = contentPrase(msg['Content'])
-
-      switch (type) {
-        case CONF.MSGTYPE_STATUSNOTIFY:
-          debug(' Message: Init')
-          this.emit('init-message')
-          break
-        case CONF.MSGTYPE_TEXT:
-          debug(' Text-Message: ', fromUser, ': ', content)
-          this.emit('text-message', msg)
-          break
-        case CONF.MSGTYPE_IMAGE:
-          debug(' Image-Message: ', fromUser, ': ', content)
-          this._getMsgImg(msg.MsgId).then(image => {
-            msg.Content = image
-            this.emit('image-message', msg)
-          }).catch(err => {
-            debug(err)
-            this.emit('error', err)
-          })
-          break
-        case CONF.MSGTYPE_VOICE:
-          debug(' Voice-Message: ', fromUser, ': ', content)
-          this._getVoice(msg.MsgId).then(voice => {
-            msg.Content = voice
-            this.emit('voice-message', msg)
-          }).catch(err => {
-            debug(err)
-            this.emit('error', err)
-          })
-          break
-        case CONF.MSGTYPE_EMOTICON:
-          debug(' Emoticon-Message: ', fromUser, ': ', content)
-          this._getEmoticon(content).then(emoticon => {
-            msg.Content = emoticon
-            this.emit('emoticon-message', msg)
-          }).catch(err => {
-            debug(err)
-            this.emit('error', err)
-          })
-          break;
-        case CONF.MSGTYPE_VERIFYMSG:
-          debug(' Message: Add Friend')
-          this.emit('verify-message', msg)
-          break
-      }
-    })
-  }
-
   syncPolling() {
-    if (this.state !== CONF.STATE.login) {
-      debug(this.state)
-      let err = new Error('未登录, 不能同步')
-      debug(err)
-      this.emit('error', err)
-      return
-    }
-
-    this.syncCheck().then(state => {
+    this._syncCheck().then(state => {
       if (state.retcode !== CONF.SYNCCHECK_RET_SUCCESS) {
         throw new Error('你登出了微信')
       } else {
         if (state.selector !== CONF.SYNCCHECK_SELECTOR_NORMAL) {
-          return this.sync().then(data => {
+          return this._sync().then(data => {
             setTimeout(() => {
               this.syncPolling()
             }, 1000)
-            this.handleMsg(data)
+            this._handleMsg(data)
           })
         } else {
           debug('WebSync Normal')
@@ -475,8 +358,8 @@ class Wechat extends EventEmitter {
     }).catch(err => {
       if (++this.syncErrorCount > 3) {
         debug(err)
-        this.state = CONF.STATE.logout
-        this.emit('logout', err)
+        this.emit('error', err)
+        this.logout()
       } else {
         setTimeout(() => {
           this.syncPolling()
@@ -502,32 +385,40 @@ class Wechat extends EventEmitter {
       url: this[API].webwxlogout,
       params: params
     }).then(res => {
+      this.state = CONF.STATE.logout
+      this.emit('logout')
       return '登出成功'
     }).catch(err => {
       debug(err)
+      this.state = CONF.STATE.logout
+      this.emit('logout')
       throw new Error('可能登出成功')
     })
   }
 
   start() {
-    return this.checkScan().then(() => {
-      this.emit('scan')
-      return this.checkLogin()
-    }).then(() => {
-      this.emit('confirm')
-      return this.login()
-    }).then(() => {
-      return this.init()
-    }).then(() => {
-      return this.notifyMobile()
-    }).then(() => {
-      return this.getContact()
-    }).then(memberList => {
-      this.emit('login', memberList)
-      this.state = CONF.STATE.login
-      this.batchGetContact()
-      this.syncPolling()
+    return Promise.resolve(this.state === CONF.STATE.uuid ?  0 : this.getUUID())
+      .then(() => this.checkScan())
+      .then(() => this.checkLogin())
+      .then(() => this.login())
+      .then(() => this.init())
+      .then(() => this.notifyMobile())
+      .then(() => this.getContact())
+      .then(() => this.batchGetContact())
+      .then(() => {
+      if (this.state !== CONF.STATE.login) {
+        throw new Error('登陆失败，未进入SyncPolling')
+      }
+      return this.syncPolling()
+    }).catch(err => {
+      debug('启动失败', err)
+      this.stop()
+      throw new Error('启动失败')
     })
+  }
+
+  stop() {
+    return logout()
   }
 
   sendMsg(msg, to) {
@@ -569,6 +460,118 @@ class Wechat extends EventEmitter {
         debug(err)
         throw new Error('发送图片信息失败')
       })
+  }
+  
+  _syncCheck() {
+    let params = {
+      'r': +new Date(),
+      'sid': this[PROP].sid,
+      'uin': this[PROP].uin,
+      'skey': this[PROP].skey,
+      'deviceid': this[PROP].deviceId,
+      'synckey': this[PROP].formateSyncKey
+    }
+    return this.request({
+      method: 'GET',
+      url: this[API].synccheck,
+      params: params,
+    }).then(res => {
+      let re = /window.synccheck={retcode:"(\d+)",selector:"(\d+)"}/
+      let pm = res.data.match(re)
+
+      let retcode = +pm[1]
+      let selector = +pm[2]
+
+      return {
+        retcode, selector
+      }
+    }).catch(err => {
+      debug(err)
+      throw new Error('同步失败')
+    })
+  }
+  
+   _sync() {
+    let params = {
+      'sid': this[PROP].sid,
+      'skey': this[PROP].skey,
+      'pass_ticket': this[PROP].passTicket
+    }
+    let data = {
+      'BaseRequest': this[PROP].baseRequest,
+      'SyncKey': this[PROP].syncKey,
+      'rr': ~new Date()
+    }
+    return this.request({
+      method: 'POST',
+      url: this[API].webwxsync,
+      params: params,
+      data: data
+    }).then(res => {
+      let data = res.data
+      if (data['BaseResponse']['Ret'] !== 0) {
+        throw new Error('拉取消息Ret错误: ' + data['BaseResponse']['Ret'])
+      }
+
+      this._updateSyncKey(data['SyncKey'])
+
+      /*
+      debug('Profile', data.Profile)
+      debug('DelContactList', data.DelContactList)
+      debug('ModContactList', data.ModContactList)
+      */
+
+      return data
+    }).catch(err => {
+      debug(err)
+      throw new Error('获取新信息失败')
+    })
+  }
+
+  _handleMsg(data) {
+    debug('Receive ', data['AddMsgList'].length, 'Message')
+
+    data['AddMsgList'].forEach((msg) => {
+      let type = +msg['MsgType']
+      let fromUser = this._getUserRemarkName(msg['FromUserName'])
+      let content = contentPrase(msg['Content'])
+
+      switch (type) {
+        case CONF.MSGTYPE_STATUSNOTIFY:
+          debug(' Message: Init')
+          this.emit('init-message')
+          break
+        case CONF.MSGTYPE_TEXT:
+          debug(' Text-Message: ', fromUser, ': ', content)
+          this.emit('text-message', msg)
+          break
+        case CONF.MSGTYPE_IMAGE:
+          debug(' Image-Message: ', fromUser, ': ', content)
+          this._getMsgImg(msg.MsgId).then(image => {
+            msg.Content = image
+            this.emit('image-message', msg)
+          })
+          break
+        case CONF.MSGTYPE_VOICE:
+          debug(' Voice-Message: ', fromUser, ': ', content)
+          this._getVoice(msg.MsgId).then(voice => {
+            msg.Content = voice
+            this.emit('voice-message', msg)
+          })
+          break
+        case CONF.MSGTYPE_EMOTICON:
+          debug(' Emoticon-Message: ', fromUser, ': ', content)
+          this._getEmoticon(content).then(emoticon => {
+            msg.Content = emoticon
+            this.emit('emoticon-message', msg)
+          })
+          break;
+        case CONF.MSGTYPE_VERIFYMSG:
+          debug(' Message: Add Friend')
+          this.emit('verify-message', msg)
+          break
+      }
+    })
   }
 
   // file: Buffer, Stream, File, Blob
