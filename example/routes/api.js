@@ -32,7 +32,7 @@ router.get('/instance/:uuid', (req, res) => {
 router.get('/login/:uuid', (req, res) => {
   let bot = botInstanceArr[req.params.uuid]
 
-  bot.start(true)
+  bot.start()
     .then(() => {
       // 绑定 Logout 事件
       bot.on('logout', () => {

@@ -16,8 +16,6 @@ class WxBot extends Wechat {
     this.superviseUsers = new Set()
     this.openTimes = 0
     this.on('init-message', () => this._botSupervise())
-
-    this.on('error', err => debug(err))
   }
 
   get replyUsersList() {
