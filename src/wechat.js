@@ -396,8 +396,8 @@ class Wechat extends EventEmitter {
     })
   }
 
-  start(hasUUID) {
-    return Promise.resolve(hasUUID ?  0 : this.getUUID())
+  start() {
+    return Promise.resolve(this.state === CONF.STATE.uuid ?  0 : this.getUUID())
       .then(() => this.checkScan())
       .then(() => this.checkLogin())
       .then(() => this.login())

@@ -30,11 +30,10 @@ let wechat = new wechat4u()
 ```javascript
 // 1. 分布启动
 wechat.getUUID().then(uuid => {/*处理uuid*/})
-let hasUUID = true
-wechat.start(hasUUID) // 返回一个 Promise 对象
-  
+wechat.start() // 返回一个 Promise 对象
+
 // 2. 直接启动
-wechat.start(） // 通过事件获得uuid等信息  
+wechat.start(） // 通过事件获得uuid等信息
 ```
 
 ####实例状态判断
