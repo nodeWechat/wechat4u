@@ -32,20 +32,18 @@ router.get('/instance/:uuid', (req, res) => {
 router.get('/login/:uuid', (req, res) => {
   let bot = botInstanceArr[req.params.uuid]
 
-  bot.start(true)
+  bot.start()
     .then(() => {
       // 绑定 Logout 事件
       bot.on('logout', () => {
-          delete botInstanceArr[req.params.uuid]
-          debug('Close Logout Connect', Object.getOwnPropertyNames(botInstanceArr).length)
-        })
-        // 返回成功
+        delete botInstanceArr[req.params.uuid]
+        debug('Close Logout Connect', Object.getOwnPropertyNames(botInstanceArr).length)
+      })
       res.sendStatus(200)
     })
     .catch((err) => {
       delete botInstanceArr[req.params.uuid]
       debug('Close Not Login Connect', Object.getOwnPropertyNames(botInstanceArr).length)
-        // 返回 Forbidden
       res.sendStatus(403)
     })
 

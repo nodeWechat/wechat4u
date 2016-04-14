@@ -1,4 +1,6 @@
 'use strict'
+const debug = require('debug')('utils')
+
 const CONF = {
   STATE: {
     init: 'init',
@@ -89,7 +91,7 @@ const convertEmoji = (s) => {
       return String.fromCodePoint.apply(null, s)
     } catch (err) {
       debug(b, err)
-      return ' '
+      return '*'
     }
   })
 }
