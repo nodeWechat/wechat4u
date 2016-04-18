@@ -720,6 +720,25 @@ class Wechat extends EventEmitter {
     })
   }
 
+  _getHeadImg (member) {
+    let url = this[API].baseUri.match(/http.*?\/\/.*?(?=\/)/)[0] + member.HeadImgUrl
+    return this.request({
+      method: 'GET',
+      url: url,
+      responseType: 'arraybuffer'
+    }).then(res => {
+      let headImg = {
+        data: res.data,
+        type: res.headers['content-type']
+      }
+      member.HeadImg = headImg
+      return headImg
+    }).catch(err => {
+      debug(err)
+      throw new Error('获取头像失败')
+    })
+  }
+
   _getUserRemarkName (uid) {
     for (let member of this.memberList) {
       if (member['UserName'] === uid) {
