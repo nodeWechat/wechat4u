@@ -14,7 +14,9 @@ const paramsSerializer = (params) => {
 module.exports = function(defaults) {
   defaults = defaults || {}
   defaults.headers = defaults.headers || {}
-  defaults.headers['user-agent'] = defaults.headers['user-agent'] || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36'
+  if(typeof window !== 'undefined') {
+    defaults.headers['user-agent'] = defaults.headers['user-agent'] || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36'
+  }
   defaults.paramsSerializer = defaults.paramsSerializer || paramsSerializer
   this.axios = axios.create(defaults)
   if (typeof window == 'undefined') {

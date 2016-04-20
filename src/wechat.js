@@ -274,7 +274,7 @@ class Wechat extends EventEmitter {
       }
       
       this.state = CONF.STATE.login
-      this.emit('login')
+      this.emit('login', this.memberList)
 
       for (let member of this.memberList) {
         member['NickName'] = convertEmoji(member['NickName'])
@@ -418,7 +418,7 @@ class Wechat extends EventEmitter {
   }
 
   stop() {
-    return logout()
+    return this.logout()
   }
 
   sendMsg(msg, to) {
