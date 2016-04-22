@@ -42,6 +42,7 @@
     "vue-strap": "^1.0.7",
     "vue-style-loader": "^1.0.0",
     "webpack": "^1.12.2",
+    "ffmpeg": "0.0.4",
     "cross-env": "^1.0.7"
   },
   "repository": {
@@ -68,8 +69,14 @@
     "rules": {
       "camelcase": 2,
       "curly": 2,
-      "brace-style": [2, "1tbs"],
-      "quotes": [2, "single"],
+      "brace-style": [
+        2,
+        "1tbs"
+      ],
+      "quotes": [
+        2,
+        "single"
+      ],
       "space-infix-ops": 2
     },
     "env": {
