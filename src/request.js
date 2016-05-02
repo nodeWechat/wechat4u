@@ -11,15 +11,15 @@ const paramsSerializer = (params) => {
   return encodeURI(qs.join('&'))
 }
 
-module.exports = function(defaults) {
+module.exports = function (defaults) {
   defaults = defaults || {}
   defaults.headers = defaults.headers || {}
-  if(typeof window !== 'undefined') {
+  if (typeof window !== 'undefined') {
     defaults.headers['user-agent'] = defaults.headers['user-agent'] || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36'
   }
   defaults.paramsSerializer = defaults.paramsSerializer || paramsSerializer
   this.axios = axios.create(defaults)
-  if (typeof window == 'undefined') {
+  if (typeof window === 'undefined') {
     this.cm = new CM()
     this.axios.interceptors.request.use(config => {
       config.headers['cookie'] = decodeURIComponent(this.cm.prepare(config.url))
@@ -39,10 +39,10 @@ module.exports = function(defaults) {
   }
   this.request = (options) => {
     return new Promise((resolve, reject) => {
-      if (options.data && typeof options.data.pipe == 'function') {
+      if (options.data && typeof options.data.pipe === 'function') {
         let pass = new Pass()
         let buf = []
-        if (typeof options.data.getHeaders == 'function') {
+        if (typeof options.data.getHeaders === 'function') {
           options.headers = options.data.getHeaders(options.headers)
         }
         pass.on('data', chunk => {
