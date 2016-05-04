@@ -26,7 +26,6 @@ router.get('/instance/:uuid', (req, res) => {
   } else {
     res.sendStatus(404)
   }
-
 })
 
 router.get('/login/:uuid', (req, res) => {
@@ -41,12 +40,11 @@ router.get('/login/:uuid', (req, res) => {
       })
       res.sendStatus(200)
     })
-    .catch((err) => {
+    .catch(err => {
       delete botInstanceArr[req.params.uuid]
-      debug('Close Not Login Connect', Object.getOwnPropertyNames(botInstanceArr).length)
+      debug('Close Not Login Connect', Object.getOwnPropertyNames(botInstanceArr).length, err)
       res.sendStatus(403)
     })
-
 })
 
 router.get('/members/:uuid', (req, res) => {
@@ -57,7 +55,6 @@ router.get('/members/:uuid', (req, res) => {
   } else {
     res.sendStatus(404)
   }
-
 })
 
 router.get('/members/:uuid/:uid', (req, res) => {
@@ -71,7 +68,6 @@ router.get('/members/:uuid/:uid', (req, res) => {
     debug('增加自动回复用户', req.params.uid)
   }
   res.sendStatus(200)
-
 })
 
 router.get('/supervise/:uuid/:uid', (req, res) => {
@@ -85,7 +81,6 @@ router.get('/supervise/:uuid/:uid', (req, res) => {
     debug('增加监督用户', req.params.uid)
   }
   res.sendStatus(200)
-
 })
 
 module.exports = router
