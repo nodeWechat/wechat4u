@@ -66,19 +66,21 @@ class Wechat extends EventEmitter {
   get friendList () {
     let members = []
 
-    this.groupList.forEach((member) => {
+    this.groupList.forEach(member => {
       members.push({
         username: member['UserName'],
         nickname: '群聊: ' + member['NickName'],
-        py: member['RemarkPYQuanPin'] ? member['RemarkPYQuanPin'] : member['PYQuanPin']
+        py: member['RemarkPYQuanPin'] ? member['RemarkPYQuanPin'] : member['PYQuanPin'],
+        avatar: this[API].baseUri.match(/http.*?\/\/.*?(?=\/)/)[0] + member.HeadImgUrl
       })
     })
 
-    this.contactList.forEach((member) => {
+    this.contactList.forEach(member => {
       members.push({
         username: member['UserName'],
         nickname: member['RemarkName'] ? member['RemarkName'] : member['NickName'],
-        py: member['RemarkPYQuanPin'] ? member['RemarkPYQuanPin'] : member['PYQuanPin']
+        py: member['RemarkPYQuanPin'] ? member['RemarkPYQuanPin'] : member['PYQuanPin'],
+        avatar: this[API].baseUri.match(/http.*?\/\/.*?(?=\/)/)[0] + member.HeadImgUrl
       })
     })
 

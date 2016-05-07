@@ -1,11 +1,10 @@
 'use strict'
 const Wechat = require('../../index')
 const debug = require('debug')('wxbot')
-const fs = require('fs')
 
 class WxBot extends Wechat {
 
-  constructor() {
+  constructor () {
     super()
 
     this.memberInfoList = []
@@ -20,53 +19,21 @@ class WxBot extends Wechat {
     this.on('error', err => debug(err))
   }
 
-  get replyUsersList() {
-    let members = []
-
-    this.groupList.forEach(member => {
-      members.push({
-        username: member['UserName'],
-        nickname: '群聊: ' + member['NickName'],
-        py: member['RemarkPYQuanPin'] ? member['RemarkPYQuanPin'] : member['PYQuanPin'],
-        switch: this.replyUsers.has(member['UserName'])
-      })
+  get replyUsersList () {
+    return this.friendList.map(member => {
+      member.switch = this.replyUsers.has(member['UserName'])
+      return member
     })
-
-    this.contactList.forEach(member => {
-      members.push({
-        username: member['UserName'],
-        nickname: member['RemarkName'] ? member['RemarkName'] : member['NickName'],
-        py: member['RemarkPYQuanPin'] ? member['RemarkPYQuanPin'] : member['PYQuanPin'],
-        switch: this.replyUsers.has(member['UserName'])
-      })
-    })
-
-    return members
   }
 
-  get superviseUsersList() {
-    let members = []
-
-    this.groupList.forEach(member => {
-      members.push({
-        username: member['UserName'],
-        nickname: '群聊: ' + member['NickName'],
-        switch: this.superviseUsers.has(member['UserName'])
-      })
+  get superviseUsersList () {
+    return this.friendList.map(member => {
+      member.switch = this.superviseUsers.has(member['UserName'])
+      return member
     })
-
-    this.contactList.forEach(member => {
-      members.push({
-        username: member['UserName'],
-        nickname: member['RemarkName'] ? member['RemarkName'] : member['NickName'],
-        switch: this.superviseUsers.has(member['UserName'])
-      })
-    })
-
-    return members
   }
 
-  _tuning(word) {
+  _tuning (word) {
     let params = {
       'key': '2ba083ae9f0016664dfb7ed80ba4ffa0',
       'info': word
@@ -87,7 +54,7 @@ class WxBot extends Wechat {
     })
   }
 
-  _botReply(msg) {
+  _botReply (msg) {
     if (this.replyUsers.has(msg['FromUserName'])) {
       this._tuning(msg['Content']).then((reply) => {
         this.sendMsg(reply, msg['FromUserName'])
@@ -96,7 +63,7 @@ class WxBot extends Wechat {
     }
   }
 
-  _botSupervise() {
+  _botSupervise () {
     const message = '我的主人玩微信' + ++this.openTimes + '次啦！'
     for (let user of this.superviseUsers.values()) {
       this.sendMsg(message, user)

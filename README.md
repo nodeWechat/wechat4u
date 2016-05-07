@@ -48,9 +48,10 @@ wechat.state === wechat4u.STATE.logout === 'logout' // 已退出登录
 ####联系人接口
 
 ```javascript
+wechat.friendList  // 通讯录（个人联系人，群聊）
+
 wechat.user        // 登陆账号
 wechat.memberList  // 所有联系人
-wechat.friendList  // 通讯录（个人联系人，群聊）
 wechat.contactList // 个人联系人
 wechat.groupList   // 已保存群聊
 wechat.groupMemberList // 所有群聊内联系人
@@ -95,7 +96,7 @@ wechat.on('text-message', msg => {
 })
 wechat.on('picture-message', msg => {
   msg['Content'] // {type:'image/jpeg',data:...buf...}
-}) 
+})
 wechat.on('voice-message', msg => {
   msg['Content'] // {type:'audio/mp3'',data:...buf...}
 })
