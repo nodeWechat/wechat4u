@@ -1,0 +1,60 @@
+{
+  "BaseResponse": {
+    "Ret": 0,
+    "ErrMsg": ""
+  },
+  "Count": 1,
+  "ContactList": [
+    {
+      "Uin": 0,
+      "UserName": "@@180fa413a597f0f313529f756a974f021ba02ff8f8388c1588c76b844fa71935",
+      "NickName": "家庭",
+      "HeadImgUrl": "/cgi-bin/mmwebwx-bin/webwxgetheadimg?seq=625238710&username=@@180fa413a597f0f313529f756a974f021ba02ff8f8388c1588c76b844fa71935&skey=",
+      "ContactFlag": 1,
+      "MemberCount": 1,
+      "MemberList": [
+        {
+          "Uin": 0,
+          "UserName": "@2ea0ad63b5550c8842c95cb987adea2491fc9e3db0899696f696149cd30688e8",
+          "NickName": "SToneX",
+          "AttrStatus": 98407,
+          "PYInitial": "",
+          "PYQuanPin": "",
+          "RemarkPYInitial": "",
+          "RemarkPYQuanPin": "",
+          "MemberStatus": 0,
+          "DisplayName": "",
+          "KeyWord": "che"
+        }
+      ],
+      "RemarkName": "",
+      "HideInputBarFlag": 0,
+      "Sex": 0,
+      "Signature": "",
+      "VerifyFlag": 0,
+      "OwnerUin": 155217200,
+      "PYInitial": "JT",
+      "PYQuanPin": "jiating",
+      "RemarkPYInitial": "",
+      "RemarkPYQuanPin": "",
+      "StarFriend": 0,
+      "AppAccountFlag": 0,
+      "Statues": 1,
+      "AttrStatus": 0,
+      "Province": "",
+      "City": "",
+      "Alias": "",
+      "SnsFlag": 0,
+      "UniFriend": 0,
+      "DisplayName": "",
+      "ChatRoomId": 0,
+      "KeyWord": "",
+      "EncryChatRoomId": "@4f120905f9814dc8f5438f905b019bb6"
+    }
+  ],
+  "RemarkPYInitial": "",
+  "RemarkPYQuanPin": "",
+  "MemberStatus": 0,
+  "DisplayName": "",
+  "KeyWord": "xm7"
+}
