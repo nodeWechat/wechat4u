@@ -1,0 +1,215 @@
+{
+  "BaseResponse": {
+    "Ret": 0,
+    "ErrMsg": ""
+  },
+  "AddMsgCount": 2,
+  "AddMsgList": [
+    {
+      "MsgId": "4442356190966618405",
+      "FromUserName": "@2ea0ad63b5550c8842c95cb987adea2491fc9e3db0899696f696149cd30688e8",
+      "ToUserName": "@2ea0ad63b5550c8842c95cb987adea2491fc9e3db0899696f696149cd30688e8",
+      "MsgType": 51,
+      "Content": "&lt;msg&gt;<br/>&lt;op id='4'&gt;<br/>&lt;username&gt;wxid_7313013130512,filehelper,902809793@chatroom,2914059377@chatroom,1738755346@chatroom,spacelan,3219370221@chatroom,298807678@chatroom,3537286444@chatroom,wxid_h0qgj9zwhp7551,gh_ea5e7ab441b6,gh_3dfda90e39d6,gh_8ee26bcfc5f9,2068844157@chatroom,wxid_zrjrjgl6gj1c22,fei540943389,2540097512@chatroom,gh_8c0180124f84,wxid_8637436368012,gh_7a139c64a53c,qqwanggou001,2328785499@chatroom,gh_8a8cce549a85,169695945@chatroom,wxid_ad0mytsvtomy21,1790339878@chatroom,wxid_5twedgeqi43521,wxid_bfgwvqhbw8ft12,gh_f8a282e7e529,wxid_qoetub8pfvsh12,wxid_vh3nh6splar512,sht1994118,wxid_6e5fuoxvow6f22,chenweijun331977,wxid_xbdb29l1mrml21,gh_1b8e40cada67,q327113864,wxid_wfxt5hgvw62i12,wxid_psd6w419wjsh21,xhxt2008,wxid_0594825947611,1551969831@chatroom,wxid_0872158721211,261901900@chatroom,jning931127,gh_03da264e115e,wxid_1toycb9o3gju12,wxid_65z4e7qe6x6m12,wxid_7ji5bfynk5pa22,leizongmin,wxid_1232152320811,gh_7aac992b0363,wxid_7919069183712,wxid_1330683306611,wxid_hj6fcbgeop1m12,44707134@chatroom,wxid_15ywf6wsm3rs12,wxid_yaj8cf0bvapn52,wskywangxiao,l726726888,gh_5ac2faed86ac,beijixiong155056,wxid_4193851938311,3757820410@chatroom,wxid_7847138493012,wxid_77oep032b9x111,1385638665@chatroom,goddy128,wxid_p7ft5mobcghb21,wxid_v8exw55kp4n112,wxid_yn3uhcmjzqmv11,chenshifan001,chenxujia_0406,cwclovecsm,wxid_bwwcspoy7zen11,wxid_6990419903812,halibotedeyouxiang,629900912@chatroom,mengdase,1285413529@chatroom,wxid_eo2cmpxx136921,wxid_8e9rdl8al14k11,1417327348@chatroom,wxid_4txm7uf3bixb11,gh_3e0c4efe9687,qie1250151726,wxid_4778517786212,wxid_aizz678xr26t51,1003130624@chatroom,a36503294,SSTVXU,gh_5bb9fc8068d9,luanquan,zhaoyuhuanweixin,818644081@chatroom,www_V5_cn,wxid_6043240434612,riobard,wxid_gsbo9hlenvoq22&lt;/username&gt;<br/>&lt;unreadchatlist&gt;<br/>&lt;chat&gt;<br/>&lt;username&gt;902809793@chatroom&lt;/username&gt;<br/>&lt;lastreadtime&gt;1463754424&lt;/lastreadtime&gt;<br/>&lt;/chat&gt;<br/>&lt;chat&gt;<br/>&lt;username&gt;2914059377@chatroom&lt;/username&gt;<br/>&lt;lastreadtime&gt;1463753124&lt;/lastreadtime&gt;<br/>&lt;/chat&gt;<br/>&lt;chat&gt;<br/>&lt;username&gt;gh_ea5e7ab441b6&lt;/username&gt;<br/>&lt;lastreadtime&gt;1463720034&lt;/lastreadtime&gt;<br/>&lt;/chat&gt;<br/>&lt;chat&gt;<br/>&lt;username&gt;gh_8c0180124f84&lt;/username&gt;<br/>&lt;lastreadtime&gt;1463656879&lt;/lastreadtime&gt;<br/>&lt;/chat&gt;<br/>&lt;chat&gt;<br/>&lt;username&gt;MomentsUnreadMsgStatus&lt;/username&gt;<br/>&lt;lastreadtime&gt;1463158935&lt;/lastreadtime&gt;<br/>&lt;/chat&gt;<br/>&lt;/unreadchatlist&gt;<br/>&lt;unreadfunctionlist&gt;<br/>&lt;/unreadfunctionlist&gt;<br/>&lt;/op&gt;<br/>&lt;/msg&gt;",
+      "Status": 3,
+      "ImgStatus": 1,
+      "CreateTime": 1463755899,
+      "VoiceLength": 0,
+      "PlayLength": 0,
+      "FileName": "",
+      "FileSize": "",
+      "MediaId": "",
+      "Url": "",
+      "AppMsgType": 0,
+      "StatusNotifyCode": 4,
+      "StatusNotifyUserName": "@339651ba569948c2c1f18e547e5fcb49cc2672af2a4ece71ed97e1c3a572858a,filehelper,@@22e2e1f42c303adeda023a1affa9a9be06f94c1d55189cedf28aa5ad78d09466,@@3ebf5e3b9aaae4fb002da88d2f96f1266a9ba0940af389ae188e05fde83004d0,@@fd04c1950a724b4443471dc95aa7ca9ff1af4592666b1de6a754b0f7525514d3,@70ab99ca1c2e4df48de528ae29ce0fbd,@@1b754c7ae914f1223703ece64acbbbf375befa56d77fa02005279f277f223b69,@@180fa413a597f0f313529f756a974f021ba02ff8f8388c1588c76b844fa71935,@@f19c122a8ead15ea8c3ad88622695563652c88fc8e864da83874cad4192f6d59,@7a67b2ee7822d1b5b912a164c60c349f5764fc2b74842f01881ee8def5e8915a,@d89e585741b44686b43781cbd83fcdda,@97109f88e39691870bd7b691693ef2ad,@abd907b0a27c909b474822c71e34d0af,@@232e56f745cca4caa8db2291ea029d5293907dbee850205da04ff4e7054ca0cf,@8e6e7e848881943024373475e5eb2137f62761d7c137c3f2337222e2466e292c,@84d7f0d41b6c3ba1f5314fa300f92f14,@@267cd63603075529efed71f38d599ef7b24681adc955b4222321013103d8196c,@b2eaf06e6fca0a59091aec4dc53e546c,@43ad02c5b14ed2de8c9c69b92884df94e66300a7ce624cdaef05199963241849,@5228c41c5864e6876061fd96a3676ef2,@973a9a9c494ea40fe42143adcdedbd84,@@ed757bbda181ec895d9531e7c1a6d8abe3ea455e68108e10cff202f44992c577,@1b7659d7cba811e5781426a24ed7af40,@@bdb11cc12d5b6134c18bafb3870bb18f3981b4b19e90fa83ea55a57ef1c24e05,@e532dcd6984a21d1f8c40d9ee14ab79ad31f0bf1bf3183215668a7c0e1eeaf1f,@@5a95f75e97fce4ac94e00ca84df8028fc95ac88784facad9462b10eab8bdda76,@6e503d143b232ea63caa4489215683cd930ac62e71b7615eecdecdadcc455fd2,@3b233e3bf704f036c441d0d2ad1f9cabe0ff2fbc87a0f4f2c57e48c39aeb28ed,@2e8eefceee672de78b9921dd2bd931e5,@6821db112aa438d0b408a14196493f59d14116a3153b00bfb83586f3fc23e5b1,@2af4f90d933ba52fffe0e558d551bb871e004197808f83f9ad21ae3f92f4de83,@16fa931dba40ade8a4ea6e7c898ba5e1,@a5d0dfda5a1345ee07f5623e22ee05309bf306f3e9e7fa5f95421b15a1ef15fe,@2ea0ad63b5550c8842c95cb987adea2491fc9e3db0899696f696149cd30688e8,@510073889f1172c62900fbde22a9f6a147b535a1f0b066bb22e7318661e13113,@a7e4ac5ed53e8126c6bc291d4f54018b,@77606b6ef1f4664c6077d19c39b925d4,@106c13e1bd6fef28fa4327e23b960933e0d63c39c0f04c4450b1a66552211e8d,@944995d2a2106a4544d2752e605ef09fdd5698e63b9fa40e9c824b5388dd73f8,@489901ee910fb3a6ad6439e184f07fb6,@f6e939701047a89b52d071251e80a374206b4bf1eeb9140498a01076134933f6,@@2506a204db5af496004ed404bfa12959031f868bd77f0f311be474c883da0463,@dd8f7e98b68df1dd30206a19724761c282ad491a090de98d66239e0895808c7a,@@b23663d8223d095f09955211032a62893ee604b78d5c731089f84b4cdf6f6234,@913d088123f85a47dec47a05fb7349c6,@13312c0060d14d05ce45ec6f5c738213,@946a23b9c0025311114d7002190ddfce78a7ab1030e1961ccbb6342262ed45f2,@5850474942d686dac2372900d508ecf96777ce265e90d1f33739c38d62fad2c1,@ee5481813de66d3db4bf84153dd7c257c2961e151fca9ca31592a703be035ccf,@f842fe4a42b4ac43495d73e866ca62f8,@85912117ff22032e16b6ba62d525b4a0cb360c06f91b58a2745fdbf1c2b48346,@7bb52d4e8462f667f10ed05de44dfc3b,@4fcb8ac339e5250fee41781ebcd6bf8cb8caf0ea455b84a3bf690e1e8ec7ef49,@3d0cf36747a5f8a9299a6a4b8d7551e05d613c94618996b28b2716b74168728f,@3263b6785dbf48511e4e7b622080d0c62c84668f824fa124394b2d3e3ddb279e,@@0b59b0670e3c529a6a38a1b1a1460514fadc462307a18cf981791aaaa590d76d,@e120944a65eba3d106767dcdd033fff191713ee63b6f4b21855001d57f32ca77,@fe6d418bb94e6d775c449c944f44dd3ef33d1c8a61a06dacadf0f77a3a698f0b,@42fc42968c82e6ef6c5f373c8b460443,@947fc8e6b8bdd97a1bb4c6baf5b414eb,@d58b074a91f1d008f63fd0af3221e722,@45ca12e75c49deadb31d65b1c88204f5e76abbcc72484bb92b6c9e26961c5699,@1fefaaba7e843cea1b71a9992ed9f0c7fb38bdf8496e3a73e8479369c1b53de3,@@2ac25e5869f6d8a0369f4d333a554f1f11f26f800c2d6edb576dea836d864cf6,@51c41a81f0802376e26ad0d3c2fbc89c89e9206555621cacae0c4e967c8c9ad1,@955976a16011603f3c8533697c72aa4d7aba9290a9c295b8d79c61ca39eb7ad6,@@476fe5b2b15ac216a727cb09f3bc260897ed8d7448049672aef11b63ddadc28a,@411b3d15d08bef67d797ae7f0978d1e3,@6648d6570c26491b69c94857fba82abbd0ea783badc198d5dd6630c09b365b4d,@fe89ad3f479b5d0b3319443b01718d1396111e8f77eca218c22928b5c00ab1cf,@2d0c47fd0fce4872536191e9dfe55d99590f0ea6fe17f5df050fb8307386e9ed,@05c4ff9934f2bd8a7aec830086851aab,@925f8b60fd7d13129eb572313fab5212,@d1c9e9dcc37407877870e188fc9888fa,@1a37dfe536da44aa9f84f60c28c16e6f905179474f773591f6523883743d4d50,@b136de5596d3a7da4d965a088b2284fd224c756ccf2f8a219b37bbf5ad7fd2be,@7962f256818fceaec3b958d92ded8ee20dcee8c843a3a3757362405ed2131896,@@3fbf03446ab041dd4e652942cdc6bf343a44248f9e7ae25ee823d4a92ebddbdb,@544820fc7fd9c197dc46d9bdb5abdbf5,@@b3622827e463af2667ebe4c408d89e781a628ef557a87df6dcf5adfbdb7b06b3,@f2ec960d1736e9fd23a71cabf8a978900a3413ae78fd4bb9387eb1a8d306249f,@ed137e1c8513f0e6dc56f27b34f4380eefc0471a5fc080675c64f11c1ba27e90,@@73ee96919fddc6092eabcb27438eba628bc56df2bb5f89ee01368d6cb817d8af,@b2d92a727462efa35b7e8d33d31a3770208b750559bb454902d937c873d1e646,@358505f3cf454c1eca7177af2af1b846,@6329ec4916697109f731dab67c2c991d,@7c2530024418b1c94d5d7fb0f696793ac2b6edf806010bcc6ee7ce7e0229d52d,@b7f0b9a12a4e515efd797898437364b01135fad314d8b4fd3e2e6579606d5a2a,@@0d03fd688236be730d875af6a81d50f1dffbee01e7e23b1f06850e0150395981,@d53c6d659f5ef174bdc3c58b449ae27c,@df186b358f43330a231fa296f0c85e25,@4843f6c9705ed2f2fbe8c1cccd344cbe,@9fc24b6488400c5132c32ab8dbc0d59b,@970afe19850fae35664ce3992061b0167a6c1a13ee0e6b959ac93a1eaa29fa1f,@@9ed64a46473dbf59ca76bd021ec280333f6b49f69d09b5da270981f7b7ebcb48,@03c96f47661b3ab4535b525e6ff363a4,@55d1b9bf453003b86b0829db529171766c0aa13763b5f5b32a8c531a332d5064,@c78beceecfd88c03289a302d2c9c6407,@eaf122e72abe21c72a13ac9d6224c15ad99bfa6fc317fca584a1140cc59e2f63",
+      "RecommendInfo": {
+        "UserName": "",
+        "NickName": "",
+        "QQNum": 0,
+        "Province": "",
+        "City": "",
+        "Content": "",
+        "Signature": "",
+        "Alias": "",
+        "Scene": 0,
+        "VerifyFlag": 0,
+        "AttrStatus": 0,
+        "Sex": 0,
+        "Ticket": "",
+        "OpCode": 0
+      },
+      "ForwardFlag": 0,
+      "AppInfo": {
+        "AppID": "",
+        "Type": 0
+      },
+      "HasProductId": 0,
+      "Ticket": "",
+      "ImgHeight": 0,
+      "ImgWidth": 0,
+      "SubMsgType": 0,
+      "NewMsgId": 4442356190966618405
+    },
+    {
+      "MsgId": "6599448710267926107",
+      "FromUserName": "@2ea0ad63b5550c8842c95cb987adea2491fc9e3db0899696f696149cd30688e8",
+      "ToUserName": "@2ea0ad63b5550c8842c95cb987adea2491fc9e3db0899696f696149cd30688e8",
+      "MsgType": 1,
+      "Content": "Hello World",
+      "Status": 3,
+      "ImgStatus": 1,
+      "CreateTime": 1463839052,
+      "VoiceLength": 0,
+      "PlayLength": 0,
+      "FileName": "",
+      "FileSize": "",
+      "MediaId": "",
+      "Url": "",
+      "AppMsgType": 0,
+      "StatusNotifyCode": 0,
+      "StatusNotifyUserName": "",
+      "RecommendInfo": {
+        "UserName": "",
+        "NickName": "",
+        "QQNum": 0,
+        "Province": "",
+        "City": "",
+        "Content": "",
+        "Signature": "",
+        "Alias": "",
+        "Scene": 0,
+        "VerifyFlag": 0,
+        "AttrStatus": 0,
+        "Sex": 0,
+        "Ticket": "",
+        "OpCode": 0
+      },
+      "ForwardFlag": 0,
+      "AppInfo": {
+        "AppID": "",
+        "Type": 0
+      },
+      "HasProductId": 0,
+      "Ticket": "",
+      "ImgHeight": 0,
+      "ImgWidth": 0,
+      "SubMsgType": 0,
+      "NewMsgId": 6599448710267926107
+    }
+  ],
+  "ModContactCount": 1,
+  "ModContactList": [
+    {
+      "UserName": "@@3ebf5e3b9aaae4fb002da88d2f96f1266a9ba0940af389ae188e05fde83004d0",
+      "NickName": "Vue.js Podcast 群二",
+      "Sex": 0,
+      "HeadImgUpdateFlag": 1,
+      "ContactType": 0,
+      "Alias": "",
+      "ChatRoomOwner": "@944995d2a2106a4544d2752e605ef09fdd5698e63b9fa40e9c824b5388dd73f8",
+      "HeadImgUrl": "/cgi-bin/mmwebwx-bin/webwxgetheadimg?seq=0&username=@@3ebf5e3b9aaae4fb002da88d2f96f1266a9ba0940af389ae188e05fde83004d0&skey=@crypt_8e4ad7fa_2703a47aaf8cd4d3e61b855795e38568",
+      "ContactFlag": 3,
+      "MemberCount": 462,
+      "MemberList": [
+        {
+          "Uin": 195765975,
+          "UserName": "@e0ec8ddd68b83d04a51839008fdaa78e",
+          "NickName": "吃圡死月不會碼代碼<span class=\"emoji emoji1f31b\"></span>",
+          "AttrStatus": 37851687,
+          "PYInitial": "",
+          "PYQuanPin": "",
+          "RemarkPYInitial": "",
+          "RemarkPYQuanPin": "",
+          "MemberStatus": 0,
+          "DisplayName": "",
+          "KeyWord": ""
+        }
+      ],
+      "HideInputBarFlag": 0,
+      "Signature": "",
+      "VerifyFlag": 0,
+      "RemarkName": "",
+      "Statues": 0,
+      "AttrStatus": 0,
+      "Province": "",
+      "City": "",
+      "SnsFlag": 0,
+      "KeyWord": ""
+    }
+  ],
+  "DelContactCount": 0,
+  "DelContactList": [],
+  "ModChatRoomMemberCount": 0,
+  "ModChatRoomMemberList": [],
+  "Profile": {
+    "BitFlag": 0,
+    "UserName": {
+      "Buff": ""
+    },
+    "NickName": {
+      "Buff": ""
+    },
+    "BindUin": 0,
+    "BindEmail": {
+      "Buff": ""
+    },
+    "BindMobile": {
+      "Buff": ""
+    },
+    "Status": 0,
+    "Sex": 0,
+    "PersonalCard": 0,
+    "Alias": "",
+    "HeadImgUpdateFlag": 0,
+    "HeadImgUrl": "",
+    "Signature": ""
+  },
+  "ContinueFlag": 0,
+  "SyncKey": {
+    "Count": 10,
+    "List": [
+      {
+        "Key": 1,
+        "Val": 636444437
+      },
+      {
+        "Key": 2,
+        "Val": 636445051
+      },
+      {
+        "Key": 3,
+        "Val": 636444675
+      },
+      {
+        "Key": 11,
+        "Val": 636445020
+      },
+      {
+        "Key": 13,
+        "Val": 636434059
+      },
+      {
+        "Key": 201,
+        "Val": 1463755899
+      },
+      {
+        "Key": 203,
+        "Val": 1463752834
+      },
+      {
+        "Key": 1000,
+        "Val": 1463747283
+      },
+      {
+        "Key": 1001,
+        "Val": 1463740232
+      },
+      {
+        "Key": 1002,
+        "Val": 1463719049
+      }
+    ]
+  },
+  "SKey": ""
+}

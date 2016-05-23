@@ -483,7 +483,7 @@ class Wechat extends EventEmitter {
 
       let retcode = +pm[1]
       let selector = +pm[2]
-
+      
       return {
         retcode, selector
       }
