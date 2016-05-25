@@ -16,14 +16,14 @@ router.map({
     component: LoginView
   },
   '/members': {
-  	component: MembersView
+    component: MembersView
   },
   '/supervise': {
-  	component: SuperviseView
+    component: SuperviseView
   }
 })
 
-router.beforeEach(function() {
+router.beforeEach(() => {
   window.scrollTo(0, 0)
 })
 

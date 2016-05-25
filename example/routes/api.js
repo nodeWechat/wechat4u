@@ -10,7 +10,7 @@ let botInstanceArr = {}
 router.get('/uuid', (req, res) => {
   let bot = new WxBot()
 
-  bot.getUUID().then((uuid) => {
+  bot.getUUID().then(uuid => {
     res.send(uuid)
     botInstanceArr[uuid] = bot
     debug('New Connect', Object.getOwnPropertyNames(botInstanceArr).length)

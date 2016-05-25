@@ -1,16 +1,16 @@
-"use strict"
+'use strict'
+const path = require('path')
 const express = require('express')
-const debug = require('debug')('app')
 
 const api = require('./routes/api')
 
 const app = express()
 
-app.set('views', __dirname + '/views');
-app.set('view engine', 'jade');
+app.set('views', path.resolve(__dirname, 'views'))
+app.set('view engine', 'jade')
 
 // 静态文件
-app.use('/static', express.static(__dirname + '/public'));
+app.use('/static', express.static(path.resolve(__dirname, 'public')))
 
 app.get('/', (req, res) => {
   res.render('layout')
@@ -18,4 +18,4 @@ app.get('/', (req, res) => {
 
 app.use('/api', api)
 
-const server = app.listen(3000)
+app.listen(3000)

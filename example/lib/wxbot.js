@@ -43,8 +43,8 @@ class WxBot extends Wechat {
       url: 'http://www.tuling123.com/openapi/api',
       params: params
     }).then(res => {
-      const data = res.data
-      if (data.code == 100000) {
+      const data = +res.data
+      if (data.code === 100000) {
         return data.text + '[微信机器人]'
       }
       throw new Error('tuning返回值code错误', data)
@@ -56,7 +56,7 @@ class WxBot extends Wechat {
 
   _botReply (msg) {
     if (this.replyUsers.has(msg['FromUserName'])) {
-      this._tuning(msg['Content']).then((reply) => {
+      this._tuning(msg['Content']).then(reply => {
         this.sendMsg(reply, msg['FromUserName'])
         debug(reply)
       })

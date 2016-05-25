@@ -483,7 +483,7 @@ class Wechat extends EventEmitter {
 
       let retcode = +pm[1]
       let selector = +pm[2]
-      
+
       return {
         retcode, selector
       }
@@ -493,40 +493,40 @@ class Wechat extends EventEmitter {
     })
   }
 
-   _sync () {
-     let params = {
-       'sid': this[PROP].sid,
-       'skey': this[PROP].skey,
-       'pass_ticket': this[PROP].passTicket
-     }
-     let data = {
-       'BaseRequest': this[PROP].baseRequest,
-       'SyncKey': this[PROP].syncKey,
-       'rr': ~new Date()
-     }
-     return this.request({
-       method: 'POST',
-       url: this[API].webwxsync,
-       params: params,
-       data: data
-     }).then(res => {
-       let data = res.data
-       if (data['BaseResponse']['Ret'] !== 0) {
-         throw new Error('拉取消息Ret错误: ' + data['BaseResponse']['Ret'])
-       }
+  _sync () {
+    let params = {
+      'sid': this[PROP].sid,
+      'skey': this[PROP].skey,
+      'pass_ticket': this[PROP].passTicket
+    }
+    let data = {
+      'BaseRequest': this[PROP].baseRequest,
+      'SyncKey': this[PROP].syncKey,
+      'rr': ~new Date()
+    }
+    return this.request({
+      method: 'POST',
+      url: this[API].webwxsync,
+      params: params,
+      data: data
+    }).then(res => {
+      let data = res.data
+      if (data['BaseResponse']['Ret'] !== 0) {
+        throw new Error('拉取消息Ret错误: ' + data['BaseResponse']['Ret'])
+      }
 
-       this._updateSyncKey(data['SyncKey'])
-       return data
-     }).catch(err => {
-       debug(err)
-       throw new Error('获取新信息失败')
-     })
-   }
+      this._updateSyncKey(data['SyncKey'])
+      return data
+    }).catch(err => {
+      debug(err)
+      throw new Error('获取新信息失败')
+    })
+  }
 
   _handleMsg (data) {
     debug('Receive ', data['AddMsgList'].length, 'Message')
 
-    data['AddMsgList'].forEach((msg) => {
+    data['AddMsgList'].forEach(msg => {
       let type = +msg['MsgType']
       let fromUser = this._getUserRemarkName(msg['FromUserName'])
       let content = contentPrase(msg['Content'])

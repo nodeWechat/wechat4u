@@ -3,7 +3,7 @@ const axios = require('axios')
 const CM = require('cookie-manager')
 const Pass = require('stream').PassThrough
 
-const paramsSerializer = (params) => {
+const paramsSerializer = params => {
   let qs = []
   for (let key in params) {
     qs.push(`${key}=${params[key]}`)
@@ -42,7 +42,7 @@ module.exports = function (defaults) {
     })
   }
 
-  this.request = (options) => {
+  this.request = options => {
     return new Promise((resolve, reject) => {
       if (options.data && isFunction(options.data.pipe)) {
         let pass = new Pass()

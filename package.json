@@ -7,13 +7,13 @@
     "example": "webpack --config=./example/webpack.config.js && cross-env DEBUG=wechat,wxbot,app node ./example/app.js",
     "compile": "babel src -d lib -s",
     "prepublish": "npm run compile",
-    "lint": "eslint src",
+    "lint": "eslint src example/lib example/routes example/app.js",
     "clean": "rm -rf lib",
     "unit": "mocha test/unit.js",
     "test": "eslint src && npm run unit"
   },
   "dependencies": {
-    "axios": "^0.9.1",
+    "axios": "^0.11.1",
     "chai": "^3.5.0",
     "cookie-manager": "0.0.16",
     "debug": "^2.2.0",
@@ -23,22 +23,34 @@
     "nock": "^8.0.0",
     "replay": "^2.0.6"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nodeWechat/wechat4u.git"
+  },
+  "author": "nodeWechat",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nodeWechat/wechat4u/issues"
+  },
+  "homepage": "https://github.com/nodeWechat/wechat4u#readme",
   "devDependencies": {
     "babel-cli": "^6.6.0",
     "babel-core": "^6.0.0",
-    "babel-eslint": "^5.0.0",
     "babel-loader": "^6.0.0",
     "babel-plugin-transform-runtime": "^6.6.0",
     "babel-preset-es2015": "^6.0.0",
     "babel-preset-stage-2": "^6.5.0",
+    "babel-runtime": "^6.9.0",
+    "cross-env": "^1.0.7",
     "css-loader": "^0.23.0",
-    "es6-promise": "^3.1.2",
-    "eslint": "^2.2.0",
-    "estraverse-fb": "^1.3.1",
+    "eslint": "^2.6.0",
+    "eslint-config-standard": "^5.3.1",
+    "eslint-plugin-promise": "^1.1.0",
+    "eslint-plugin-standard": "^1.3.2",
     "express": "^4.13.4",
     "jade": "^1.11.0",
     "json-loader": "^0.5.4",
-    "stylus-loader": "^1.4.0",
+    "stylus-loader": "^2.1.0",
     "url-loader": "^0.5.7",
     "vue": "^1.0.16",
     "vue-hot-reload-api": "^1.2.0",
@@ -47,46 +59,6 @@
     "vue-router": "^0.7.11",
     "vue-strap": "^1.0.7",
     "vue-style-loader": "^1.0.0",
-    "webpack": "^1.12.2",
-    "cross-env": "^1.0.7"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/nodeWechat/wechat4u.git"
-  },
-  "keywords": [
-    "wechat",
-    "weixin"
-  ],
-  "author": "nodeWechat",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/nodeWechat/wechat4u/issues"
-  },
-  "homepage": "https://github.com/nodeWechat/wechat4u#readme",
-  "babel": {
-    "presets": [
-      "es2015"
-    ]
-  },
-  "eslintConfig": {
-    "parser": "babel-eslint",
-    "rules": {
-      "camelcase": 2,
-      "curly": 2,
-      "brace-style": [
-        2,
-        "1tbs"
-      ],
-      "quotes": [
-        2,
-        "single"
-      ],
-      "space-infix-ops": 2
-    },
-    "env": {
-      "browser": true,
-      "node": true
-    }
+    "webpack": "^1.12.2"
   }
 }

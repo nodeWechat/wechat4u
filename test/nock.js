@@ -2,22 +2,22 @@ var nock = require('nock')
 var fs = require('fs')
 var path = require('path')
 
-var check = (key, value) => data => data[key] == value
+var check = (key, value) => data => data[key] === value
 var checkUin = check('Uin', 155217200)
-var checkuin = check('uin', 155217200)
+var checkuin = check('uin', '155217200')
 var checkSid = check('Sid', 'PsWd4FvKROR5EVcG')
 var checksid = check('sid', 'PsWd4FvKROR5EVcG')
 var checkSkey = check('Skey', '@crypt_8e4ad7fa_2703a47aaf8cd4d3e61b855795e38568')
 var checkskey = check('skey', '@crypt_8e4ad7fa_2703a47aaf8cd4d3e61b855795e38568')
 var checkPassTicket = check('pass_ticket', 'VgRra8tyYbvfTTS3LVlIHdFob0XowE6%2BZV9X1PB9w9w%3D')
 
-var checkBaseRequest = function(data) {
-  return data
-    && data.BaseRequest
-    && checkUin(data.BaseRequest)
-    && checkSid(data.BaseRequest)
-    && checkSkey(data.BaseRequest)
-    && data.BaseRequest.DeviceID
+var checkBaseRequest = data => {
+  return data &&
+    data.BaseRequest &&
+    checkUin(data.BaseRequest) &&
+    checkSid(data.BaseRequest) &&
+    checkSkey(data.BaseRequest) &&
+    data.BaseRequest.DeviceID
 }
 
 nock('https://login.weixin.qq.com')
@@ -56,17 +56,17 @@ nock('https://wx2.qq.com')
     return checkBaseRequest(data)
   })
   .query(data => {
-    return data
-      && checkPassTicket(data) 
-      && checkskey(data)
+    return data &&
+      checkPassTicket(data) &&
+      checkskey(data)
   })
   .reply(200, fs.readFileSync(path.resolve(__dirname, './response/webwxinit'), 'utf-8'))
 
 // notifyMobile
 nock('https://wx2.qq.com')
   .post('/cgi-bin/mmwebwx-bin/webwxstatusnotify', data => {
-    return data
-      && checkBaseRequest(data)
+    return data &&
+      checkBaseRequest(data)
   })
   .reply(200, '{"BaseResponse": {"Ret": 0,"ErrMsg": ""},"MsgID": "3199705316661781423"}')
 
@@ -74,21 +74,21 @@ nock('https://wx2.qq.com')
 nock('https://wx2.qq.com')
   .post('/cgi-bin/mmwebwx-bin/webwxgetcontact')
   .query(data => {
-    return data
-      && checkPassTicket(data)
-      && checkskey(data)
+    return data &&
+      checkPassTicket(data) &&
+      checkskey(data)
   })
   .reply(200, fs.readFileSync(path.resolve(__dirname, './response/webwxgetcontact'), 'utf-8'))
 
 // batchGetContact
 nock('https://wx2.qq.com')
   .post('/cgi-bin/mmwebwx-bin/webwxbatchgetcontact', data => {
-    return data
-      && checkBaseRequest(data)
+    return data &&
+      checkBaseRequest(data)
   })
   .query(data => {
-    return data
-      && checkPassTicket(data)
+    return data &&
+      checkPassTicket(data)
   })
   .reply(200, fs.readFileSync(path.resolve(__dirname, './response/webwxbatchgetcontact'), 'utf-8'))
 
@@ -97,10 +97,10 @@ var webpushTimes = 0
 nock('https://webpush2.weixin.qq.com')
   .get('/cgi-bin/mmwebwx-bin/synccheck')
   .query(data => {
-    return data
-      && checksid(data)
-      && checkskey(data)
-      && checkuin(data)
+    return data &&
+      checksid(data) &&
+      checkskey(data) &&
+      checkuin(data)
   })
   .times(10)
   .reply(200, uri => {
@@ -115,14 +115,14 @@ nock('https://webpush2.weixin.qq.com')
 
 nock('https://wx2.qq.com')
   .post('/cgi-bin/mmwebwx-bin/webwxsync', data => {
-    return data
-      && checkBaseRequest(data)
+    return data &&
+      checkBaseRequest(data)
   })
   .query(data => {
-    return data
-      && checksid(data)
-      && checkskey(data)
-      && checkPassTicket(data)
+    return data &&
+      checksid(data) &&
+      checkskey(data) &&
+      checkPassTicket(data)
   })
   .times(2)
   .reply(200, fs.readFileSync(path.resolve(__dirname, './response/webwxsync'), 'utf-8'))
@@ -130,7 +130,7 @@ nock('https://wx2.qq.com')
 nock('https://wx2.qq.com')
   .post('/cgi-bin/mmwebwx-bin/webwxlogout')
   .query(data => {
-    return data
-      && checkskey(data)
+    return data &&
+      checkskey(data)
   })
   .reply(200, '')

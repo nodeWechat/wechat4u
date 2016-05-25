@@ -62,9 +62,9 @@ module.exports = {
     }
   },
 
-  methods: {
+  methods:{
     getMembers() {
-      return service.getMembers().then(members => {
+      return service.getMembers().then( members => {
         console.log(members)
         this.showMembers = this.members = members
       })

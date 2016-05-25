@@ -75,7 +75,7 @@ const updateAPI = API => {
   API.webwxoplog = e + '/webwxoplog'
 }
 
-const convertEmoji = (s) => {
+const convertEmoji = s => {
   return s.replace(/<span.*?class="emoji emoji(.*?)"><\/span>/g, (a, b) => {
     try {
       let s = null

@@ -1,10 +1,11 @@
+/* eslint-env node, mocha */
 require('./nock')
 var expect = require('chai').expect
 
 var Wechat = require('../src/wechat')
 
 describe('wechat', () => {
-  var wechatIns = new Wechat
+  var wechatIns = new Wechat()
 
   it('get uuid', done => {
     wechatIns.getUUID().then(uuid => {
@@ -112,5 +113,4 @@ describe('wechat', () => {
 
     wechatIns._handleMsg(msgData)
   })
-
 })
