@@ -26,7 +26,7 @@ module.exports = function (defaults) {
   if (!isBrowser) {
     this.cm = new CM()
     this.axios.interceptors.request.use(config => {
-      config.headers['cookie'] = decodeURIComponent(this.cm.prepare(config.url))
+      config.headers['cookie'] = config.url ? decodeURIComponent(this.cm.prepare(config.url)) : ''
       return config
     }, err => {
       return Promise.reject(err)

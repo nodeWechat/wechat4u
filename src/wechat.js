@@ -420,7 +420,7 @@ class Wechat extends EventEmitter {
   }
 
   stop () {
-    return this.logout()
+    return this.state === CONF.STATE.login ? this.logout() : Promise.resolve()
   }
 
   sendMsg (msg, to) {
