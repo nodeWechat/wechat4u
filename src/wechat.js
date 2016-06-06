@@ -1,16 +1,16 @@
-'use strict'
-const EventEmitter = require('events')
-const fs = require('fs')
-const Request = require('./request.js')
-const debug = require('debug')('wechat')
-const FormData = require('form-data')
-const mime = require('mime')
+import EventEmitter from 'events'
+import fs from 'fs'
 
-const updateAPI = require('./utils').updateAPI
-const CONF = require('./utils').CONF
-const convertEmoji = require('./utils').convertEmoji
-const contentPrase = require('./utils').contentPrase
+import _debug from 'debug'
+import FormData from 'form-data'
+import mime from 'mime'
 
+import {CONF, Request, updateAPI} from './util'
+
+import initContact, {getUserByUserName} from './interface/contact'
+import initMessage from './interface/message'
+
+const debug = _debug('wechat')
 // Private
 const PROP = Symbol()
 const API = Symbol()
@@ -279,8 +279,7 @@ class Wechat extends EventEmitter {
       this.emit('login', this.memberList)
 
       for (let member of this.memberList) {
-        member['NickName'] = convertEmoji(member['NickName'])
-        member['RemarkName'] = convertEmoji(member['RemarkName'])
+        initContact(member, {baseUri: this[API].baseUri})
 
         if (member['VerifyFlag'] & 8) {
           this.publicList.push(member)
@@ -327,6 +326,7 @@ class Wechat extends EventEmitter {
 
       for (let group of contactList) {
         for (let member of group['MemberList']) {
+          initContact(member, {baseUri: this[API].baseUri})
           this.groupMemberList.push(member)
         }
       }
@@ -524,12 +524,14 @@ class Wechat extends EventEmitter {
   }
 
   _handleMsg (data) {
-    debug('Receive ', data['AddMsgList'].length, 'Message')
+    debug('Receive ', data.AddMsgList.length, 'Message')
 
     data['AddMsgList'].forEach(msg => {
-      let type = +msg['MsgType']
-      let fromUser = this._getUserRemarkName(msg['FromUserName'])
-      let content = contentPrase(msg['Content'])
+      initMessage(msg)
+
+      let type = +msg.MsgType
+      let fromUser = getUserByUserName(this.memberList, msg.FromUserName).getDisplayName()
+      let content = msg.Content
 
       switch (type) {
         case CONF.MSGTYPE_STATUSNOTIFY:

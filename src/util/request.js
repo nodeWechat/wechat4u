@@ -1,7 +1,6 @@
-'use strict'
-const axios = require('axios')
-const CM = require('cookie-manager')
-const Pass = require('stream').PassThrough
+import axios from 'axios'
+import CM from 'cookie-manager'
+import {PassThrough as Pass} from 'stream'
 
 const paramsSerializer = params => {
   let qs = []
@@ -14,7 +13,7 @@ const paramsSerializer = params => {
 const isBrowser = (typeof window !== 'undefined')
 const isFunction = data => (typeof data === 'function')
 
-module.exports = function (defaults) {
+export function Request (defaults) {
   defaults = defaults || {}
   defaults.headers = defaults.headers || {}
   if (!isBrowser) {

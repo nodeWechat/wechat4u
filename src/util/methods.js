@@ -1,42 +1,12 @@
-'use strict'
-const debug = require('debug')('utils')
+import debug from 'debug'
 
-const CONF = {
-  STATE: {
-    init: 'init',
-    uuid: 'uuid',
-    login: 'login',
-    logout: 'logout'
-  },
-
-  MSGTYPE_TEXT: 1,
-  MSGTYPE_IMAGE: 3,
-  MSGTYPE_VOICE: 34,
-  MSGTYPE_VIDEO: 43,
-  MSGTYPE_MICROVIDEO: 62,
-  MSGTYPE_EMOTICON: 47,
-  MSGTYPE_APP: 49,
-  MSGTYPE_VOIPMSG: 50,
-  MSGTYPE_VOIPNOTIFY: 52,
-  MSGTYPE_VOIPINVITE: 53,
-  MSGTYPE_LOCATION: 48,
-  MSGTYPE_STATUSNOTIFY: 51,
-  MSGTYPE_SYSNOTICE: 9999,
-  MSGTYPE_POSSIBLEFRIEND_MSG: 40,
-  MSGTYPE_VERIFYMSG: 37,
-  MSGTYPE_SHARECARD: 42,
-  MSGTYPE_SYS: 1e4,
-  MSGTYPE_RECALLED: 10002,
-
-  SYNCCHECK_RET_SUCCESS: 0,
-  SYNCCHECK_SELECTOR_NORMAL: 0,
-  SYNCCHECK_SELECTOR_MSG: 2,
-  SYNCCHECK_SELECTOR_MOBILEOPEN: 7,
-
-  SPECIALUSERS: ['newsapp', 'fmessage', 'filehelper', 'weibo', 'qqmail', 'fmessage', 'tmessage', 'qmessage', 'qqsync', 'floatbottle', 'lbsapp', 'shakeapp', 'medianote', 'qqfriend', 'readerapp', 'blogapp', 'facebookapp', 'masssendapp', 'meishiapp', 'feedsapp', 'voip', 'blogappweixin', 'weixin', 'brandsessionholder', 'weixinreminder', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'officialaccounts', 'notification_messages', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'wxitil', 'userexperience_alarm', 'notification_messages']
+export function protoAugment (obj, proto) {
+  /* eslint-disable no-proto */
+  obj.__proto__ = proto
+  /* eslint-enable no-proto */
 }
 
-const updateAPI = API => {
+export function updateAPI (API) {
   let e = API.baseUri
   let t = 'weixin.qq.com'
   let o = 'file.wx.qq.com'
@@ -75,8 +45,8 @@ const updateAPI = API => {
   API.webwxoplog = e + '/webwxoplog'
 }
 
-const convertEmoji = s => {
-  return s.replace(/<span.*?class="emoji emoji(.*?)"><\/span>/g, (a, b) => {
+export function convertEmoji (s) {
+  return s ? s.replace(/<span.*?class="emoji emoji(.*?)"><\/span>/g, (a, b) => {
     try {
       let s = null
       if (b.length === 4 || b.length === 5) {
@@ -93,14 +63,5 @@ const convertEmoji = s => {
       debug(b, err)
       return '*'
     }
-  })
-}
-
-const contentPrase = s => convertEmoji(s.replace('&lt;', '<').replace('&gt;', '>').replace('<br/>', '\n'))
-
-module.exports = {
-  CONF,
-  updateAPI,
-  convertEmoji,
-  contentPrase
+  }) : ''
 }
