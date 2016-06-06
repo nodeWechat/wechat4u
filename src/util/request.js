@@ -1,6 +1,7 @@
 import axios from 'axios'
 import CM from 'cookie-manager'
 import {PassThrough as Pass} from 'stream'
+import {isBrowser, isFunction} from './methods'
 
 const paramsSerializer = params => {
   let qs = []
@@ -9,9 +10,6 @@ const paramsSerializer = params => {
   }
   return encodeURI(qs.join('&'))
 }
-
-const isBrowser = (typeof window !== 'undefined')
-const isFunction = data => (typeof data === 'function')
 
 export function Request (defaults) {
   defaults = defaults || {}

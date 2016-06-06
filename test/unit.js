@@ -8,8 +8,16 @@ import * as util from '../src/util'
 import initMessage, * as messageMethod from '../src/interface/message'
 import initContact, * as contactMethod from '../src/interface/contact'
 
-
 describe('util', () => {
+  it('is not browser', () => {
+    expect(util.isBrowser).to.equal(false)
+  })
+
+  it('is function', () => {
+    expect(util.isFunction(() => {})).to.equal(true)
+    expect(util.isFunction(null)).to.equal(false)
+  })
+
   it('__proto__ augment method', () => {
     var a = {b: 123}
     var A = {get () { return this.b }}

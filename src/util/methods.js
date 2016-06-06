@@ -1,5 +1,9 @@
 import debug from 'debug'
 
+export const isBrowser = (typeof window !== 'undefined')
+
+export const isFunction = data => (typeof data === 'function')
+
 export function protoAugment (obj, proto) {
   /* eslint-disable no-proto */
   obj.__proto__ = proto
