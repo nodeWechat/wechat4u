@@ -567,6 +567,14 @@ class Wechat extends EventEmitter {
           debug(' Message: Add Friend')
           this.emit('verify-message', msg)
           break
+        case CONF.MSGTYPE_RECALLED:
+          debug(' Recalled-Message: ', fromUser)
+          this.emit('recalled-message', msg)
+          break
+        default:
+          debug(' Other-Message: ', type, fromUser)
+          this.emit('other-message', msg)
+          break
       }
     })
   }
