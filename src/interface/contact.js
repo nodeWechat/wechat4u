@@ -48,7 +48,9 @@ const contactProto = {
   init: function (config) {
     this.NickName = convertEmoji(this.NickName)
     this.UserName = convertEmoji(this.UserName)
-    this.HeadImgUrl = headImgUrlAugment(this.HeadImgUrl, config.baseUri)
+    if (config && config.baseUri) {
+      this.AvatarUrl = headImgUrlAugment(this.HeadImgUrl, config.baseUri)
+    }
   },
 
   getDisplayName: function () {

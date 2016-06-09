@@ -731,7 +731,7 @@ class Wechat extends EventEmitter {
   }
 
   _getHeadImg (member) {
-    let url = this[API].baseUri.match(/http.*?\/\/.*?(?=\/)/)[0] + member.HeadImgUrl
+    let url = member.AvatarUrl ? member.AvatarUrl : this[API].baseUri.match(/http.*?\/\/.*?(?=\/)/)[0] + member.HeadImgUrl
     return this.request({
       method: 'GET',
       url: url,
@@ -747,16 +747,6 @@ class Wechat extends EventEmitter {
       debug(err)
       throw new Error('获取头像失败')
     })
-  }
-
-  _getUserRemarkName (uid) {
-    for (let member of this.memberList) {
-      if (member['UserName'] === uid) {
-        return member['RemarkName'] ? member['RemarkName'] : member['NickName']
-      }
-    }
-    debug('不存在用户', uid)
-    return uid
   }
 
   _updateSyncKey (syncKey) {

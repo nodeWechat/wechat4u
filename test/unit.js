@@ -88,7 +88,7 @@ describe('contact interface', () => {
 
     expect(a.NickName).to.equal('test')
     expect(a.getDisplayName()).to.equal('test')
-    expect(a.HeadImgUrl).to.equal('https://wx2.qq.com/test')
+    expect(a.AvatarUrl).to.equal('https://wx2.qq.com/test')
   })
 })
 
@@ -147,7 +147,7 @@ describe('wechat', () => {
   it('getContact', done => {
     wechatIns.getContact().then(memberList => {
       expect(memberList.length).to.equal(7)
-      expect(memberList[1].HeadImgUrl).to.equal('https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgeticon?seq=620964297&username=@2035c3436177335bc3f0e756e7cc354a&skey=@crypt_8e4ad7fa_2703a47aaf8cd4d3e61b855795e38568')
+      expect(memberList[1].AvatarUrl).to.equal('https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgeticon?seq=620964297&username=@2035c3436177335bc3f0e756e7cc354a&skey=@crypt_8e4ad7fa_2703a47aaf8cd4d3e61b855795e38568')
       done()
     }).catch(err => {
       done(err)
