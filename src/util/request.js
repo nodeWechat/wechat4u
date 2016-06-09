@@ -1,7 +1,7 @@
 import axios from 'axios'
 import CM from 'cookie-manager'
 import {PassThrough as Pass} from 'stream'
-import {isBrowser, isFunction} from './methods'
+import {isStandardBrowserEnv, isFunction} from './global'
 
 const paramsSerializer = params => {
   let qs = []
@@ -14,13 +14,13 @@ const paramsSerializer = params => {
 export function Request (defaults) {
   defaults = defaults || {}
   defaults.headers = defaults.headers || {}
-  if (!isBrowser) {
+  if (!isStandardBrowserEnv) {
     defaults.headers['user-agent'] = defaults.headers['user-agent'] || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36'
   }
   defaults.paramsSerializer = defaults.paramsSerializer || paramsSerializer
 
   this.axios = axios.create(defaults)
-  if (!isBrowser) {
+  if (!isStandardBrowserEnv) {
     this.cm = new CM()
     this.axios.interceptors.request.use(config => {
       config.headers['cookie'] = config.url ? decodeURIComponent(this.cm.prepare(config.url)) : ''

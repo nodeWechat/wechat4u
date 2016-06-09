@@ -10,7 +10,7 @@ import initContact, * as contactMethod from '../src/interface/contact'
 
 describe('util', () => {
   it('is not browser', () => {
-    expect(util.isBrowser).to.equal(false)
+    expect(util.isStandardBrowserEnv).to.equal(false)
   })
 
   it('is function', () => {
