@@ -31,17 +31,32 @@ import {protoAugment, convertEmoji} from '../util'
 }
 */
 
-export function contentPrase (s) {
+export function contentParse (s) {
   return convertEmoji(s.replace('&lt;', '<').replace('&gt;', '>').replace('<br/>', '\n'))
 }
 
 const messageProto = {
-  init: function (config) {
-    this.Content = contentPrase(this.Content)
+  init: function (instance) {
+    this.MsgType = +this.MsgType
+    this.Content = this.Content || ''
+    this.Content = contentParse(this.Content)
+    this.isSendBySelf = this.FromUserName === instance.user.UserName || this.FromUserName === ''
+
+    return this
+  },
+  isSendBy: function (UserName) {
+    return this.FromUserName === UserName
+  },
+  getPeerUserName: function () {
+    return this.isSendBySelf ? this.ToUserName : this.FromUserName
   }
 }
 
-export default function messageAugment (messageObj, config) {
-  protoAugment(messageObj, messageProto)
-  messageObj.init(config)
+export default function MessageFactory (instance) {
+  return {
+    extend: function (messageObj) {
+      protoAugment(messageObj, messageProto)
+      return messageObj.init(instance)
+    }
+  }
 }

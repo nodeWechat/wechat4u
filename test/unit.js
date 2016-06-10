@@ -5,8 +5,8 @@ import './nock'
 
 import Wechat from '../src/wechat'
 import * as util from '../src/util'
-import initMessage, * as messageMethod from '../src/interface/message'
-import initContact, * as contactMethod from '../src/interface/contact'
+import MessageFactory, * as messageMethod from '../src/interface/message'
+import ContactFactory, * as contactMethod from '../src/interface/contact'
 
 describe('util', () => {
   it('is not browser', () => {
@@ -42,19 +42,44 @@ describe('util', () => {
 })
 
 describe('message interface', () => {
-  it('content prase', () => {
-    expect(messageMethod.contentPrase('&lt;a&gt;<br/>bc')).to.equal('<a>\nbc')
+  it('content parse', () => {
+    expect(messageMethod.contentParse('&lt;a&gt;<br/>bc')).to.equal('<a>\nbc')
   })
 
-  it('message init', () => {
-    var a = {
+  describe('Message', () => {
+    let newMessage1 = {
       FromUserName: 'test',
       Content: '&lt;a&gt;<br/>bc'
     }
-    initMessage(a)
 
-    expect(a.FromUserName).to.equal('test')
-    expect(a.Content).to.equal('<a>\nbc')
+    let newMessage2 = {
+      FromUserName: '123',
+      Content: '&lt;a&gt;<br/>bc'
+    }
+
+    beforeEach(() => {
+      let Message = MessageFactory({user: {UserName: 'test'}})
+      Message.extend(newMessage1)
+      Message.extend(newMessage2)
+    })
+
+    it('message property stable', () => {
+      expect(newMessage1.FromUserName).to.equal('test')
+    })
+
+    it('message content parse', () => {
+      expect(newMessage1.Content).to.equal('<a>\nbc')
+    })
+
+    it('message isSendBySelf', () => {
+      expect(newMessage1.isSendBySelf).to.equal(true)
+      expect(newMessage2.isSendBySelf).to.equal(false)
+    })
+
+    it('message isSendBy', () => {
+      expect(newMessage2.isSendBy('123')).to.equal(true)
+      expect(newMessage2.isSendBy('test')).to.equal(false)
+    })
   })
 })
 
@@ -78,17 +103,37 @@ describe('contact interface', () => {
     )).to.equal(null)
   })
 
+  it('is room contact', () => {
+    expect(contactMethod.isRoomContact('@@123')).to.equal(true)
+    expect(contactMethod.isRoomContact('123')).to.equal(false)
+  })
+
   it('contact init', () => {
     var a = {
       UserName: 'test',
       NickName: 'test',
       HeadImgUrl: '/test'
     }
-    initContact(a, {baseUri: 'https://wx2.qq.com/'})
+    let Contact = ContactFactory({baseUri: 'https://wx2.qq.com/'})
+    Contact.extend(a)
 
     expect(a.NickName).to.equal('test')
     expect(a.getDisplayName()).to.equal('test')
     expect(a.AvatarUrl).to.equal('https://wx2.qq.com/test')
+    expect(a.canSearch('te')).to.equal(true)
+    expect(a.canSearch('123')).to.equal(false)
+  })
+
+  it('Contact methods', () => {
+    var user = {UserName: 'test', NickName: 'test'}
+    var instance = {memberList: [user]}
+
+    var Contact = ContactFactory(instance)
+    Contact.extend(user)
+
+    expect(Contact.getUserByUserName('test')).to.equal(user)
+    expect(Contact.getSearchUser('te')[0]).to.equal(user)
+    expect(Contact.getSearchUser('123').length).to.equal(0)
   })
 })
 

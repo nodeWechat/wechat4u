@@ -44,21 +44,51 @@ export function headImgUrlAugment (headImgUrl, baseUri) {
   return headImgUrl ? baseUri.match(/http.*?\/\/.*?(?=\/)/)[0] + headImgUrl : null
 }
 
-const contactProto = {
-  init: function (config) {
-    this.NickName = convertEmoji(this.NickName)
-    this.UserName = convertEmoji(this.UserName)
-    if (config && config.baseUri) {
-      this.AvatarUrl = headImgUrlAugment(this.HeadImgUrl, config.baseUri)
-    }
-  },
+export function isRoomContact (UserName) {
+  return UserName ? /^@@|@chatroom$/.test(UserName) : false
+}
 
+const contactProto = {
+  init: function (instance) {
+    this.NickName = convertEmoji(this.NickName)
+    this.RemarkName = convertEmoji(this.UserName)
+    this.AvatarUrl = headImgUrlAugment(this.HeadImgUrl, instance.baseUri)
+
+    return this
+  },
+  isRoomContact: function () {
+    return isRoomContact(this.UserName)
+  },
   getDisplayName: function () {
     return this.RemarkName || this.NickName || ''
+  },
+  canSearch: function (keyword) {
+    if (!keyword) return false
+    keyword = keyword.toUpperCase()
+
+    let isSatisfy = key => (key || '').toUpperCase().indexOf(keyword) >= 0
+    return (
+      isSatisfy(this.RemarkName) ||
+      isSatisfy(this.RemarkPYQuanPin) ||
+      isSatisfy(this.NickName) ||
+      isSatisfy(this.PYQuanPin) ||
+      isSatisfy(this.Alias) ||
+      isSatisfy(this.KeyWord)
+    )
   }
 }
 
-export default function contactAugment (contactObj, config) {
-  protoAugment(contactObj, contactProto)
-  contactObj.init(config)
+export default function ContactFactory (instance) {
+  return {
+    extend: function (contactObj) {
+      protoAugment(contactObj, contactProto)
+      return contactObj.init(instance)
+    },
+    getUserByUserName: function (UserName) {
+      return getUserByUserName(instance.memberList, UserName)
+    },
+    getSearchUser: function (keyword) {
+      return instance.memberList.filter(contact => contact.canSearch(keyword))
+    }
+  }
 }

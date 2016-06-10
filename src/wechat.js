@@ -7,8 +7,8 @@ import mime from 'mime'
 
 import {CONF, Request, updateAPI} from './util'
 
-import initContact, {getUserByUserName} from './interface/contact'
-import initMessage from './interface/message'
+import ContactFactory from './interface/contact'
+import MessageFactory from './interface/message'
 
 const debug = _debug('wechat')
 // Private
@@ -41,8 +41,9 @@ class Wechat extends EventEmitter {
     this.syncErrorCount = 0
     this.mediaSend = 0
     this.state = CONF.STATE.init
+    this.baseUri = ''
 
-    this.user = [] // 登陆账号
+    this.user = {} // 登陆账号
     this.memberList = [] // 所有联系人
 
     this.contactList = [] // 个人联系人
@@ -50,6 +51,9 @@ class Wechat extends EventEmitter {
     this.groupMemberList = [] // 所有群聊内联系人
     this.publicList = [] // 公众账号
     this.specialList = [] // 特殊账号
+
+    this.Contact = ContactFactory(this)
+    this.Message = MessageFactory(this)
 
     this.request = new Request()
   }
@@ -163,7 +167,7 @@ class Wechat extends EventEmitter {
 
       pm = res.data.match(/window.redirect_uri="(\S+?)";/)
       this[API].rediUri = pm[1] + '&fun=new'
-      this[API].baseUri = this[API].rediUri.substring(0, this[API].rediUri.lastIndexOf('/'))
+      this.baseUri = this[API].baseUri = this[API].rediUri.substring(0, this[API].rediUri.lastIndexOf('/'))
 
       // 接口更新
       updateAPI(this[API])
@@ -219,7 +223,7 @@ class Wechat extends EventEmitter {
       data: data
     }).then(res => {
       let data = res.data
-      this.user = data['User']
+      this.user = this.Contact.extend(data['User'])
 
       this._updateSyncKey(data['SyncKey'])
 
@@ -275,11 +279,8 @@ class Wechat extends EventEmitter {
         throw new Error('通讯录获取异常')
       }
 
-      this.state = CONF.STATE.login
-      this.emit('login', this.memberList)
-
       for (let member of this.memberList) {
-        initContact(member, {baseUri: this[API].baseUri})
+        this.Contact.extend(member)
 
         if (member['VerifyFlag'] & 8) {
           this.publicList.push(member)
@@ -291,6 +292,10 @@ class Wechat extends EventEmitter {
           this.contactList.push(member)
         }
       }
+
+      this.state = CONF.STATE.login
+      this.emit('login', this.memberList)
+
       debug('好友数量：' + this.memberList.length)
       return this.memberList
     }).catch(err => {
@@ -326,7 +331,7 @@ class Wechat extends EventEmitter {
 
       for (let group of contactList) {
         for (let member of group['MemberList']) {
-          initContact(member, {baseUri: this[API].baseUri})
+          this.Contact.extend(member, {baseUri: this[API].baseUri})
           this.groupMemberList.push(member)
         }
       }
@@ -527,38 +532,36 @@ class Wechat extends EventEmitter {
     debug('Receive ', data.AddMsgList.length, 'Message')
 
     data['AddMsgList'].forEach(msg => {
-      initMessage(msg)
+      this.Message.extend(msg)
 
-      let type = +msg.MsgType
-      let fromUser = getUserByUserName(this.memberList, msg.FromUserName).getDisplayName()
-      let content = msg.Content
+      let fromUser = this.Contact.getUserByUserName(msg.FromUserName).getDisplayName()
 
-      switch (type) {
+      switch (msg.MsgType) {
         case CONF.MSGTYPE_STATUSNOTIFY:
           debug(' Message: Init')
           this.emit('init-message')
           break
         case CONF.MSGTYPE_TEXT:
-          debug(' Text-Message: ', fromUser, ': ', content)
+          debug(' Text-Message: ', fromUser, ': ', msg.Content)
           this.emit('text-message', msg)
           break
         case CONF.MSGTYPE_IMAGE:
-          debug(' Image-Message: ', fromUser, ': ', content)
+          debug(' Image-Message: ', fromUser, ': ', msg.Content)
           this._getMsgImg(msg.MsgId).then(image => {
             msg.Content = image
             this.emit('image-message', msg)
           })
           break
         case CONF.MSGTYPE_VOICE:
-          debug(' Voice-Message: ', fromUser, ': ', content)
+          debug(' Voice-Message: ', fromUser, ': ', msg.Content)
           this._getVoice(msg.MsgId).then(voice => {
             msg.Content = voice
             this.emit('voice-message', msg)
           })
           break
         case CONF.MSGTYPE_EMOTICON:
-          debug(' Emoticon-Message: ', fromUser, ': ', content)
-          this._getEmoticon(content).then(emoticon => {
+          debug(' Emoticon-Message: ', fromUser, ': ', msg.Content)
+          this._getEmoticon(msg.Content).then(emoticon => {
             msg.Content = emoticon
             this.emit('emoticon-message', msg)
           })
@@ -572,7 +575,7 @@ class Wechat extends EventEmitter {
           this.emit('recalled-message', msg)
           break
         default:
-          debug(' Other-Message: ', type, fromUser)
+          debug(' Other-Message: ', msg.msgType, fromUser)
           this.emit('other-message', msg)
           break
       }
