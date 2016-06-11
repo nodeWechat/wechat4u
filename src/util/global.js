@@ -34,3 +34,10 @@ export function convertEmoji (s) {
     }
   }) : ''
 }
+
+export function formatNum (num, length) {
+  num = (isNaN(num) ? 0 : num).toString()
+  let n = length - num.length
+
+  return n > 0 ? [new Array(n + 1).join('0'), num].join('') : num
+}

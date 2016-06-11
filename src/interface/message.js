@@ -1,5 +1,4 @@
-import {protoAugment, convertEmoji} from '../util'
-
+import {protoAugment, convertEmoji, formatNum} from '../util'
 /* Message Object Example
 {
     "FromUserName": "",
@@ -44,11 +43,15 @@ const messageProto = {
 
     return this
   },
-  isSendBy: function (UserName) {
-    return this.FromUserName === UserName
+  isSendBy: function (contact) {
+    return this.FromUserName === contact.UserName
   },
   getPeerUserName: function () {
     return this.isSendBySelf ? this.ToUserName : this.FromUserName
+  },
+  getDisplayTime: function () {
+    var time = new Date(1e3 * this.CreateTime)
+    return time.getHours() + ':' + formatNum(time.getMinutes(), 2)
   }
 }
 

@@ -1,4 +1,4 @@
-import {protoAugment, convertEmoji} from '../util'
+import {CONF, protoAugment, convertEmoji} from '../util'
 
 /* Contact Object Example
 {
@@ -44,8 +44,16 @@ export function headImgUrlAugment (headImgUrl, baseUri) {
   return headImgUrl ? baseUri.match(/http.*?\/\/.*?(?=\/)/)[0] + headImgUrl : null
 }
 
-export function isRoomContact (UserName) {
-  return UserName ? /^@@|@chatroom$/.test(UserName) : false
+export function isRoomContact (contact) {
+  return contact.UserName ? /^@@|@chatroom$/.test(contact.UserName) : false
+}
+
+export function isSpContact (contact) {
+  return CONF.SPECIALUSERS.indexOf(contact.UserName) >= 0
+}
+
+export function isPublicContact (contact) {
+  return contact.VerifyFlag & CONF.MM_USERATTRVERIFYFALG_BIZ_BRAND
 }
 
 const contactProto = {
@@ -54,10 +62,9 @@ const contactProto = {
     this.RemarkName = convertEmoji(this.UserName)
     this.AvatarUrl = headImgUrlAugment(this.HeadImgUrl, instance.baseUri)
 
+    this.isSelf = this.UserName === instance.user.UserName
+
     return this
-  },
-  isRoomContact: function () {
-    return isRoomContact(this.UserName)
   },
   getDisplayName: function () {
     return this.RemarkName || this.NickName || ''
@@ -89,6 +96,12 @@ export default function ContactFactory (instance) {
     },
     getSearchUser: function (keyword) {
       return instance.memberList.filter(contact => contact.canSearch(keyword))
-    }
+    },
+    isSelf: function (contact) {
+      return contact.isSelf || contact.UserName === instance.user.UserName
+    },
+    isRoomContact,
+    isPublicContact,
+    isSpContact
   }
 }

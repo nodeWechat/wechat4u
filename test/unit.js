@@ -8,7 +8,7 @@ import * as util from '../src/util'
 import MessageFactory, * as messageMethod from '../src/interface/message'
 import ContactFactory, * as contactMethod from '../src/interface/contact'
 
-describe('util', () => {
+describe('Util', () => {
   it('is not browser', () => {
     expect(util.isStandardBrowserEnv).to.equal(false)
   })
@@ -39,14 +39,22 @@ describe('util', () => {
     expect(util.convertEmoji('')).to.equal('')
     expect(util.convertEmoji(undefined)).to.equal('')
   })
+
+  it('format num', () => {
+    expect(util.formatNum(0, 2)).to.equal('00')
+    expect(util.formatNum(2, 2)).to.equal('02')
+    expect(util.formatNum(20, 2)).to.equal('20')
+  })
 })
 
-describe('message interface', () => {
-  it('content parse', () => {
-    expect(messageMethod.contentParse('&lt;a&gt;<br/>bc')).to.equal('<a>\nbc')
+describe('Message interface', () => {
+  describe('Method: ', () => {
+    it('content parse', () => {
+      expect(messageMethod.contentParse('&lt;a&gt;<br/>bc')).to.equal('<a>\nbc')
+    })
   })
 
-  describe('Message', () => {
+  describe('Message: ', () => {
     let newMessage1 = {
       FromUserName: 'test',
       Content: '&lt;a&gt;<br/>bc'
@@ -57,83 +65,123 @@ describe('message interface', () => {
       Content: '&lt;a&gt;<br/>bc'
     }
 
+    let Message
+
     beforeEach(() => {
-      let Message = MessageFactory({user: {UserName: 'test'}})
+      Message = MessageFactory({user: {UserName: 'test'}})
       Message.extend(newMessage1)
       Message.extend(newMessage2)
     })
 
-    it('message property stable', () => {
+    it('property stable', () => {
       expect(newMessage1.FromUserName).to.equal('test')
     })
 
-    it('message content parse', () => {
+    it('content parse', () => {
       expect(newMessage1.Content).to.equal('<a>\nbc')
     })
 
-    it('message isSendBySelf', () => {
+    it('isSendBySelf', () => {
       expect(newMessage1.isSendBySelf).to.equal(true)
       expect(newMessage2.isSendBySelf).to.equal(false)
     })
 
-    it('message isSendBy', () => {
-      expect(newMessage2.isSendBy('123')).to.equal(true)
-      expect(newMessage2.isSendBy('test')).to.equal(false)
+    it('isSendBy', () => {
+      expect(newMessage2.isSendBy({UserName: '123'})).to.equal(true)
+      expect(newMessage2.isSendBy({UserName: 'test'})).to.equal(false)
     })
   })
 })
 
-describe('contact interface', () => {
-  it('get user by UserName', () => {
-    var user = {UserName: 'test'}
-    var list = [user]
+describe('Contact interface: ', () => {
+  describe('method: ', () => {
+    it('get user by UserName', () => {
+      var user = {UserName: 'test'}
+      var list = [user]
 
-    expect(contactMethod.getUserByUserName(list, 'test')).to.equal(user)
+      expect(contactMethod.getUserByUserName(list, 'test')).to.equal(user)
+    })
+
+    it('head img url augment', () => {
+      expect(contactMethod.headImgUrlAugment(
+        '/cgi-bin/mmwebwx-bin/webwxgeticon?seq=620802813&username=@7f504ff04e223e8cda9ece47f040c6b7&skey=@crypt_8e4ad7fa_2703a47aaf8cd4d3e61b855795e38568',
+        'https://wx2.qq.com/'
+      )).to.equal('https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgeticon?seq=620802813&username=@7f504ff04e223e8cda9ece47f040c6b7&skey=@crypt_8e4ad7fa_2703a47aaf8cd4d3e61b855795e38568')
+
+      expect(contactMethod.headImgUrlAugment(
+        undefined,
+        'https://wx2.qq.com/'
+      )).to.equal(null)
+    })
+
+    it('is room contact', () => {
+      expect(contactMethod.isRoomContact({UserName: '@@123'})).to.equal(true)
+      expect(contactMethod.isRoomContact({UserName: '123'})).to.equal(false)
+    })
   })
 
-  it('head img url augment', () => {
-    expect(contactMethod.headImgUrlAugment(
-      '/cgi-bin/mmwebwx-bin/webwxgeticon?seq=620802813&username=@7f504ff04e223e8cda9ece47f040c6b7&skey=@crypt_8e4ad7fa_2703a47aaf8cd4d3e61b855795e38568',
-      'https://wx2.qq.com/'
-    )).to.equal('https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxgeticon?seq=620802813&username=@7f504ff04e223e8cda9ece47f040c6b7&skey=@crypt_8e4ad7fa_2703a47aaf8cd4d3e61b855795e38568')
-
-    expect(contactMethod.headImgUrlAugment(
-      undefined,
-      'https://wx2.qq.com/'
-    )).to.equal(null)
-  })
-
-  it('is room contact', () => {
-    expect(contactMethod.isRoomContact('@@123')).to.equal(true)
-    expect(contactMethod.isRoomContact('123')).to.equal(false)
-  })
-
-  it('contact init', () => {
-    var a = {
+  describe('Contact: ', () => {
+    let user1 = {
       UserName: 'test',
       NickName: 'test',
       HeadImgUrl: '/test'
     }
-    let Contact = ContactFactory({baseUri: 'https://wx2.qq.com/'})
-    Contact.extend(a)
 
-    expect(a.NickName).to.equal('test')
-    expect(a.getDisplayName()).to.equal('test')
-    expect(a.AvatarUrl).to.equal('https://wx2.qq.com/test')
-    expect(a.canSearch('te')).to.equal(true)
-    expect(a.canSearch('123')).to.equal(false)
-  })
+    let user2 = {
+      UserName: '@@test',
+      NickName: 'test',
+      HeadImgUrl: '/test'
+    }
 
-  it('Contact methods', () => {
-    var user = {UserName: 'test', NickName: 'test'}
-    var instance = {memberList: [user]}
+    let Contact
 
-    var Contact = ContactFactory(instance)
-    Contact.extend(user)
+    beforeEach(() => {
+      let instance = {
+        user: user1,
+        baseUri: 'https://wx2.qq.com/',
+        memberList: [user1, user2]
+      }
+      Contact = ContactFactory(instance)
 
-    expect(Contact.getUserByUserName('test')).to.equal(user)
-    expect(Contact.getSearchUser('te')[0]).to.equal(user)
-    expect(Contact.getSearchUser('123').length).to.equal(0)
+      Contact.extend(user1)
+      Contact.extend(user2)
+    })
+
+    it('property stable', () => {
+      expect(user1.NickName).to.equal('test')
+    })
+
+    it('getDisplayName', () => {
+      expect(user1.getDisplayName()).to.equal('test')
+    })
+
+    it('avatar url', () => {
+      expect(user1.AvatarUrl).to.equal('https://wx2.qq.com/test')
+    })
+
+    it('can search', () => {
+      expect(user1.canSearch('te')).to.equal(true)
+      expect(user2.canSearch('123')).to.equal(false)
+    })
+
+    it('isSelf', () => {
+      expect(user1.isSelf).to.equal(true)
+      expect(user2.isSelf).to.equal(false)
+    })
+
+    it('get user by username', () => {
+      expect(Contact.getUserByUserName('test')).to.equal(user1)
+    })
+
+    it('get search user', () => {
+      expect(Contact.getSearchUser('te')[0]).to.equal(user1)
+      expect(Contact.getSearchUser('123').length).to.equal(0)
+    })
+
+    it('isRoomContact', () => {
+      expect(Contact.isRoomContact(user2)).to.equal(true)
+      expect(Contact.isRoomContact(user1)).to.equal(false)
+    })
   })
 })
 
