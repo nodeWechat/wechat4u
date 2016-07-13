@@ -13,7 +13,7 @@
     "test": "npm run lint && npm run unit"
   },
   "dependencies": {
-    "axios": "^0.11.1",
+    "axios": "latest",
     "chai": "^3.5.0",
     "cookie-manager": "0.0.16",
     "debug": "^2.2.0",
