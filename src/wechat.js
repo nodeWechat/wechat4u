@@ -622,6 +622,7 @@ class Wechat extends EventEmitter {
     return this.request({
       url: this[API].webwxuploadmedia,
       method: 'POST',
+      headers: form.getHeaders(),
       params: params,
       data: form
     }).then(res => {
