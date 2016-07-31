@@ -73,7 +73,7 @@ class Wechat extends EventEmitter {
     this.groupList.forEach(member => {
       members.push({
         username: member['UserName'],
-        nickname: '群聊: ' + member['NickName'],
+        nickname: '群聊：' + this.Contact.getDisplayName(member),
         py: member['RemarkPYQuanPin'] ? member['RemarkPYQuanPin'] : member['PYQuanPin'],
         avatar: this[API].baseUri.match(/http.*?\/\/.*?(?=\/)/)[0] + member.HeadImgUrl
       })
@@ -82,7 +82,7 @@ class Wechat extends EventEmitter {
     this.contactList.forEach(member => {
       members.push({
         username: member['UserName'],
-        nickname: member['RemarkName'] ? member['RemarkName'] : member['NickName'],
+        nickname: this.Contact.getDisplayName(member),
         py: member['RemarkPYQuanPin'] ? member['RemarkPYQuanPin'] : member['PYQuanPin'],
         avatar: this[API].baseUri.match(/http.*?\/\/.*?(?=\/)/)[0] + member.HeadImgUrl
       })

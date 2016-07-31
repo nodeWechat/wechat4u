@@ -40,6 +40,11 @@ export function getUserByUserName (memberList, UserName) {
   return memberList.find(contact => contact.UserName === UserName)
 }
 
+export function getDisplayName (contact) {
+  return (contact.RemarkName && contact.RemarkName[0] !== '@')
+    ? contact.RemarkName : contact.NickName || ''
+}
+
 export function headImgUrlAugment (headImgUrl, baseUri) {
   return headImgUrl ? baseUri.match(/http.*?\/\/.*?(?=\/)/)[0] + headImgUrl : null
 }
@@ -67,7 +72,7 @@ const contactProto = {
     return this
   },
   getDisplayName: function () {
-    return this.RemarkName || this.NickName || ''
+    return getDisplayName(this)
   },
   canSearch: function (keyword) {
     if (!keyword) return false
@@ -100,6 +105,7 @@ export default function ContactFactory (instance) {
     isSelf: function (contact) {
       return contact.isSelf || contact.UserName === instance.user.UserName
     },
+    getDisplayName,
     isRoomContact,
     isPublicContact,
     isSpContact
