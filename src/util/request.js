@@ -1,6 +1,6 @@
 import axios from 'axios'
 import CM from 'cookie-manager'
-import {isStandardBrowserEnv, isFunction} from './global'
+import {isStandardBrowserEnv} from './global'
 
 const paramsSerializer = params => {
   let qs = []
