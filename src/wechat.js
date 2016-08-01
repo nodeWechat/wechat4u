@@ -330,6 +330,13 @@ class Wechat extends EventEmitter {
       let contactList = data['ContactList']
 
       for (let group of contactList) {
+        let thisGroup = this.groupList.find(g => g.UserName === group.UserName)
+
+        if (thisGroup) {
+          thisGroup.MemberList = group.MemberList
+          thisGroup.MemberCount = group.MemberCount
+        }
+
         for (let member of group['MemberList']) {
           this.Contact.extend(member, {baseUri: this[API].baseUri})
           this.groupMemberList.push(member)
