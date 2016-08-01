@@ -1,11 +1,11 @@
 import EventEmitter from 'events'
 import fs from 'fs'
+import path from 'path'
 
 import _debug from 'debug'
 import FormData from 'form-data'
 import mime from 'mime'
-
-import {CONF, Request, updateAPI} from './util'
+import {CONF, Request, updateAPI, isStandardBrowserEnv} from './util'
 
 import ContactFactory from './interface/contact'
 import MessageFactory from './interface/message'
@@ -460,6 +460,46 @@ class Wechat extends EventEmitter {
     })
   }
 
+  sendEmoticon(id, to) {
+    let params = {
+      'fun': 'sys',
+      'pass_ticket': this[PROP].passTicket
+    }
+    let clientMsgId = +new Date() + '0' + Math.random().toString().substring(2, 5)
+    let data = {
+      'BaseRequest': this[PROP].baseRequest,
+      'Msg': {
+        'Type': 47,
+        'EmojiFlag': 2,
+        'FromUserName': this.user['UserName'],
+        'ToUserName': to,
+        'LocalID': clientMsgId,
+        'ClientMsgId': clientMsgId
+      },
+      'Scene': 0
+    }
+
+    if (id.indexOf('@') == 0)
+      data.Msg.MediaId = id
+    else
+      data.Msg.EMoticonMd5 = id
+
+    this.request({
+      method: 'POST',
+      url: this[API].webwxsendemoticon,
+      params: params,
+      data: data
+    }).then(res => {
+      let data = res.data
+      if (data['BaseResponse']['Ret'] !== 0) {
+        throw new Error('发送表情Ret错误: ' + data['BaseResponse']['Ret'])
+      }
+    }).catch(err => {
+      debug(err)
+      throw new Error('发送表情失败')
+    })
+  }
+
   sendMedia(file, to) {
     return this._uploadMedia(file)
       .then(res => {
@@ -469,7 +509,10 @@ class Wechat extends EventEmitter {
           case 'video':
             return this._sendVideo(res.mediaId, to)
           case 'doc':
-            return this._sendDoc(res.mediaId, res.name, res.size, res.ext, to)
+            if (res.ext == 'gif')
+              return this.sendEmoticon(res.mediaId, to)
+            else
+              return this._sendDoc(res.mediaId, res.name, res.size, res.ext, to)
         }
       })
       .catch(err => {
