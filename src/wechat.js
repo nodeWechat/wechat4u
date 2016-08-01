@@ -460,12 +460,21 @@ class Wechat extends EventEmitter {
     })
   }
 
-  sendImage (to, file, type, size) {
-    return this._uploadMedia(file, type, size)
-      .then(mediaId => this._sendImage(mediaId, to))
+  sendMedia(file, to) {
+    return this._uploadMedia(file)
+      .then(res => {
+        switch (res.mediatype) {
+          case 'pic':
+            return this._sendPic(res.mediaId, to)
+          case 'video':
+            return this._sendVideo(res.mediaId, to)
+          case 'doc':
+            return this._sendDoc(res.mediaId, res.name, res.size, res.ext, to)
+        }
+      })
       .catch(err => {
         debug(err)
-        throw new Error('发送图片信息失败')
+        throw new Error('发送媒体文件失败')
       })
   }
 
@@ -582,10 +591,41 @@ class Wechat extends EventEmitter {
     })
   }
 
-  // file: Buffer, Stream, File, Blob
-  _uploadMedia (file, type, size) {
-    type = type || file.type || (file.path ? mime.lookup(file.path) : null) || ''
-    size = size || file.size || (file.path ? fs.statSync(file.path).size : null) || file.length || 0
+  // file: Stream, File
+  _uploadMedia(file) {
+    let name, type, size, lastModifiedDate
+    if (isStandardBrowserEnv) {
+      name = file.name
+      type = file.type
+      size = file.size
+      lastModifiedDate = file.lastModifiedDate
+    } else {
+      name = path.basename(file.path)
+      type = mime.lookup(name)
+      let stat = fs.statSync(file.path)
+      size = stat.size
+      lastModifiedDate = stat.mtime
+    }
+
+
+    let ext = name.match(/.*\.(.*)/)
+    if (ext)
+      ext = ext[1]
+
+    let mediatype
+    switch (ext) {
+      case 'bmp':
+      case 'jpeg':
+      case 'jpg':
+      case 'png':
+        mediatype = 'pic'
+        break
+      case 'mp4':
+        mediatype = 'video'
+        break
+      default:
+        mediatype = 'doc'
+    }
 
     let mediaId = this.mediaSend++
     let clientMsgId = +new Date() + '0' + Math.random().toString().substring(2, 5)
@@ -601,16 +641,16 @@ class Wechat extends EventEmitter {
 
     let form = new FormData()
     form.append('id', 'WU_FILE_' + mediaId)
-    form.append('name', 'filename')
+    form.append('name', name)
     form.append('type', type)
-    form.append('lastModifieDate', new Date().toGMTString())
+    form.append('lastModifiedDate', lastModifiedDate.toGMTString())
     form.append('size', size)
-    form.append('mediatype', 'pic')
+    form.append('mediatype', mediatype)
     form.append('uploadmediarequest', uploadMediaRequest)
     form.append('webwx_data_ticket', this[PROP].webwxDataTicket)
     form.append('pass_ticket', encodeURI(this[PROP].passTicket))
     form.append('filename', file, {
-      filename: 'filename',
+      filename: name,
       contentType: type,
       knownLength: size
     })
@@ -630,14 +670,20 @@ class Wechat extends EventEmitter {
       if (!mediaId) {
         throw new Error('MediaId获取失败')
       }
-      return mediaId
+      return {
+        name: name,
+        size: size,
+        ext: ext,
+        mediatype: mediatype,
+        mediaId: mediaId
+      }
     }).catch(err => {
       debug(err)
-      throw new Error('上传图片失败')
+      throw new Error('上传媒体文件失败')
     })
   }
 
-  _sendImage (mediaId, to) {
+  _sendPic(mediaId, to) {
     let params = {
       'pass_ticket': this[PROP].passTicket,
       'fun': 'async',
@@ -649,7 +695,7 @@ class Wechat extends EventEmitter {
       'Msg': {
         'Type': 3,
         'MediaId': mediaId,
-        'FromUserName': this.user['UserName'],
+        'FromUserName': this.user.UserName,
         'ToUserName': to,
         'LocalID': clientMsgId,
         'ClientMsgId': clientMsgId
@@ -663,11 +709,79 @@ class Wechat extends EventEmitter {
     }).then(res => {
       let data = res.data
       if (data['BaseResponse']['Ret'] !== 0) {
-        throw new Error('发送图片信息Ret错误: ' + data['BaseResponse']['Ret'])
+        throw new Error('发送图片Ret错误: ' + data['BaseResponse']['Ret'])
       }
     }).catch(err => {
       debug(err)
       throw new Error('发送图片失败')
+    })
+  }
+
+  _sendVideo(mediaId, to) {
+    let params = {
+      'pass_ticket': this[PROP].passTicket,
+      'fun': 'async',
+      'f': 'json'
+    }
+    let clientMsgId = +new Date() + '0' + Math.random().toString().substring(2, 5)
+    let data = {
+      'BaseRequest': this[PROP].baseRequest,
+      'Msg': {
+        'Type': 43,
+        'MediaId': mediaId,
+        'FromUserName': this.user.UserName,
+        'ToUserName': to,
+        'LocalID': clientMsgId,
+        'ClientMsgId': clientMsgId
+      }
+    }
+    return this.request({
+      method: 'POST',
+      url: this[API].webwxsendmsgvedio,
+      params: params,
+      data: data
+    }).then(res => {
+      let data = res.data
+      if (data['BaseResponse']['Ret'] !== 0) {
+        throw new Error('发送视频Ret错误: ' + data['BaseResponse']['Ret'])
+      }
+    }).catch(err => {
+      debug(err)
+      throw new Error('发送视频失败')
+    })
+  }
+
+  _sendDoc(mediaId, name, size, ext, to) {
+    let params = {
+      'pass_ticket': this[PROP].passTicket,
+      'fun': 'async',
+      'f': 'json'
+    }
+    let clientMsgId = +new Date() + '0' + Math.random().toString().substring(2, 5)
+    let data = {
+      'BaseRequest': this[PROP].baseRequest,
+      'Msg': {
+        'Type': 6,
+        'Content': `<appmsg appid='wx782c26e4c19acffb' sdkver=''><title>${name}</title><des></des><action></action><type>6</type><content></content><url></url><lowurl></lowurl><appattach><totallen>${size}</totallen><attachid>${mediaId}</attachid><fileext>${ext}</fileext></appattach><extinfo></extinfo></appmsg>`,
+        'FromUserName': this.user.UserName,
+        'ToUserName': to,
+        'LocalID': clientMsgId,
+        'ClientMsgId': clientMsgId
+      }
+    }
+    return this.request({
+      method: 'POST',
+      url: this[API].webwxsendappmsg,
+      params: params,
+      data: data
+    }).then(res => {
+      let data = res.data
+      if (data['BaseResponse']['Ret'] !== 0) {
+        throw new Error('发送文件Ret错误: ' + data['BaseResponse']['Ret'])
+      }
+    }).catch(err => {
+      debug(err)
+      throw new Error('发送文件失败')
     })
   }
 
