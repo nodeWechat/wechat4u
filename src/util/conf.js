@@ -181,7 +181,7 @@ export function updateAPI (API) {
   API.webwxgeticon = e + '/webwxgeticon'
   API.webwxsendmsg = e + '/webwxsendmsg'
   API.webwxsendmsgimg = e + '/webwxsendmsgimg'
-  API.webwxsendmsgvedio = e + "/webwxsendvideomsg"
+  API.webwxsendmsgvedio = e + '/webwxsendvideomsg'
   API.webwxsendemoticon = e + '/webwxsendemoticon'
   API.webwxsendappmsg = e + '/webwxsendappmsg'
   API.webwxgetheadimg = e + '/webwxgetheadimg'
