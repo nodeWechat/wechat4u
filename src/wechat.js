@@ -876,7 +876,7 @@ class Wechat extends EventEmitter {
     return Promise.resolve().then(() => {
       return this.request({
         method: 'GET',
-        url: content.match(/cdnurl="(.*?)"/)[1],
+        url: content.match(/cdnurl ?= ?"(.*?)"/)[1],
         responseType: 'arraybuffer'
       })
     }).then(res => {
