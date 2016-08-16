@@ -1,5 +1,6 @@
 #wechat4u.js
 ![](http://7xr8pm.com1.z0.glb.clouddn.com/nodeWechat.png)
+
 尝试功能的话，可在demo服务器（简单功能）中测试，支持多用户实例。
  * [测试服务器](http://wechat4u.duapp.com/#!/login) 
 
