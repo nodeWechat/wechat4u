@@ -51,15 +51,36 @@ wechat.state === wechat4u.STATE.logout === 'logout' // 已退出登录
 ####联系人接口
 
 ```javascript
-wechat.friendList  // 通讯录（个人联系人，群聊）
+wechat.friendList  // （* 不建议使用）通讯录（个人联系人，群聊）
 
 wechat.user        // 登陆账号
-wechat.memberList  // 所有联系人
-wechat.contactList // 个人联系人
-wechat.groupList   // 已保存群聊
-wechat.groupMemberList // 所有群聊内联系人
-wechat.publicList  // 公众账号
-wechat.specialList // 特殊账号
+wechat.memberList  // 所有联系人 [...]
+wechat.contactList // 个人联系人 [...]
+wechat.groupList   // 已保存群聊 [...]
+wechat.groupMemberList // 所有群聊内联系人 [...]
+wechat.publicList  // 公众账号 [...]
+wechat.specialList // 特殊账号 [...]
+```
+
+数组中的每个 contact，继承自 interface/contact，除原本 json 外，扩展以下属性：
+
+```javascript
+contact.AvatarUrl // 处理过的头像地址
+contact.isSelf    // 是否是登录用户本人
+
+contact.getDisplayName()
+contact.canSearch(keyword)
+```
+
+此外，wechat4u 在实例上提供 Contact 作为联系人的通用接口，扩展以下属性：
+
+```javascript
+wechat.contact.isRoomContact()
+wechat.contact.isSpContact()
+wechat.contact.isPublicContact()
+
+wechat.Contact.getUserByUserName()
+wechat.Contact.getSearchUser(keyword)
 ```
 
 ####消息发送接口
@@ -95,14 +116,24 @@ wechat.on('verify-message', msg => {})
 
 ```javascript
 wechat.on('text-message', msg => {
-  msg['Content'] // '你好！'
+  msg.Content // '你好！'
 })
 wechat.on('picture-message', msg => {
-  msg['Content'] // {type:'image/jpeg',data:...buf...}
+  msg.Content // {type:'image/jpeg',data:...buf...}
 })
 wechat.on('voice-message', msg => {
-  msg['Content'] // {type:'audio/mp3'',data:...buf...}
+  msg.Content // {type:'audio/mp3'',data:...buf...}
 })
+```
+
+msg 对象继承自 interface/message，出原本 json 外，具有以下属性：
+
+```javascript
+message.isSendBySelf // 是否是本人发送
+
+message.isSendBy(contact)
+message.getPeerUserName() // 获取所属对话的联系人 UserName
+message.getDisplayTime() // 获取形如 12:00 的时间戳信息
 ```
 
 ####请求接口

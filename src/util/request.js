@@ -1,7 +1,6 @@
-'use strict'
-const axios = require('axios')
-const CM = require('cookie-manager')
-const Pass = require('stream').PassThrough
+import axios from 'axios'
+import CM from 'cookie-manager'
+import {isStandardBrowserEnv} from './global'
 
 const paramsSerializer = params => {
   let qs = []
@@ -11,13 +10,10 @@ const paramsSerializer = params => {
   return encodeURI(qs.join('&'))
 }
 
-const isBrowser = (typeof window !== 'undefined')
-const isFunction = data => (typeof data === 'function')
-
-module.exports = function (defaults) {
+export function Request (defaults) {
   defaults = defaults || {}
   defaults.headers = defaults.headers || {}
-  if (!isBrowser) {
+  if (!isStandardBrowserEnv) {
     defaults.headers['user-agent'] = defaults.headers['user-agent'] || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36'
     defaults.headers['connection'] = defaults.headers['connection'] || 'close'
   }
@@ -26,7 +22,7 @@ module.exports = function (defaults) {
   defaults.httpsAgent = false
 
   this.axios = axios.create(defaults)
-  if (!isBrowser) {
+  if (!isStandardBrowserEnv) {
     this.cm = new CM()
     this.axios.interceptors.request.use(config => {
       config.headers['cookie'] = config.url ? decodeURIComponent(this.cm.prepare(config.url)) : ''
@@ -46,31 +42,7 @@ module.exports = function (defaults) {
   }
 
   this.request = options => {
-    return new Promise((resolve, reject) => {
-      if (options.data && isFunction(options.data.pipe)) {
-        let pass = new Pass()
-        let buf = []
-        if (isFunction(options.data.getHeaders)) {
-          options.headers = options.data.getHeaders(options.headers)
-        }
-        pass.on('data', chunk => {
-          buf.push(chunk)
-        })
-        pass.on('end', () => {
-          let arr = new Uint8Array(Buffer.concat(buf))
-          options.data = arr.buffer
-          resolve(options)
-        })
-        pass.on('error', err => {
-          reject(err)
-        })
-        options.data.pipe(pass)
-      } else {
-        resolve(options)
-      }
-    }).then(options => {
-      return this.axios.request(options)
-    })
+    return this.axios.request(options)
   }
 
   return this.request

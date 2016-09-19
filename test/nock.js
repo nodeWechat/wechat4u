@@ -1,15 +1,15 @@
-var nock = require('nock')
-var fs = require('fs')
-var path = require('path')
+import fs from 'fs'
+import path from 'path'
+import nock from 'nock'
 
-var check = (key, value) => data => data[key] === value
-var checkUin = check('Uin', 155217200)
-var checkuin = check('uin', '155217200')
-var checkSid = check('Sid', 'PsWd4FvKROR5EVcG')
-var checksid = check('sid', 'PsWd4FvKROR5EVcG')
-var checkSkey = check('Skey', '@crypt_8e4ad7fa_2703a47aaf8cd4d3e61b855795e38568')
-var checkskey = check('skey', '@crypt_8e4ad7fa_2703a47aaf8cd4d3e61b855795e38568')
-var checkPassTicket = check('pass_ticket', 'VgRra8tyYbvfTTS3LVlIHdFob0XowE6%2BZV9X1PB9w9w%3D')
+const check = (key, value) => data => data[key] === value
+const checkUin = check('Uin', 155217200)
+const checkuin = check('uin', '155217200')
+const checkSid = check('Sid', 'PsWd4FvKROR5EVcG')
+const checksid = check('sid', 'PsWd4FvKROR5EVcG')
+const checkSkey = check('Skey', '@crypt_8e4ad7fa_2703a47aaf8cd4d3e61b855795e38568')
+const checkskey = check('skey', '@crypt_8e4ad7fa_2703a47aaf8cd4d3e61b855795e38568')
+const checkPassTicket = check('pass_ticket', 'VgRra8tyYbvfTTS3LVlIHdFob0XowE6%2BZV9X1PB9w9w%3D')
 
 var checkBaseRequest = data => {
   return data &&
@@ -134,3 +134,5 @@ nock('https://wx2.qq.com')
       checkskey(data)
   })
   .reply(200, '')
+
+export default nock
