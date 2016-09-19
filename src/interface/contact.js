@@ -41,8 +41,7 @@ export function getUserByUserName (memberList, UserName) {
 }
 
 export function getDisplayName (contact) {
-  return (contact.RemarkName && contact.RemarkName[0] !== '@')
-    ? contact.RemarkName : contact.NickName || ''
+  return (isRoomContact(contact) ? '[群] ' : '') + (contact.RemarkName || contact.NickName || contact.UserName)
 }
 
 export function headImgUrlAugment (headImgUrl, baseUri) {
@@ -64,7 +63,7 @@ export function isPublicContact (contact) {
 const contactProto = {
   init: function (instance) {
     this.NickName = convertEmoji(this.NickName)
-    this.RemarkName = convertEmoji(this.UserName)
+    this.RemarkName = convertEmoji(this.RemarkName)
     this.AvatarUrl = headImgUrlAugment(this.HeadImgUrl, instance.baseUri)
 
     this.isSelf = this.UserName === instance.user.UserName
@@ -97,10 +96,16 @@ export default function ContactFactory (instance) {
       return contactObj.init(instance)
     },
     getUserByUserName: function (UserName) {
-      return getUserByUserName(instance.memberList, UserName)
+      return instance.contacts[UserName]
     },
     getSearchUser: function (keyword) {
-      return instance.memberList.filter(contact => contact.canSearch(keyword))
+      let users = []
+      for (let key in instance.contacts) {
+        if (instance.contacts[key].canSearch(keyword)) {
+          users.push(instance.contacts[key])
+        }
+      }
+      return users
     },
     isSelf: function (contact) {
       return contact.isSelf || contact.UserName === instance.user.UserName

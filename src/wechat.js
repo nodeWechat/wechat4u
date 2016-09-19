@@ -44,13 +44,7 @@ class Wechat extends EventEmitter {
     this.baseUri = ''
 
     this.user = {} // 登陆账号
-    this.memberList = [] // 所有联系人
-
-    this.contactList = [] // 个人联系人
-    this.groupList = [] // 已保存群聊
-    this.groupMemberList = [] // 所有群聊内联系人
-    this.publicList = [] // 公众账号
-    this.specialList = [] // 特殊账号
+    this.contacts = {} // 所有联系人
 
     this.Contact = ContactFactory(this)
     this.Message = MessageFactory(this)
@@ -70,23 +64,15 @@ class Wechat extends EventEmitter {
   get friendList () {
     let members = []
 
-    this.groupList.forEach(member => {
-      members.push({
-        username: member['UserName'],
-        nickname: '群聊：' + this.Contact.getDisplayName(member),
-        py: member['RemarkPYQuanPin'] ? member['RemarkPYQuanPin'] : member['PYQuanPin'],
-        avatar: this[API].baseUri.match(/http.*?\/\/.*?(?=\/)/)[0] + member.HeadImgUrl
-      })
-    })
-
-    this.contactList.forEach(member => {
+    for (let key in this.contacts) {
+      let member = this.contacts[key]
       members.push({
         username: member['UserName'],
         nickname: this.Contact.getDisplayName(member),
         py: member['RemarkPYQuanPin'] ? member['RemarkPYQuanPin'] : member['PYQuanPin'],
-        avatar: this[API].baseUri.match(/http.*?\/\/.*?(?=\/)/)[0] + member.HeadImgUrl
+        avatar: member.AvatarUrl
       })
-    })
+    }
 
     return members
   }
@@ -223,13 +209,23 @@ class Wechat extends EventEmitter {
       data: data
     }).then(res => {
       let data = res.data
-      this.user = this.Contact.extend(data['User'])
-
-      this._updateSyncKey(data['SyncKey'])
-
       if (data['BaseResponse']['Ret'] !== 0) {
         throw new Error('微信初始化Ret错误' + data['BaseResponse']['Ret'])
       }
+
+      this.user = this.Contact.extend(data['User'])
+
+      for (let contact of data.ContactList) {
+        this._addContact(contact)
+      }
+
+      this._updateSyncKey(data['SyncKey'])
+
+      return this.batchGetContact(data.ChatSet.split(',').map(username => {
+        return {
+          UserName: username
+        }
+      }))
     }).catch(err => {
       debug(err)
       throw new Error('微信初始化失败')
@@ -273,38 +269,26 @@ class Wechat extends EventEmitter {
       params: params
     }).then(res => {
       let data = res.data
-      this.memberList = data['MemberList']
-
-      if (this.memberList.length === 0) {
-        throw new Error('通讯录获取异常')
+      if (data['BaseResponse']['Ret'] !== 0) {
+        throw new Error('通讯录获取Ret错误' + data['BaseResponse']['Ret'])
       }
 
-      for (let member of this.memberList) {
-        this.Contact.extend(member)
-
-        if (member['VerifyFlag'] & 8) {
-          this.publicList.push(member)
-        } else if (CONF.SPECIALUSERS.indexOf(member['UserName']) > -1) {
-          this.specialList.push(member)
-        } else if (member['UserName'].indexOf('@@') > -1) {
-          this.groupList.push(member)
-        } else {
-          this.contactList.push(member)
-        }
+      for (let member of data.MemberList) {
+        this._addContact(member)
       }
 
       this.state = CONF.STATE.login
-      this.emit('login', this.memberList)
+      this.emit('login', this.contacts)
 
-      debug('好友数量：' + this.memberList.length)
-      return this.memberList
+      debug('联系人数量：' + Object.keys(this.contacts).length)
+      return this.contacts
     }).catch(err => {
       debug(err)
       throw new Error('获取通讯录失败')
     })
   }
 
-  batchGetContact () {
+  batchGetContact (contacts) {
     let params = {
       'pass_ticket': this[PROP].passTicket,
       'type': 'e',
@@ -312,13 +296,8 @@ class Wechat extends EventEmitter {
     }
     let data = {
       'BaseRequest': this[PROP].baseRequest,
-      'Count': this.groupList.length,
-      'List': this.groupList.map(member => {
-        return {
-          'UserName': member['UserName'],
-          'EncryChatRoomId': ''
-        }
-      })
+      'Count': contacts.length,
+      'List': contacts
     }
     return this.request({
       method: 'POST',
@@ -327,19 +306,18 @@ class Wechat extends EventEmitter {
       data: data
     }).then(res => {
       let data = res.data
-      let contactList = data['ContactList']
-
-      for (let group of contactList) {
-        for (let member of group['MemberList']) {
-          this.Contact.extend(member, {baseUri: this[API].baseUri})
-          this.groupMemberList.push(member)
-        }
+      if (data['BaseResponse']['Ret'] !== 0) {
+        throw new Error('批量获取联系人Ret错误' + data['BaseResponse']['Ret'])
       }
-      debug('群组好友总数：', this.groupMemberList.length)
-      return this.groupMemberList
+
+      for (let contact of data.ContactList) {
+        this._addContact(contact)
+      }
+      debug('批量获取联系人: ', data.ContactList.length)
+      return this.contacts
     }).catch(err => {
       debug(err)
-      throw new Error('获取群组通讯录失败')
+      throw new Error('批量获取联系人失败')
     })
   }
 
@@ -411,7 +389,6 @@ class Wechat extends EventEmitter {
       .then(() => this.init())
       .then(() => this.notifyMobile())
       .then(() => this.getContact())
-      .then(() => this.batchGetContact())
       .then(() => {
         if (this.state !== CONF.STATE.login) {
           throw new Error('登陆失败，未进入SyncPolling')
@@ -460,7 +437,7 @@ class Wechat extends EventEmitter {
     })
   }
 
-  sendEmoticon(id, to) {
+  sendEmoticon (id, to) {
     let params = {
       'fun': 'sys',
       'pass_ticket': this[PROP].passTicket
@@ -479,10 +456,11 @@ class Wechat extends EventEmitter {
       'Scene': 0
     }
 
-    if (id.indexOf('@') == 0)
+    if (id.indexOf('@') === 0) {
       data.Msg.MediaId = id
-    else
+    } else {
       data.Msg.EMoticonMd5 = id
+    }
 
     this.request({
       method: 'POST',
@@ -500,7 +478,7 @@ class Wechat extends EventEmitter {
     })
   }
 
-  sendMedia(file, to) {
+  sendMedia (file, to) {
     return this._uploadMedia(file)
       .then(res => {
         switch (res.mediatype) {
@@ -509,10 +487,11 @@ class Wechat extends EventEmitter {
           case 'video':
             return this._sendVideo(res.mediaId, to)
           case 'doc':
-            if (res.ext == 'gif')
+            if (res.ext === 'gif') {
               return this.sendEmoticon(res.mediaId, to)
-            else
+            } else {
               return this._sendDoc(res.mediaId, res.name, res.size, res.ext, to)
+            }
         }
       })
       .catch(err => {
@@ -584,58 +563,64 @@ class Wechat extends EventEmitter {
     debug('Receive ', data.AddMsgList.length, 'Message')
 
     data['AddMsgList'].forEach(msg => {
-      this.Message.extend(msg)
+      Promise.resolve().then(() => {
+        if (!this.contacts[msg.FromUserName]) {
+          return this.batchGetContact([{
+            UserName: msg.FromUserName
+          }]).catch(err => {
+            debug(err)
+            this._addContact({
+              UserName: msg.FromUserName
+            })
+          }).then(() => {
+            return this.contacts[msg.FromUserName]
+          })
+        } else {
+          return this.contacts[msg.FromUserName]
+        }
+      }).then(fromUser => {
+        this.Message.extend(msg)
 
-      let fromUser = this.Contact.getUserByUserName(msg.FromUserName).getDisplayName()
-
-      switch (msg.MsgType) {
-        case CONF.MSGTYPE_STATUSNOTIFY:
-          debug(' Message: Init')
-          this.emit('init-message')
-          break
-        case CONF.MSGTYPE_TEXT:
-          debug(' Text-Message: ', fromUser, ': ', msg.Content)
-          this.emit('text-message', msg)
-          break
-        case CONF.MSGTYPE_IMAGE:
-          debug(' Image-Message: ', fromUser, ': ', msg.Content)
-          this._getMsgImg(msg.MsgId).then(image => {
-            msg.Content = image
+        switch (msg.MsgType) {
+          case CONF.MSGTYPE_STATUSNOTIFY:
+            debug(' Message: Init')
+            this.emit('init-message')
+            break
+          case CONF.MSGTYPE_TEXT:
+            debug(' Text-Message: ', fromUser.getDisplayName(), ': ', msg.Content)
+            this.emit('text-message', msg)
+            break
+          case CONF.MSGTYPE_IMAGE:
+            debug(' Image-Message: ', fromUser.getDisplayName(), ': ', msg.Content)
             this.emit('image-message', msg)
-          })
-          break
-        case CONF.MSGTYPE_VOICE:
-          debug(' Voice-Message: ', fromUser, ': ', msg.Content)
-          this._getVoice(msg.MsgId).then(voice => {
-            msg.Content = voice
+            break
+          case CONF.MSGTYPE_VOICE:
+            debug(' Voice-Message: ', fromUser.getDisplayName(), ': ', msg.Content)
             this.emit('voice-message', msg)
-          })
-          break
-        case CONF.MSGTYPE_EMOTICON:
-          debug(' Emoticon-Message: ', fromUser, ': ', msg.Content)
-          this._getEmoticon(msg.Content).then(emoticon => {
-            msg.Content = emoticon
+            break
+          case CONF.MSGTYPE_EMOTICON:
+            debug(' Emoticon-Message: ', fromUser.getDisplayName(), ': ', msg.Content)
             this.emit('emoticon-message', msg)
-          })
-          break
-        case CONF.MSGTYPE_VERIFYMSG:
-          debug(' Message: Add Friend')
-          this.emit('verify-message', msg)
-          break
-        case CONF.MSGTYPE_RECALLED:
-          debug(' Recalled-Message: ', fromUser)
-          this.emit('recalled-message', msg)
-          break
-        default:
-          debug(' Other-Message: ', msg.msgType, fromUser)
-          this.emit('other-message', msg)
-          break
-      }
+            break
+          case CONF.MSGTYPE_VERIFYMSG:
+            debug(' Verify-Message: ', fromUser.getDisplayName())
+            this.emit('verify-message', msg)
+            break
+          case CONF.MSGTYPE_RECALLED:
+            debug(' Recalled-Message: ', fromUser.getDisplayName())
+            this.emit('recalled-message', msg)
+            break
+          default:
+            debug(' Other-Message: ', fromUser.getDisplayName(), ': ', msg.MsgType)
+            this.emit('other-message', msg)
+            break
+        }
+      })
     })
   }
 
   // file: Stream, File
-  _uploadMedia(file) {
+  _uploadMedia (file) {
     let name, type, size, lastModifiedDate
     if (isStandardBrowserEnv) {
       name = file.name
@@ -650,10 +635,10 @@ class Wechat extends EventEmitter {
       lastModifiedDate = stat.mtime
     }
 
-
     let ext = name.match(/.*\.(.*)/)
-    if (ext)
+    if (ext) {
       ext = ext[1]
+    }
 
     let mediatype
     switch (ext) {
@@ -726,7 +711,7 @@ class Wechat extends EventEmitter {
     })
   }
 
-  _sendPic(mediaId, to) {
+  _sendPic (mediaId, to) {
     let params = {
       'pass_ticket': this[PROP].passTicket,
       'fun': 'async',
@@ -760,7 +745,7 @@ class Wechat extends EventEmitter {
     })
   }
 
-  _sendVideo(mediaId, to) {
+  _sendVideo (mediaId, to) {
     let params = {
       'pass_ticket': this[PROP].passTicket,
       'fun': 'async',
@@ -794,7 +779,7 @@ class Wechat extends EventEmitter {
     })
   }
 
-  _sendDoc(mediaId, name, size, ext, to) {
+  _sendDoc (mediaId, name, size, ext, to) {
     let params = {
       'pass_ticket': this[PROP].passTicket,
       'fun': 'async',
@@ -917,6 +902,11 @@ class Wechat extends EventEmitter {
       synckeylist.push(e[o]['Key'] + '_' + e[o]['Val'])
     }
     this[PROP].formateSyncKey = synckeylist.join('|')
+  }
+
+  _addContact (contact) {
+    this.Contact.extend(contact)
+    this.contacts[contact.UserName] = contact
   }
 }
 
