@@ -610,6 +610,17 @@ class Wechat extends EventEmitter {
             debug(' Recalled-Message: ', fromUser.getDisplayName())
             this.emit('recalled-message', msg)
             break
+          case CONF.MSGTYPE_GROUP_NOTIFY:
+            debug(' GroupNotify-Message: ', fromUser.getDisplayName())
+			var joingroupKey = "通过扫描"
+			if (msg.Content.indexOf(joingroupKey) > 0) {
+				var whoScan = msg.Content.split(joingroupKey)[0];
+				msg.whoScan = whoScan;
+				debug(msg)
+				this.emit('joingroup-message', msg)
+			} 
+            this.emit('groupNotify-message', msg)
+            break
           default:
             debug(' Other-Message: ', fromUser.getDisplayName(), ': ', msg.MsgType)
             this.emit('other-message', msg)
