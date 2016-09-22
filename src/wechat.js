@@ -612,11 +612,10 @@ class Wechat extends EventEmitter {
             break
           case CONF.MSGTYPE_GROUP_NOTIFY:
             debug(' GroupNotify-Message: ', fromUser.getDisplayName())
-			var joingroupKey = "通过扫描"
+			var joingroupKey = "通过扫描" /*其他语言有些问题*/
 			if (msg.Content.indexOf(joingroupKey) > 0) {
 				var whoScan = msg.Content.split(joingroupKey)[0];
 				msg.whoScan = whoScan;
-				debug(msg)
 				this.emit('joingroup-message', msg)
 			} 
             this.emit('groupNotify-message', msg)
