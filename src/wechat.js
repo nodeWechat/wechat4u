@@ -337,7 +337,7 @@ class Wechat extends EventEmitter {
           debug('WebSync Normal')
           setTimeout(() => {
             this.syncPolling()
-          }, 3000)
+          }, 1000)
         }
       }
     }).catch(err => {
