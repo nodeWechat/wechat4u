@@ -337,7 +337,7 @@ class Wechat extends EventEmitter {
           debug('WebSync Normal')
           setTimeout(() => {
             this.syncPolling()
-          }, 1000)
+          }, 3000)
         }
       }
     }).catch(err => {
@@ -618,7 +618,6 @@ class Wechat extends EventEmitter {
 				msg.whoScan = whoScan;
 				this.emit('joingroup-message', msg)
 			} 
-            this.emit('groupNotify-message', msg)
             break
           default:
             debug(' Other-Message: ', fromUser.getDisplayName(), ': ', msg.MsgType)
