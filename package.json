@@ -10,7 +10,8 @@
     "lint": "eslint src example/lib example/routes example/app.js",
     "clean": "rm -rf lib",
     "unit": "mocha test/unit.js --compilers js:babel-core/register",
-    "test": "npm run lint && npm run unit"
+    "test": "npm run lint && npm run unit",
+    "dev": "cross-env DEBUG=wechat,wxbot,app nodemon --exec babel-node -- example/app.js"
   },
   "dependencies": {
     "axios": "^0.14.0",

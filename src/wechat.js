@@ -5,7 +5,7 @@ import path from 'path'
 import _debug from 'debug'
 import FormData from 'form-data'
 import mime from 'mime'
-import {CONF, Request, updateAPI, isStandardBrowserEnv} from './util'
+import {Request, isStandardBrowserEnv, getCONF} from './util'
 
 import ContactFactory from './interface/contact'
 import MessageFactory from './interface/message'
@@ -13,7 +13,6 @@ import MessageFactory from './interface/message'
 const debug = _debug('wechat')
 // Private
 const PROP = Symbol()
-const API = Symbol()
 
 class Wechat extends EventEmitter {
 
@@ -33,14 +32,11 @@ class Wechat extends EventEmitter {
       syncKey: {}
     }
 
-    this[API] = {
-      jsLogin: 'https://login.weixin.qq.com/jslogin',
-      login: 'https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login'
-    }
+    this.CONF = getCONF()
 
     this.syncErrorCount = 0
     this.mediaSend = 0
-    this.state = CONF.STATE.init
+    this.state = this.CONF.STATE.init
     this.baseUri = ''
 
     this.user = {} // 登陆账号
@@ -78,15 +74,9 @@ class Wechat extends EventEmitter {
   }
 
   getUUID () {
-    let params = {
-      'appid': 'wx782c26e4c19acffb',
-      'fun': 'new',
-      'lang': 'zh_CN'
-    }
     return this.request({
       method: 'POST',
-      url: this[API].jsLogin,
-      params: params
+      url: this.CONF.API_jsLogin
     }).then(res => {
       let pm = res.data.match(/window.QRLogin.code = (\d+); window.QRLogin.uuid = "(\S+?)"/)
       if (!pm) {
@@ -100,7 +90,7 @@ class Wechat extends EventEmitter {
       }
 
       this.emit('uuid', uuid)
-      this.state = CONF.STATE.uuid
+      this.state = this.CONF.STATE.uuid
 
       return uuid
     }).catch(err => {
@@ -117,7 +107,7 @@ class Wechat extends EventEmitter {
     }
     return this.request({
       method: 'GET',
-      url: this[API].login,
+      url: this.CONF.API_login,
       params: params
     }).then(res => {
       let pm = res.data.match(/window.code=(\d+);/)
@@ -141,7 +131,7 @@ class Wechat extends EventEmitter {
     }
     return this.request({
       method: 'GET',
-      url: this[API].login,
+      url: this.CONF.API_login,
       params: params
     }).then(res => {
       let pm = res.data.match(/window.code=(\d+);/)
@@ -152,11 +142,10 @@ class Wechat extends EventEmitter {
       }
 
       pm = res.data.match(/window.redirect_uri="(\S+?)";/)
-      this[API].rediUri = pm[1] + '&fun=new'
-      this.baseUri = this[API].baseUri = this[API].rediUri.substring(0, this[API].rediUri.lastIndexOf('/'))
-
       // 接口更新
-      updateAPI(this[API])
+      this.CONF = getCONF(pm[1].match(/(?:\w+\.)+\w+/)[0])
+      this.rediUri = pm[1] + '&fun=new'
+      this.baseUri = this.CONF.baseUri
 
       this.emit('confirm')
     }).catch(err => {
@@ -168,7 +157,7 @@ class Wechat extends EventEmitter {
   login () {
     return this.request({
       method: 'GET',
-      url: this[API].rediUri
+      url: this.rediUri
     }).then(res => {
       this[PROP].skey = res.data.match(/<skey>(.*)<\/skey>/)[1]
       this[PROP].sid = res.data.match(/<wxsid>(.*)<\/wxsid>/)[1]
@@ -204,7 +193,7 @@ class Wechat extends EventEmitter {
     }
     return this.request({
       method: 'POST',
-      url: this[API].webwxinit,
+      url: this.CONF.API_webwxinit,
       params: params,
       data: data
     }).then(res => {
@@ -242,7 +231,7 @@ class Wechat extends EventEmitter {
     }
     return this.request({
       method: 'POST',
-      url: this[API].webwxstatusnotify,
+      url: this.CONF.API_webwxstatusnotify,
       data: data
     }).then(res => {
       let data = res.data
@@ -265,7 +254,7 @@ class Wechat extends EventEmitter {
     }
     return this.request({
       method: 'POST',
-      url: this[API].webwxgetcontact,
+      url: this.CONF.API_webwxgetcontact,
       params: params
     }).then(res => {
       let data = res.data
@@ -277,7 +266,7 @@ class Wechat extends EventEmitter {
         this._addContact(member)
       }
 
-      this.state = CONF.STATE.login
+      this.state = this.CONF.STATE.login
       this.emit('login', this.contacts)
 
       debug('联系人数量：' + Object.keys(this.contacts).length)
@@ -301,7 +290,7 @@ class Wechat extends EventEmitter {
     }
     return this.request({
       method: 'POST',
-      url: this[API].webwxbatchgetcontact,
+      url: this.CONF.API_webwxbatchgetcontact,
       params: params,
       data: data
     }).then(res => {
@@ -323,10 +312,10 @@ class Wechat extends EventEmitter {
 
   syncPolling () {
     this._syncCheck().then(state => {
-      if (state.retcode !== CONF.SYNCCHECK_RET_SUCCESS) {
+      if (state.retcode !== this.CONF.SYNCCHECK_RET_SUCCESS) {\
         throw new Error('你登出了微信')
       } else {
-        if (state.selector !== CONF.SYNCCHECK_SELECTOR_NORMAL) {
+        if (state.selector !== this.CONF.SYNCCHECK_SELECTOR_NORMAL) {
           return this._sync().then(data => {
             setTimeout(() => {
               this.syncPolling()
@@ -367,22 +356,22 @@ class Wechat extends EventEmitter {
     // }
     return this.request({
       method: 'POST',
-      url: this[API].webwxlogout,
+      url: this.CONF.API_webwxlogout,
       params: params
     }).then(res => {
-      this.state = CONF.STATE.logout
+      this.state = this.CONF.STATE.logout
       this.emit('logout')
       return '登出成功'
     }).catch(err => {
       debug(err)
-      this.state = CONF.STATE.logout
+      this.state = this.CONF.STATE.logout
       this.emit('logout')
       throw new Error('可能登出成功')
     })
   }
 
   start () {
-    return Promise.resolve(this.state === CONF.STATE.uuid ? 0 : this.getUUID())
+    return Promise.resolve(this.state === this.CONF.STATE.uuid ? 0 : this.getUUID())
       .then(() => this.checkScan())
       .then(() => this.checkLogin())
       .then(() => this.login())
@@ -390,7 +379,7 @@ class Wechat extends EventEmitter {
       .then(() => this.notifyMobile())
       .then(() => this.getContact())
       .then(() => {
-        if (this.state !== CONF.STATE.login) {
+        if (this.state !== this.CONF.STATE.login) {
           throw new Error('登陆失败，未进入SyncPolling')
         }
         return this.syncPolling()
@@ -402,7 +391,7 @@ class Wechat extends EventEmitter {
   }
 
   stop () {
-    return this.state === CONF.STATE.login ? this.logout() : Promise.resolve()
+    return this.state === this.CONF.STATE.login ? this.logout() : Promise.resolve()
   }
 
   sendMsg (msg, to) {
@@ -423,7 +412,7 @@ class Wechat extends EventEmitter {
     }
     this.request({
       method: 'POST',
-      url: this[API].webwxsendmsg,
+      url: this.CONF.API_webwxsendmsg,
       params: params,
       data: data
     }).then(res => {
@@ -464,7 +453,7 @@ class Wechat extends EventEmitter {
 
     this.request({
       method: 'POST',
-      url: this[API].webwxsendemoticon,
+      url: this.CONF.API_webwxsendemoticon,
       params: params,
       data: data
     }).then(res => {
@@ -511,7 +500,7 @@ class Wechat extends EventEmitter {
     }
     return this.request({
       method: 'GET',
-      url: this[API].synccheck,
+      url: this.CONF.API_synccheck,
       params: params
     }).then(res => {
       let re = /window.synccheck={retcode:"(\d+)",selector:"(\d+)"}/
@@ -542,7 +531,7 @@ class Wechat extends EventEmitter {
     }
     return this.request({
       method: 'POST',
-      url: this[API].webwxsync,
+      url: this.CONF.API_webwxsync,
       params: params,
       data: data
     }).then(res => {
@@ -582,31 +571,31 @@ class Wechat extends EventEmitter {
         this.Message.extend(msg)
 
         switch (msg.MsgType) {
-          case CONF.MSGTYPE_STATUSNOTIFY:
+          case this.CONF.MSGTYPE_STATUSNOTIFY:
             debug(' Message: Init')
             this.emit('init-message')
             break
-          case CONF.MSGTYPE_TEXT:
+          case this.CONF.MSGTYPE_TEXT:
             debug(' Text-Message: ', fromUser.getDisplayName(), ': ', msg.Content)
             this.emit('text-message', msg)
             break
-          case CONF.MSGTYPE_IMAGE:
+          case this.CONF.MSGTYPE_IMAGE:
             debug(' Image-Message: ', fromUser.getDisplayName(), ': ', msg.Content)
             this.emit('image-message', msg)
             break
-          case CONF.MSGTYPE_VOICE:
+          case this.CONF.MSGTYPE_VOICE:
             debug(' Voice-Message: ', fromUser.getDisplayName(), ': ', msg.Content)
             this.emit('voice-message', msg)
             break
-          case CONF.MSGTYPE_EMOTICON:
+          case this.CONF.MSGTYPE_EMOTICON:
             debug(' Emoticon-Message: ', fromUser.getDisplayName(), ': ', msg.Content)
             this.emit('emoticon-message', msg)
             break
-          case CONF.MSGTYPE_VERIFYMSG:
+          case this.CONF.MSGTYPE_VERIFYMSG:
             debug(' Verify-Message: ', fromUser.getDisplayName())
             this.emit('verify-message', msg)
             break
-          case CONF.MSGTYPE_RECALLED:
+          case this.CONF.MSGTYPE_RECALLED:
             debug(' Recalled-Message: ', fromUser.getDisplayName())
             this.emit('recalled-message', msg)
             break
@@ -688,7 +677,7 @@ class Wechat extends EventEmitter {
     }
 
     return this.request({
-      url: this[API].webwxuploadmedia,
+      url: this.CONF.API_webwxuploadmedia,
       method: 'POST',
       headers: form.getHeaders(),
       params: params,
@@ -731,7 +720,7 @@ class Wechat extends EventEmitter {
     }
     return this.request({
       method: 'POST',
-      url: this[API].webwxsendmsgimg,
+      url: this.CONF.API_webwxsendmsgimg,
       params: params,
       data: data
     }).then(res => {
@@ -765,7 +754,7 @@ class Wechat extends EventEmitter {
     }
     return this.request({
       method: 'POST',
-      url: this[API].webwxsendmsgvedio,
+      url: this.CONF.API_webwxsendmsgvedio,
       params: params,
       data: data
     }).then(res => {
@@ -799,7 +788,7 @@ class Wechat extends EventEmitter {
     }
     return this.request({
       method: 'POST',
-      url: this[API].webwxsendappmsg,
+      url: this.CONF.API_webwxsendappmsg,
       params: params,
       data: data
     }).then(res => {
@@ -821,7 +810,7 @@ class Wechat extends EventEmitter {
 
     return this.request({
       method: 'GET',
-      url: this[API].webwxgetmsgimg,
+      url: this.CONF.API_webwxgetmsgimg,
       params: params,
       responseType: 'arraybuffer'
     }).then(res => {
@@ -843,7 +832,7 @@ class Wechat extends EventEmitter {
 
     return this.request({
       method: 'GET',
-      url: this[API].webwxgetvoice,
+      url: this.CONF.API_webwxgetvoice,
       params: params,
       responseType: 'arraybuffer'
     }).then(res => {
@@ -877,7 +866,7 @@ class Wechat extends EventEmitter {
   }
 
   _getHeadImg (member) {
-    let url = member.AvatarUrl ? member.AvatarUrl : this[API].baseUri.match(/http.*?\/\/.*?(?=\/)/)[0] + member.HeadImgUrl
+    let url = member.AvatarUrl ? member.AvatarUrl : this.baseUri.match(/http.*?\/\/.*?(?=\/)/)[0] + member.HeadImgUrl
     return this.request({
       method: 'GET',
       url: url,
@@ -910,6 +899,6 @@ class Wechat extends EventEmitter {
   }
 }
 
-Wechat.STATE = CONF.STATE
+Wechat.STATE = getCONF().STATE
 
 exports = module.exports = Wechat
