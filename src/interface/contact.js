@@ -1,4 +1,6 @@
-import {CONF, protoAugment, convertEmoji} from '../util'
+import {protoAugment, convertEmoji} from '../util'
+import ConfFactory from './conf'
+const CONF = ConfFactory()
 
 /* Contact Object Example
 {
