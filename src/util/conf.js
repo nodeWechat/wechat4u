@@ -169,7 +169,7 @@ export const CONF = {
 
 export function getCONF(host) {
   host = host || 'wx.qq.com';
-  let baseUrl = `https://${host}/cgi-bin/mmwebwx-bin`;
+  let origin = `https://${host}`;
   let loginUrl = "login.weixin.qq.com";
   let fileUrl = "file.wx.qq.com";
   let pushUrl = "webpush.weixin.qq.com";
@@ -186,38 +186,39 @@ export function getCONF(host) {
     "login.web.wechat.com", fileUrl = "file.web.wechat.com", pushUrl = "webpush.web.wechat.com");
 
   let conf = {}
-  conf.baseUri = baseUrl
+  conf.origin = origin
+  conf.baseUri = origin + "/cgi-bin/mmwebwx-bin"
   conf.API_jsLogin = "https://" + loginUrl + "/jslogin?appid=wx782c26e4c19acffb&fun=new&lang=zh-CN"
   conf.API_login = "https://" + loginUrl + "/cgi-bin/mmwebwx-bin/login"
   conf.API_synccheck = "https://" + pushUrl + "/cgi-bin/mmwebwx-bin/synccheck"
   conf.API_webwxdownloadmedia = "https://" + fileUrl + "/cgi-bin/mmwebwx-bin/webwxgetmedia"
   conf.API_webwxuploadmedia = "https://" + fileUrl + "/cgi-bin/mmwebwx-bin/webwxuploadmedia"
-  conf.API_webwxpreview = baseUrl + "/webwxpreview"
-  conf.API_webwxinit = baseUrl + "/webwxinit"
-  conf.API_webwxgetcontact = baseUrl + "/webwxgetcontact"
-  conf.API_webwxsync = baseUrl + "/webwxsync"
-  conf.API_webwxbatchgetcontact = baseUrl + "/webwxbatchgetcontact"
-  conf.API_webwxgeticon = baseUrl + "/webwxgeticon"
-  conf.API_webwxsendmsg = baseUrl + "/webwxsendmsg"
-  conf.API_webwxsendmsgimg = baseUrl + "/webwxsendmsgimg"
-  conf.API_webwxsendmsgvedio = baseUrl + "/webwxsendvideomsg"
-  conf.API_webwxsendemoticon = baseUrl + "/webwxsendemoticon"
-  conf.API_webwxsendappmsg = baseUrl + "/webwxsendappmsg"
-  conf.API_webwxgetheadimg = baseUrl + "/webwxgetheadimg"
-  conf.API_webwxgetmsgimg = baseUrl + "/webwxgetmsgimg"
-  conf.API_webwxgetmedia = baseUrl + "/webwxgetmedia"
-  conf.API_webwxgetvideo = baseUrl + "/webwxgetvideo"
-  conf.API_webwxlogout = baseUrl + "/webwxlogout"
-  conf.API_webwxgetvoice = baseUrl + "/webwxgetvoice"
-  conf.API_webwxupdatechatroom = baseUrl + "/webwxupdatechatroom"
-  conf.API_webwxcreatechatroom = baseUrl + "/webwxcreatechatroom"
-  conf.API_webwxstatusnotify = baseUrl + "/webwxstatusnotify"
-  conf.API_webwxcheckurl = baseUrl + "/webwxcheckurl"
-  conf.API_webwxverifyuser = baseUrl + "/webwxverifyuser"
-  conf.API_webwxfeedback = baseUrl + "/webwxsendfeedback"
-  conf.API_webwxreport = baseUrl + "/webwxstatreport"
-  conf.API_webwxsearch = baseUrl + "/webwxsearchcontact"
-  conf.API_webwxoplog = baseUrl + "/webwxoplog"
-  conf.API_checkupload = baseUrl + "/webwxcheckupload"
+  conf.API_webwxpreview = origin + "/cgi-bin/mmwebwx-bin/webwxpreview"
+  conf.API_webwxinit = origin + "/cgi-bin/mmwebwx-bin/webwxinit"
+  conf.API_webwxgetcontact = origin + "/cgi-bin/mmwebwx-bin/webwxgetcontact"
+  conf.API_webwxsync = origin + "/cgi-bin/mmwebwx-bin/webwxsync"
+  conf.API_webwxbatchgetcontact = origin + "/cgi-bin/mmwebwx-bin/webwxbatchgetcontact"
+  conf.API_webwxgeticon = origin + "/cgi-bin/mmwebwx-bin/webwxgeticon"
+  conf.API_webwxsendmsg = origin + "/cgi-bin/mmwebwx-bin/webwxsendmsg"
+  conf.API_webwxsendmsgimg = origin + "/cgi-bin/mmwebwx-bin/webwxsendmsgimg"
+  conf.API_webwxsendmsgvedio = origin + "/cgi-bin/mmwebwx-bin/webwxsendvideomsg"
+  conf.API_webwxsendemoticon = origin + "/cgi-bin/mmwebwx-bin/webwxsendemoticon"
+  conf.API_webwxsendappmsg = origin + "/cgi-bin/mmwebwx-bin/webwxsendappmsg"
+  conf.API_webwxgetheadimg = origin + "/cgi-bin/mmwebwx-bin/webwxgetheadimg"
+  conf.API_webwxgetmsgimg = origin + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg"
+  conf.API_webwxgetmedia = origin + "/cgi-bin/mmwebwx-bin/webwxgetmedia"
+  conf.API_webwxgetvideo = origin + "/cgi-bin/mmwebwx-bin/webwxgetvideo"
+  conf.API_webwxlogout = origin + "/cgi-bin/mmwebwx-bin/webwxlogout"
+  conf.API_webwxgetvoice = origin + "/cgi-bin/mmwebwx-bin/webwxgetvoice"
+  conf.API_webwxupdatechatroom = origin + "/cgi-bin/mmwebwx-bin/webwxupdatechatroom"
+  conf.API_webwxcreatechatroom = origin + "/cgi-bin/mmwebwx-bin/webwxcreatechatroom"
+  conf.API_webwxstatusnotify = origin + "/cgi-bin/mmwebwx-bin/webwxstatusnotify"
+  conf.API_webwxcheckurl = origin + "/cgi-bin/mmwebwx-bin/webwxcheckurl"
+  conf.API_webwxverifyuser = origin + "/cgi-bin/mmwebwx-bin/webwxverifyuser"
+  conf.API_webwxfeedback = origin + "/cgi-bin/mmwebwx-bin/webwxsendfeedback"
+  conf.API_webwxreport = origin + "/cgi-bin/mmwebwx-bin/webwxstatreport"
+  conf.API_webwxsearch = origin + "/cgi-bin/mmwebwx-bin/webwxsearchcontact"
+  conf.API_webwxoplog = origin + "/cgi-bin/mmwebwx-bin/webwxoplog"
+  conf.API_checkupload = origin + "/cgi-bin/mmwebwx-bin/webwxcheckupload"
   return Object.assign(conf, CONF)
 }

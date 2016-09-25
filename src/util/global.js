@@ -1,4 +1,5 @@
 import debug from 'debug'
+import Assert from 'assert'
 
 export const isStandardBrowserEnv = (
   typeof window !== 'undefined' &&
@@ -40,4 +41,31 @@ export function formatNum (num, length) {
   let n = length - num.length
 
   return n > 0 ? [new Array(n + 1).join('0'), num].join('') : num
+}
+
+export const assert = {
+  equal(actual, expected, message) {
+    try {
+      Assert.equal(actual, expected)
+    } catch (e) {
+      debug(e)
+      throw message
+    }
+  },
+  notEqual(actual, expected, message) {
+    try {
+      Assert.notEqual(actual, expected)
+    } catch (e) {
+      debug(e)
+      throw message
+    }
+  },
+  ok(actual, message) {
+    try {
+      Assert.ok(actual)
+    } catch (e) {
+      debug(e)
+      throw message
+    }
+  }
 }
