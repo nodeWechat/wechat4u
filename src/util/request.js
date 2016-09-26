@@ -10,6 +10,10 @@ const paramsSerializer = params => {
   return encodeURI(qs.join('&'))
 }
 
+const getPgv = c => {
+  return (c || "") + Math.round(2147483647 * (Math.random() || .5)) * +new Date % 1E10
+}
+
 export function Request (defaults) {
   defaults = defaults || {}
   defaults.headers = defaults.headers || {}
@@ -24,6 +28,7 @@ export function Request (defaults) {
   this.axios = axios.create(defaults)
   if (!isStandardBrowserEnv) {
     this.cm = new CM()
+    this.cm.store('', ['pgv_pvi=' + getPgv() + '; Domain=.qq.com; Path=/', 'pgv_si=' + getPgv('s') + '; Domain=.qq.com; Path=/'])
     this.axios.interceptors.request.use(config => {
       config.headers['cookie'] = config.url ? decodeURIComponent(this.cm.prepare(config.url)) : ''
       return config
@@ -33,7 +38,9 @@ export function Request (defaults) {
     this.axios.interceptors.response.use(res => {
       let setCookie = res.headers['set-cookie']
       if (setCookie) {
-        this.cm.store(res.config.url, setCookie)
+        this.cm.store(res.config.url, setCookie.map(item => {
+          return item.replace(/\=\s*?(?=(\w+\.)*(wx\.qq\.com|wechat\.com))/, '=.')
+        }))
       }
       return res
     }, err => {
