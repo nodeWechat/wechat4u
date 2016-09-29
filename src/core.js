@@ -231,6 +231,7 @@ export default class WechatCore {
     this.syncCheck().then(selector => {
       if (selector !== this.CONF.SYNCCHECK_SELECTOR_NORMAL) {
         return this.sync().then(data => {
+          this.syncErrorCount = 0
           callback(data)
           this.syncPolling(callback)
         })
@@ -239,7 +240,7 @@ export default class WechatCore {
         this.syncPolling(callback)
       }
     }).catch(err => {
-      if (++this.syncErrorCount > 1) {
+      if (++this.syncErrorCount > 10) {
         debug(err)
         this.logout().then(res => {
           debug(res)
@@ -248,7 +249,7 @@ export default class WechatCore {
       } else {
         setTimeout(() => {
           this.syncPolling(callback)
-        }, 1000)
+        }, 1000 * this.syncErrorCount)
       }
     })
   }
