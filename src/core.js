@@ -8,7 +8,8 @@ import {
   getCONF,
   Request,
   isStandardBrowserEnv,
-  assert
+  assert,
+  getClientMsgId
 } from './util'
 
 const debug = _debug('core')
@@ -679,9 +680,4 @@ export default class WechatCore {
       throw new Error('获取头像失败')
     })
   }
-
-  getClientMsgId() {
-    return +new Date() + '0' + Math.random().toString().substring(2, 5)
-  }
-
 }
