@@ -35,6 +35,7 @@ export default class WechatCore {
 
     this.CONF = getCONF()
     this.user = {}
+    this.lastReportTime = 0
     this.syncErrorCount = 0
     this.mediaSend = 0
     this.baseUri = ''
@@ -150,15 +151,15 @@ export default class WechatCore {
     })
   }
 
-  notifyMobile() {
+  notifyMobile(to) {
     let params = {
       pass_ticket: this[PROP].passTicket
     }
     let data = {
       'BaseRequest': this[PROP].baseRequest,
-      'Code': 3,
+      'Code': to ? 1 : 3,
       'FromUserName': this.user['UserName'],
-      'ToUserName': this.user['UserName'],
+      'ToUserName': to || this.user['UserName'],
       'ClientMsgId': +new Date()
     }
     return this.request({
@@ -171,7 +172,7 @@ export default class WechatCore {
       assert.equal(data.BaseResponse.Ret, 0, res)
     }).catch(err => {
       debug(err)
-      throw new Error('开启状态通知失败')
+      throw new Error('手机状态通知失败')
     })
   }
 
@@ -227,20 +228,58 @@ export default class WechatCore {
     })
   }
 
+  statReport(text) {
+    text = text || {
+      "type": "[action-record]",
+      "data": {
+        "actions": [{
+          "type": "click",
+          "action": "发送框",
+          "time": +new Date()
+        }]
+      }
+    }
+    text = JSON.stringify(text)
+    let params = {
+      'pass_ticket': this[PROP].passTicket,
+      'fun': 'new'
+    }
+    let data = {
+      'BaseRequest': this[PROP].baseRequest,
+      'Count': 1,
+      'List': [{
+        'Text': text,
+        'Type': 1
+      }]
+    }
+    this.request({
+      method: 'POST',
+      url: this.CONF.API_webwxreport,
+      params: params,
+      data: data
+    })
+  }
+
   syncPolling(callback) {
     this.syncCheck().then(selector => {
-      if (selector !== this.CONF.SYNCCHECK_SELECTOR_NORMAL) {
+      if (selector != this.CONF.SYNCCHECK_SELECTOR_NORMAL) {
         return this.sync().then(data => {
           this.syncErrorCount = 0
           callback(data)
-          this.syncPolling(callback)
         })
       } else {
         debug('WebSync Normal')
-        this.syncPolling(callback)
+      }
+    }).then(() => {
+      this.syncPolling(callback)
+      if (+new Date() - this.lastReportTime > 60 * 1000) {
+        debug('Status Report')
+        this.notifyMobile()
+        this.statReport()
+        this.lastReportTime = +new Date()
       }
     }).catch(err => {
-      if (++this.syncErrorCount > 10) {
+      if (this.syncErrorCount++ > 5) {
         debug(err)
         this.logout().then(res => {
           debug(res)
@@ -313,7 +352,7 @@ export default class WechatCore {
     this[PROP].syncKey = syncKey
     let synckeylist = []
     for (let e = this[PROP].syncKey['List'], o = 0, n = e.length; n > o; o++) {
-      synckeylist.push(e[o][' '] + '_' + e[o]['Val'])
+      synckeylist.push(e[o]['Key'] + '_' + e[o]['Val'])
     }
     this[PROP].formatedSyncKey = synckeylist.join('|')
   }
@@ -346,7 +385,7 @@ export default class WechatCore {
     let params = {
       'pass_ticket': this[PROP].passTicket
     }
-    let clientMsgId = this.getClientMsgId()
+    let clientMsgId = getClientMsgId()
     let data = {
       'BaseRequest': this[PROP].baseRequest,
       'Msg': {
@@ -377,7 +416,7 @@ export default class WechatCore {
       'fun': 'sys',
       'pass_ticket': this[PROP].passTicket
     }
-    let clientMsgId = this.getClientMsgId()
+    let clientMsgId = getClientMsgId()
     let data = {
       'BaseRequest': this[PROP].baseRequest,
       'Msg': {
@@ -447,7 +486,7 @@ export default class WechatCore {
         mediatype = 'doc'
     }
 
-    let clientMsgId = this.getClientMsgId()
+    let clientMsgId = getClientMsgId()
 
     let uploadMediaRequest = JSON.stringify({
       BaseRequest: this[PROP].baseRequest,
@@ -509,7 +548,7 @@ export default class WechatCore {
       'fun': 'async',
       'f': 'json'
     }
-    let clientMsgId = this.getClientMsgId()
+    let clientMsgId = getClientMsgId()
     let data = {
       'BaseRequest': this[PROP].baseRequest,
       'Msg': {
@@ -541,7 +580,7 @@ export default class WechatCore {
       'fun': 'async',
       'f': 'json'
     }
-    let clientMsgId = this.getClientMsgId()
+    let clientMsgId = getClientMsgId()
     let data = {
       'BaseRequest': this[PROP].baseRequest,
       'Msg': {
@@ -573,7 +612,7 @@ export default class WechatCore {
       'fun': 'async',
       'f': 'json'
     }
-    let clientMsgId = this.getClientMsgId()
+    let clientMsgId = getClientMsgId()
     let data = {
       'BaseRequest': this[PROP].baseRequest,
       'Msg': {
