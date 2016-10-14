@@ -2,185 +2,282 @@
 
 ![](http://7xr8pm.com1.z0.glb.clouddn.com/nodeWechat.png)
 
-wechat4u core分支更新了大量API，增强了稳定性
+wechat4u@0.4.0更新了大量API，增强了稳定性
 
-## 运行
+测试服务器[wechat4u.duapp.com](http://wechat4u.duapp.com)
+<small>具有文本表情自动回复，监控，群发功能</small>
+
+## 安装使用
 
 ```
-npm install
-DEBUG=core,wechat node run-core.js
+npm install --save wechat4u@latest
 ```
 
-以上`DEBUG`环境变量指定是否输出调试信息，可去掉
-
-## 使用示例
-
-所有API和使用方法均在run-core.js中呈现
-
-```js
-'use strict'
-require('babel-register')
-const Wechat = require('./src/wechat.js')
-const qrcode = require('qrcode-terminal')
-const fs = require('fs')
-
+```javascript
+const Wechat = require('wechat')
 let bot = new Wechat()
+bot.start()
+// 或使用核心API
+// const WechatCore = require('wechat/lib/core')
+```
 
-bot.on('error', err => {
-  console.log('错误：', err)
+## 开发测试
+
+```
+git clone https://github.com/nodeWechat/wechat4u.git
+cd wechat4u
+npm install
+npm run example
+npm run core
+npm run compile
+```
+
+## 使用范例
+
+`node run-core.js`
+
+逻辑见代码，简明完整
+
+## 实例属性
+
+所有属性均只读
+
+##### bot.PROP
+
+保持登录状态的必要信息
+
+##### bot.CONF
+
+配置信息，包括当前服务器地址，API路径和一些常量
+
+程序中需要使用CONF中的常量来判断当前状态的新消息类型
+
+```javascript
+bot.state === bot.CONF.STATE.init // 初始化状态
+bot.state === bot.CONF.STATE.uuid // 已获取 UUID
+bot.state === bot.CONF.STATE.login // 已登录
+bot.state === bot.CONF.STATE.logout // 已退出登录
+msg.MsgType == bot.CONF.MSGTYPE_TEXT // 文本消息
+msg.MsgType == bot.CONF.MSGTYPE_IMAGE // 图片消息
+msg.MsgType == bot.CONF.MSGTYPE_VOICE // 语音消息
+msg.MsgType == bot.CONF.MSGTYPE_EMOTICON // 自定义表情消息
+msg.MsgType == bot.CONF.MSGTYPE_MICROVIDEO // 小视频消息
+msg.MsgType == bot.CONF.MSGTYPE_VIDEO // 视频消息
+```
+
+##### bot.state
+
+当前状态
+
+##### bot.user
+
+当前登录用户信息
+
+##### bot.contacts
+
+所有联系人，包括通讯录联系人，近期联系群，公众号
+
+key为联系人UserName，UserName是本次登录时每个联系人的UUID，不过下次登录会改变
+
+value为`Contact`对象，具体属性方法见`src/interface/contact.js`
+
+##### msg
+
+登录后接受到的所有消息
+
+msg为`Message`对象，具体属性方法见`src/interface/message.js`
+
+## 实例API
+
+##### bot.start()
+
+启动实例，登录和保持同步
+
+##### bot.stop()
+
+停止实例，退出登录
+
+#### 以下方法均返回Promise
+
+##### bot.sendText(msgString, toUserName)
+
+发送文本消息，可以包含emoji(😒)和QQ表情([坏笑])
+
+##### bot.uploadMedia(Stream | File)
+
+上传媒体文件，返回:
+
+```javascript
+{
+  name: name,
+  size: size,
+  ext: ext,
+  mediatype: mediatype,
+  mediaId: mediaId
+}
+```
+
+##### bot.sendPic(mediaId, toUserName)
+
+发送图片，mediaId为uploadMedia返回的mediaId
+
+```javascript
+bot.uploadMedia(fs.createReadStream('test.png'))
+  .then(res => {
+    return bot.sendPic(res.mediaId, ToUserName)
+  })
+  .catch(err => {
+    console.log(err)
+  })
+```
+
+##### bot.sendEmoticon(md5 | mediaId, toUserName)
+
+发送表情，可是是表情的MD5或者uploadMedia返回的mediaId
+
+表情的MD5，可以自己计算但是可能不存在在微信服务器中，也可以从微信返回的表情消息中获得
+
+##### bot.sendVideo(mediaId, toUserName)
+
+发送视频
+
+##### bot.sendDoc(mediaId, name, size, ext, toUserName)
+
+以应用卡片的形式发送文件，可以通过这个API发送语音
+
+##### bot.getHeadImg(HeadImgUrl)
+
+获取联系人头像
+
+```javascript
+bot.getHeadImg(bot.contacts[UserName].HeadImgUrl).then(res => {
+  fs.writeFileSync(`${UserName}.jpg`, res.data)
+}).catch(err => {
+  console.log(err)
 })
+```
 
+##### bot.getMsgImg(MsgId)
+
+获取图片或表情
+
+```javascript
+bot.getMsgImg(msg.MsgId).then(res => {
+  fs.writeFileSync(`${msg.MsgId}.jpg`, res.data)
+}).catch(err => {
+  console.log(err)
+})
+```
+
+##### bot.getVoice(MsgId)
+
+获取语音
+
+##### bot.getVideo(MsgId)
+
+获取小视频或视频
+
+## 实例事件
+
+##### uuid
+
+得到uuid，之后可以构造二维码或从微信服务器取得二维码
+
+```javascript
 bot.on('uuid', uuid => {
-  // uuid事件，获取二维码
   qrcode.generate('https://login.weixin.qq.com/l/' + uuid, {
     small: true
   })
   console.log('二维码链接：', 'https://login.weixin.qq.com/qrcode/' + uuid)
 })
+```
 
-bot.on('user-avatar', avatar => {
-  // 手机扫描后可以得到登录用户头像的Data URL
-  console.log('登录用户头像Data URL：', avatar)
-})
+##### user-avatar
 
-bot.on('login', () => {
-  console.log('登录成功')
-  let ToUserName = bot.contacts['filehelper'].UserName
+手机扫描后可以得到登录用户头像的Data URL
 
-  // 发送文本消息，可以包含emoji(😒)和QQ表情([坏笑])
-  bot.sendText('发送文本消息，可以包含emoji(😒)和QQ表情([坏笑])', ToUserName)
-    .catch(err => {
-      console.log(err)
-    })
+##### login
 
-  // 发送图片
-  bot.uploadMedia(fs.createReadStream('./media/test.png'))
-    .then(res => {
-      return bot.sendPic(res.mediaId, ToUserName)
-    })
-    .catch(err => {
-      console.log(err)
-    })
+手机确认登录
 
-  // 通过表情MD5发送表情
-  bot.sendEmoticon('00c801cdf69127550d93ca52c3f853ff', ToUserName)
-    .catch(err => {
-      console.log(err)
-    })
+##### logout
 
-  // 通过上传本地gif发送表情
-  bot.uploadMedia(fs.createReadStream('./media/test.gif'))
-    .then(res => {
-      return bot.sendEmoticon(res.mediaId, ToUserName)
-    })
-    .catch(err => {
-      console.log(err)
-    })
+成功登出
 
-  // 发送视频
-  bot.uploadMedia(fs.createReadStream('./media/test.mp4'))
-    .then(res => {
-      return bot.sendVideo(res.mediaId, ToUserName)
-    })
-    .catch(err => {
-      console.log(err)
-    })
+##### contacts-updated
 
-  // 发送文件
-  bot.uploadMedia(fs.createReadStream('./media/test.txt'))
-    .then(res => {
-      return bot.sendDoc(res.mediaId, res.name, res.size, res.ext, ToUserName)
-    })
-    .catch(err => {
-      console.log(err)
-    })
-})
+联系人更新，可得到已更新的联系人列表
 
-bot.on('logout', () => {
-  console.log('登出成功')
-})
+##### message
 
-bot.on('contacts-updated', contacts => {
-  console.log('联系人数量：', Object.keys(bot.contacts).length)
-})
+所有通过同步得到的消息，通过`msg.MsgType`判断消息类型
 
+```javascript
 bot.on('message', msg => {
   switch (msg.MsgType) {
     case bot.CONF.MSGTYPE_STATUSNOTIFY:
-      // 手机上进行操作后的状态更新信息，内部通过这个消息获取未保存到通讯录的群信息
-      console.log('又玩手机辣')
       break
     case bot.CONF.MSGTYPE_TEXT:
-      // 文本消息
-      console.log(`----------${msg.getDisplayTime()}----------`)
-      console.log(bot.contacts[msg.FromUserName].getDisplayName() + ':\t' + msg.Content)
-      bot.getHeadImg(bot.contacts[msg.FromUserName].HeadImgUrl).then(res => {
-        fs.writeFileSync(`./media/${msg.FromUserName}.jpg`, res.data)
-      }).catch(err => {
-        console.log(err)
-      })
-      break
-    case bot.CONF.MSGTYPE_IMAGE:
-      // 图片消息
-      console.log(`----------${msg.getDisplayTime()}----------`)
-      console.log(bot.contacts[msg.FromUserName].getDisplayName() + ':\t' + '图片信息，手机上查看')
-      bot.getMsgImg(msg.MsgId).then(res => {
-        fs.writeFileSync(`./media/${msg.MsgId}.jpg`, res.data)
-      }).catch(err => {
-        console.log(err)
-      })
-      break
-    case bot.CONF.MSGTYPE_VOICE:
-      // 语音消息
-      console.log(`----------${msg.getDisplayTime()}----------`)
-      console.log(bot.contacts[msg.FromUserName].getDisplayName() + ':\t' + '语音信息，手机上查看')
-      bot.getVoice(msg.MsgId).then(res => {
-        fs.writeFileSync(`./media/${msg.MsgId}.mp3`, res.data)
-      }).catch(err => {
-        console.log(err)
-      })
-      break
-    case bot.CONF.MSGTYPE_EMOTICON:
-      // 表情消息
-      console.log(`----------${msg.getDisplayTime()}----------`)
-      console.log(bot.contacts[msg.FromUserName].getDisplayName() + ':\t' + '表情信息，手机上查看')
-      bot.getMsgImg(msg.MsgId).then(res => {
-        fs.writeFileSync(`./media/${msg.MsgId}.gif`, res.data)
-      }).catch(err => {
-        console.log(err)
-      })
-      break
-    case bot.CONF.MSGTYPE_VIDEO:
-      // 视频消息
-      console.log(`----------${msg.getDisplayTime()}----------`)
-      console.log(bot.contacts[msg.FromUserName].getDisplayName() + ':\t' + '视频信息，手机上查看')
-      bot.getVideo(msg.MsgId).then(res => {
-        fs.writeFileSync(`./media/${msg.MsgId}.mp4`, res.data)
-      }).catch(err => {
-        console.log(err)
-      })
-      break
-    case bot.CONF.MSGTYPE_MICROVIDEO:
-      // 小视频消息
-      console.log(`----------${msg.getDisplayTime()}----------`)
-      console.log(bot.contacts[msg.FromUserName].getDisplayName() + ':\t' + '小视频信息，手机上查看')
-      bot.getVideo(msg.MsgId).then(res => {
-        fs.writeFileSync(`./media/${msg.MsgId}.mp4`, res.data)
-      }).catch(err => {
-        console.log(err)
-      })
-      break
-    case bot.CONF.MSGTYPE_VERIFYMSG:
-
       break
     case bot.CONF.MSGTYPE_RECALLED:
-
-      break
-    default:
-
       break
   }
 })
-
-bot.start()
 ```
+
+##### error
+
+## Contact对象和Message对象
+
+每个contact，继承自 interface/contact，除原本 json 外，扩展以下属性：
+
+```javascript
+contact.AvatarUrl // 处理过的头像地址
+contact.isSelf    // 是否是登录用户本人
+
+contact.getDisplayName()
+contact.canSearch(keyword)
+```
+
+此外，wechat4u 在实例上提供 Contact 作为联系人的通用接口，扩展以下属性：
+
+```javascript
+wechat.contact.isRoomContact()
+wechat.contact.isSpContact()
+wechat.contact.isPublicContact()
+
+wechat.Contact.getUserByUserName()
+wechat.Contact.getSearchUser(keyword)
+```
+
+每个msg 对象继承自 interface/message，出原本 json 外，具有以下属性：
+
+```javascript
+message.isSendBySelf // 是否是本人发送
+
+message.isSendBy(contact)
+message.getPeerUserName() // 获取所属对话的联系人 UserName
+message.getDisplayTime() // 获取形如 12:00 的时间戳信息
+```
+
+
+## 相关项目
+
+关于微信网页端机器人的实现，已经有大量的轮子了。感谢各位大神！（排名不分先后。。收录的肯定也不齐。。）
+
+* [Python2 的 WeixinBot](https://github.com/Urinx/WeixinBot)
+* [QT 的 QWX](https://github.com/xiangzhai/qwx)
+* [Node，可能会写成uProxy插件的 uProxy_wechat](https://github.com/LeMasque/uProxy_wechat)
+* [Node，可在shell中直接运行的 wechat-user-bot](https://github.com/HalfdogStudio/wechat-user-bot)
+* [Python3 的 wechat_robot](https://github.com/lyyyuna/wechat_robot)
+* [开放协议 支持 QQ&微信 的 wxagent](https://github.com/kitech/wxagent)
+* [在微信网页版和 IRC 间搭建通道支持 IRC 操作的 wechatircd](https://github.com/MaskRay/wechatircd)
+* [Chrome 插件版的微信机器人](https://github.com/spacelan/weixin-bot-chrome-extension)
+
+关于微信网页端的接口说明，也有好几篇分析的很厉害的文章。
+
+* [Reverland 大神的web 微信与基于node的微信机器人实现](http://reverland.org/javascript/2016/01/15/webchat-user-bot/)
+* [Urinx 大神的 API Map](https://github.com/Urinx/WeixinBot/blob/master/README.md)
+* [聂永 大神的 微信协议简单调研笔记](http://www.blogjava.net/yongboy/archive/2014/03/05/410636.html)
+
+好了，差不多就这些资料了。如果想要开发个自己的，那就开工吧！

@@ -121,7 +121,7 @@ class Wechat extends WechatCore {
   }
 
   stop() {
-    return this.state == this.CONF.STATE.login ? this.logout() : Promise.resolve()
+    this.logout()
   }
 
   handleMsg(data) {

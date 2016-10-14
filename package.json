@@ -1,6 +1,6 @@
 {
   "name": "wechat4u",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "web wechat lib for user",
   "main": "lib/wechat.js",
   "scripts": {
@@ -11,8 +11,7 @@
     "clean": "rm -rf lib",
     "unit": "mocha test/unit.js --compilers js:babel-core/register",
     "test": "npm run lint && npm run unit",
-    "dev": "cross-env DEBUG=wechat,wxbot,app nodemon --exec babel-node -- example/app.js",
-    "core": "cross-env DEBUG=wechat,core babel-node run-core.js"
+    "core": "cross-env DEBUG=wechat,core run-core.js"
   },
   "dependencies": {
     "assert": "^1.4.1",
