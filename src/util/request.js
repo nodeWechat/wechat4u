@@ -40,7 +40,7 @@ export function Request (defaults) {
       let setCookie = res.headers['set-cookie']
       if (setCookie) {
         this.cm.store(res.config.url, setCookie.map(item => {
-          return item.replace(/\=\s*?(?=(\w+\.)*(wx\.qq\.com|wechat\.com))/, '=.')
+          return item.replace(/\=\s*?(?=(\w+\.)*(wx\d?\.qq\.com|wechat\.com))/, '=.')
         }))
       }
       return res

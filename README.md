@@ -101,7 +101,7 @@ bot.on('logout', () => {
 })
 
 bot.on('contacts-updated', contacts => {
-  console.log('联系人数量：', Object.keys(this.contacts).length)
+  console.log('联系人数量：', Object.keys(bot.contacts).length)
 })
 
 bot.on('message', msg => {
