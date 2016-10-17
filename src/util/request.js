@@ -21,7 +21,8 @@ export function Request (defaults) {
     defaults.headers['user-agent'] = defaults.headers['user-agent'] || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36'
     defaults.headers['connection'] = defaults.headers['connection'] || 'close'
   }
-  defaults.paramsSerializer = defaults.paramsSerializer || paramsSerializer
+  // 好像不需要了
+  // defaults.paramsSerializer = defaults.paramsSerializer || paramsSerializer
   defaults.httpAgent = false
   defaults.httpsAgent = false
 
@@ -39,7 +40,7 @@ export function Request (defaults) {
       let setCookie = res.headers['set-cookie']
       if (setCookie) {
         this.cm.store(res.config.url, setCookie.map(item => {
-          return item.replace(/\=\s*?(?=(\w+\.)*(wx\.qq\.com|wechat\.com))/, '=.')
+          return item.replace(/\=\s*?(?=(\w+\.)*(wx\d?\.qq\.com|wechat\.com))/, '=.')
         }))
       }
       return res

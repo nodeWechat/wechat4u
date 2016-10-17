@@ -1,4 +1,8 @@
-import {protoAugment, convertEmoji, getCONF} from '../util'
+import {
+  protoAugment,
+  convertEmoji,
+  getCONF
+} from '../util'
 const CONF = getCONF()
 
 /* Contact Object Example
@@ -35,46 +39,47 @@ const CONF = getCONF()
   "EncryChatRoomId": ""
 }
 */
-export function getUserByUserName (memberList, UserName) {
+export function getUserByUserName(memberList, UserName) {
   if (!memberList.length) return null
 
   return memberList.find(contact => contact.UserName === UserName)
 }
 
-export function getDisplayName (contact) {
-  return (isRoomContact(contact) ? '[群] ' : '') + (contact.RemarkName || contact.NickName || contact.UserName)
+export function getDisplayName(contact) {
+  if (isRoomContact(contact)) {
+    return '[群] ' + (contact.RemarkName || contact.DisplayName || contact.NickName ||
+      `${getDisplayName(contact.MemberList[0])}、${getDisplayName(contact.MemberList[1])}`)
+  } else {
+    return contact.RemarkName || contact.DisplayName || contact.NickName || contact.UserName
+  }
 }
 
-export function headImgUrlAugment (headImgUrl, baseUri) {
-  return headImgUrl ? baseUri.match(/http.*?\/\/.*?(?=\/)/)[0] + headImgUrl : null
-}
-
-export function isRoomContact (contact) {
+export function isRoomContact(contact) {
   return contact.UserName ? /^@@|@chatroom$/.test(contact.UserName) : false
 }
 
-export function isSpContact (contact) {
+export function isSpContact(contact) {
   return CONF.SPECIALUSERS.indexOf(contact.UserName) >= 0
 }
 
-export function isPublicContact (contact) {
+export function isPublicContact(contact) {
   return contact.VerifyFlag & CONF.MM_USERATTRVERIFYFALG_BIZ_BRAND
 }
 
 const contactProto = {
-  init: function (instance) {
+  init: function(instance) {
     this.NickName = convertEmoji(this.NickName)
     this.RemarkName = convertEmoji(this.RemarkName)
-    this.AvatarUrl = headImgUrlAugment(this.HeadImgUrl, instance.baseUri)
+    this.DisplayName = convertEmoji(this.DisplayName)
 
     this.isSelf = this.UserName === instance.user.UserName
 
     return this
   },
-  getDisplayName: function () {
+  getDisplayName: function() {
     return getDisplayName(this)
   },
-  canSearch: function (keyword) {
+  canSearch: function(keyword) {
     if (!keyword) return false
     keyword = keyword.toUpperCase()
 
@@ -90,16 +95,16 @@ const contactProto = {
   }
 }
 
-export default function ContactFactory (instance) {
+export default function ContactFactory(instance) {
   return {
-    extend: function (contactObj) {
+    extend: function(contactObj) {
       protoAugment(contactObj, contactProto)
       return contactObj.init(instance)
     },
-    getUserByUserName: function (UserName) {
+    getUserByUserName: function(UserName) {
       return instance.contacts[UserName]
     },
-    getSearchUser: function (keyword) {
+    getSearchUser: function(keyword) {
       let users = []
       for (let key in instance.contacts) {
         if (instance.contacts[key].canSearch(keyword)) {
@@ -108,7 +113,7 @@ export default function ContactFactory (instance) {
       }
       return users
     },
-    isSelf: function (contact) {
+    isSelf: function(contact) {
       return contact.isSelf || contact.UserName === instance.user.UserName
     },
     getDisplayName,

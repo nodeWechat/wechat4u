@@ -9,12 +9,17 @@ let botInstanceArr = {}
 
 router.get('/uuid', (req, res) => {
   let bot = new WxBot()
-
-  bot.getUUID().then(uuid => {
+  bot.on('uuid', uuid => {
     res.send(uuid)
     botInstanceArr[uuid] = bot
-    debug('New Connect', Object.getOwnPropertyNames(botInstanceArr).length)
+    debug('新连接', Object.getOwnPropertyNames(botInstanceArr).length)
   })
+  bot.on('logout', () => {
+    res.sendStatus(404)
+    debug('获取UUID失败')
+  })
+
+  bot.start()
 })
 
 router.get('/instance/:uuid', (req, res) => {
@@ -30,21 +35,25 @@ router.get('/instance/:uuid', (req, res) => {
 
 router.get('/login/:uuid', (req, res) => {
   let bot = botInstanceArr[req.params.uuid]
-
-  bot.start()
-    .then(() => {
-      // 绑定 Logout 事件
-      bot.on('logout', () => {
-        delete botInstanceArr[req.params.uuid]
-        debug('Close Logout Connect', Object.getOwnPropertyNames(botInstanceArr).length)
-      })
+  if (!bot) {
+    return res.sendStatus(404)
+  }
+  bot.removeAllListeners('logout')
+  bot.on('logout', () => {
+    delete botInstanceArr[req.params.uuid]
+    debug('Close Logout Connect', Object.getOwnPropertyNames(botInstanceArr).length)
+  })
+  if (bot.state == WxBot.STATE.uuid) {
+    bot.on('login', () => {
       res.sendStatus(200)
     })
-    .catch(err => {
-      delete botInstanceArr[req.params.uuid]
-      debug('Close Not Login Connect', Object.getOwnPropertyNames(botInstanceArr).length, err)
-      res.sendStatus(403)
-    })
+  } else if (bot.state == WxBot.STATE.login) {
+    res.sendStatus(200)
+  } else {
+    delete botInstanceArr[req.params.uuid]
+    debug('Close Not Login Connect', Object.getOwnPropertyNames(botInstanceArr).length, err)
+    res.sendStatus(403)
+  }
 })
 
 router.get('/members/:uuid', (req, res) => {
@@ -59,7 +68,9 @@ router.get('/members/:uuid', (req, res) => {
 
 router.get('/members/:uuid/:uid', (req, res) => {
   let bot = botInstanceArr[req.params.uuid]
-
+  if (!bot) {
+    return res.sendStatus(404)
+  }
   if (bot.replyUsers.has(req.params.uid)) {
     bot.replyUsers.delete(req.params.uid)
     debug('删除自动回复用户', req.params.uid)
@@ -72,7 +83,9 @@ router.get('/members/:uuid/:uid', (req, res) => {
 
 router.get('/supervise/:uuid/:uid', (req, res) => {
   let bot = botInstanceArr[req.params.uuid]
-
+  if (!bot) {
+    return res.sendStatus(404)
+  }
   if (bot.superviseUsers.has(req.params.uid)) {
     bot.superviseUsers.delete(req.params.uid)
     debug('删除监督用户', req.params.uid)

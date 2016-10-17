@@ -2,10 +2,9 @@
 
 ![](http://7xr8pm.com1.z0.glb.clouddn.com/nodeWechat.png)
 
-wechat4u@0.5.x更新了大量API，增强了稳定性
+wechat4u@0.4.0更新了大量API，增强了稳定性
 
 测试服务器[wechat4u.duapp.com](http://wechat4u.duapp.com)
-
 <small>具有文本表情自动回复，监控，群发功能</small>
 
 ## 安装使用
@@ -15,11 +14,11 @@ npm install --save wechat4u@latest
 ```
 
 ```javascript
-const Wechat = require('wechat4u')
+const Wechat = require('wechat')
 let bot = new Wechat()
 bot.start()
 // 或使用核心API
-// const WechatCore = require('wechat4u/lib/core')
+// const WechatCore = require('wechat/lib/core')
 ```
 
 ## 开发测试
@@ -28,9 +27,9 @@ bot.start()
 git clone https://github.com/nodeWechat/wechat4u.git
 cd wechat4u
 npm install
-npm run example // web服务器模式
-npm run core // 命令行模式
-npm run compile // babel编译
+npm run example
+npm run core
+npm run compile
 ```
 
 ## 使用范例
@@ -54,10 +53,10 @@ npm run compile // babel编译
 程序中需要使用CONF中的常量来判断当前状态的新消息类型
 
 ```javascript
-bot.state == bot.CONF.STATE.init // 初始化状态
-bot.state == bot.CONF.STATE.uuid // 已获取 UUID
-bot.state == bot.CONF.STATE.login // 已登录
-bot.state == bot.CONF.STATE.logout // 已退出登录
+bot.state === bot.CONF.STATE.init // 初始化状态
+bot.state === bot.CONF.STATE.uuid // 已获取 UUID
+bot.state === bot.CONF.STATE.login // 已登录
+bot.state === bot.CONF.STATE.logout // 已退出登录
 msg.MsgType == bot.CONF.MSGTYPE_TEXT // 文本消息
 msg.MsgType == bot.CONF.MSGTYPE_IMAGE // 图片消息
 msg.MsgType == bot.CONF.MSGTYPE_VOICE // 语音消息
@@ -94,13 +93,9 @@ msg为`Message`对象，具体属性方法见`src/interface/message.js`
 
 启动实例，登录和保持同步
 
-调用该方法后，通过监听事件来处理消息
-
 ##### bot.stop()
 
 停止实例，退出登录
-
-调用该方法后，通过监听`logout`事件来登出
 
 #### 以下方法均返回Promise
 
@@ -276,7 +271,7 @@ message.getDisplayTime() // 获取形如 12:00 的时间戳信息
 * [Node，可在shell中直接运行的 wechat-user-bot](https://github.com/HalfdogStudio/wechat-user-bot)
 * [Python3 的 wechat_robot](https://github.com/lyyyuna/wechat_robot)
 * [开放协议 支持 QQ&微信 的 wxagent](https://github.com/kitech/wxagent)
-* [在微信网页版和 IRC 间搭建通道支持 IRC 操作的 wechatircd](https://github.com/MaskRay/wechatircd)
+* [在微信网页版和 IRC 间搭建通道支持 IRC 操作的 wechatircd](https://github.com/MaskRay/wechatircd)
 * [Chrome 插件版的微信机器人](https://github.com/spacelan/weixin-bot-chrome-extension)
 
 关于微信网页端的接口说明，也有好几篇分析的很厉害的文章。
