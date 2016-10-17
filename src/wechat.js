@@ -1,4 +1,3 @@
-import 'babel-polyfill'
 import WechatCore from './core'
 import EventEmitter from 'events'
 

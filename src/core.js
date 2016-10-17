@@ -146,7 +146,7 @@ export default class WechatCore {
         assert.equal(data.BaseResponse.Ret, 0, res)
         this.PROP.baseRequest.Skey = this.PROP.skey = data.SKey || this.PROP.skey
         this.updateSyncKey(data.SyncKey)
-        this.user = data.User
+        Object.assign(this.user, data.User)
         return this.user
       })
     }).catch(err => {

@@ -1,5 +1,7 @@
-import debug from 'debug'
+'use strict'
 import Assert from 'assert'
+import _debug from 'debug'
+const debug = _debug('util')
 
 export const isStandardBrowserEnv = (
   typeof window !== 'undefined' &&
