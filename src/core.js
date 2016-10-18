@@ -619,7 +619,7 @@ export default class WechatCore {
         'BaseRequest': this.PROP.baseRequest,
         'Msg': {
           'Type': this.CONF.APPMSGTYPE_ATTACH,
-          'Content': `<appmsg appid='wx782c26e4c19acffb' sdkver=''><title>${name}</title><des></des><action></action><type>6</type><content></content><url></url><lowurl></lowurl><appattach><totallen>${size}</totallen><attachid>${mediaId}</attachid><fileext>${ext}</fileext></appattach><extinfo></extinfo></appmsg>`,
+          'Content': `<appmsg appid='wxeb7ec651dd0aefa9' sdkver=''><title>${name}</title><des></des><action></action><type>6</type><content></content><url></url><lowurl></lowurl><appattach><totallen>${size}</totallen><attachid>${mediaId}</attachid><fileext>${ext}</fileext></appattach><extinfo></extinfo></appmsg>`,
           'FromUserName': this.user.UserName,
           'ToUserName': to,
           'LocalID': clientMsgId,

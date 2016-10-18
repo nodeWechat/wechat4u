@@ -71,7 +71,6 @@ class Wechat extends WechatCore {
       if (this.syncErrorCount++ > 5) {
         debug(err)
         this.logout()
-        this.state = this.CONF.STATE.logout
         callback()
       } else {
         setTimeout(() => {
@@ -101,22 +100,25 @@ class Wechat extends WechatCore {
       ret = await this.getContact()
       debug('getContact data length: ', ret.length)
       this.updateContacts(ret)
-      this.syncPolling(msg => {
-        if (!msg) {
-          this.emit('logout')
-          this.state = this.CONF.STATE.logout
-        } else if (msg.AddMsgCount) {
-          debug('syncPolling messages count: ', msg.AddMsgCount)
-          this.handleMsg(msg.AddMsgList)
-        }
-      })
-      this.emit('login')
-      this.state = this.CONF.STATE.login
     } catch (err) {
       this.emit('error', err)
       debug(err)
-      this.stop()
+      this.logout()
+      this.emit('logout')
+      this.state = this.CONF.STATE.logout
+      return
     }
+    this.syncPolling(msg => {
+      if (!msg) {
+        this.emit('logout')
+        this.state = this.CONF.STATE.logout
+      } else if (msg.AddMsgCount) {
+        debug('syncPolling messages count: ', msg.AddMsgCount)
+        this.handleMsg(msg.AddMsgList)
+      }
+    })
+    this.emit('login')
+    this.state = this.CONF.STATE.login
   }
 
   stop() {

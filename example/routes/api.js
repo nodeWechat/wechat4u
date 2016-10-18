@@ -7,6 +7,10 @@ const router = express.Router()
 
 let botInstanceArr = {}
 
+router.get('/redirect/:uuid', (req, res) => {
+  res.redirect('https://login.weixin.qq.com/l/' + req.params.uuid)
+})
+
 router.get('/uuid', (req, res) => {
   let bot = new WxBot()
   bot.on('uuid', uuid => {
