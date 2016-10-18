@@ -735,4 +735,37 @@ export default class WechatCore {
       throw new Error('获取头像失败')
     })
   }
+
+  verifyUser(UserName, Ticket) {
+    return Promise.resolve().then(() => {
+      let params = {
+        'pass_ticket': this.PROP.passTicket
+      }
+      let data = {
+        'BaseRequest': this.PROP.baseRequest,
+        'Opcode': 3,
+        'VerifyUserListSize': 1,
+        'VerifyUserList': [{
+          'Value': UserName,
+          'VerifyUserTicket': Ticket
+        }],
+        'VerifyContent': '',
+        'SceneListCount': 1,
+        'SceneList': [33],
+        'skey': this.PROP.skey
+      }
+      return this.request({
+        method: 'POST',
+        url: this.CONF.API_webwxverifyuser,
+        params: params,
+        data: data
+      }).then(res => {
+        let data = res.data
+        assert.equal(data.BaseResponse.Ret, 0, res)
+      })
+    }).catch(err => {
+      debug(err)
+      throw new Error('通过好友请求失败')
+    })
+  }
 }

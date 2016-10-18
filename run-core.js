@@ -151,13 +151,29 @@ bot.on('message', msg => {
       })
       break
     case bot.CONF.MSGTYPE_VERIFYMSG:
-
+      // 好友请求消息，似乎没什么用，微信上面能取消加好友验证
+      console.log(`----------${msg.getDisplayTime()}----------`)
+      bot.verifyUser(msg.RecommendInfo.UserName, msg.RecommendInfo.Ticket)
+        .then(res => {
+          console.log(`通过 ${bot.Contact.getDisplayName(msg.RecommendInfo)} 好友请求`)
+        })
+        .catch(err => {
+          console.log(err)
+        })
       break
     case bot.CONF.MSGTYPE_RECALLED:
-
+      // 撤回消息，Content中有消息的MsgId
+      console.log(`----------${msg.getDisplayTime()}----------`)
+      console.log(bot.contacts[msg.FromUserName].getDisplayName() + ' 撤回' + ':\t' + msg.Content)
+      break
+    case bot.CONF.MSGTYPE_SYS:
+      // 系统消息，Content中会提示细节，包括红包消息
+      console.log(`----------${msg.getDisplayTime()}----------`)
+      console.log(bot.contacts[msg.FromUserName].getDisplayName() + ':\t' + msg.Content)
       break
     default:
-
+      console.log(`----------${msg.getDisplayTime()}----------`)
+      console.log(msg)
       break
   }
 })
