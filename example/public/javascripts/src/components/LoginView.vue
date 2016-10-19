@@ -58,7 +58,7 @@ module.exports = {
       },
       showQR() {
         return service.getUUID().then(uuid => {
-          const qrCode = 'http://172.20.172.97:3000/api/redirect/' + uuid
+          const qrCode = 'https://login.weixin.qq.com/l/' + uuid
           this.$els.qrCode.innerHTML = ''
           new QRCode(this.$els.qrCode, qrCode)
         }).catch(err => {

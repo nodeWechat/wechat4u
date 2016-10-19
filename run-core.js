@@ -152,6 +152,7 @@ bot.on('message', msg => {
       break
     case bot.CONF.MSGTYPE_VERIFYMSG:
       // 好友请求消息，似乎没什么用，微信上面能取消加好友验证
+      // 不过如果是取消了加好友验证，那么就没办法将新好友添加到通讯录，相当于临时会话
       console.log(`----------${msg.getDisplayTime()}----------`)
       bot.verifyUser(msg.RecommendInfo.UserName, msg.RecommendInfo.Ticket)
         .then(res => {
