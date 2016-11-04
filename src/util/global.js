@@ -73,5 +73,9 @@ export const assert = {
 }
 
 export function getClientMsgId() {
-  return +new Date() + '0' + Math.random().toString().substring(2, 5)
+  return (Date.now() + Math.random().toFixed(3)).replace(".", "")
+}
+
+export function getDeviceID() {
+  return "e" + ("" + Math.random().toFixed(15)).substring(2, 17)
 }

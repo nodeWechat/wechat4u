@@ -9,7 +9,8 @@ import {
   Request,
   isStandardBrowserEnv,
   assert,
-  getClientMsgId
+  getClientMsgId,
+  getDeviceID
 } from './util'
 
 const debug = _debug('core')
@@ -25,9 +26,6 @@ export default class WechatCore {
       passTicket: '',
       formatedSyncKey: '',
       webwxDataTicket: '',
-      deviceId: 'e' + Math.random().toString().substring(2, 17),
-
-      baseRequest: {},
       syncKey: {}
     }
 
@@ -113,12 +111,6 @@ export default class WechatCore {
             }
           })
         }
-        this.PROP.baseRequest = {
-          'Uin': parseInt(this.PROP.uin, 10),
-          'Sid': this.PROP.sid,
-          'Skey': this.PROP.skey,
-          'DeviceID': this.PROP.deviceId
-        }
       })
     }).catch(err => {
       debug(err)
@@ -134,7 +126,7 @@ export default class WechatCore {
         'r': ~new Date()
       }
       let data = {
-        BaseRequest: this.PROP.baseRequest
+        BaseRequest: this.getBaseRequest()
       }
       return this.request({
         method: 'POST',
@@ -144,7 +136,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
-        this.PROP.baseRequest.Skey = this.PROP.skey = data.SKey || this.PROP.skey
+        this.PROP.skey = data.SKey || this.PROP.skey
         this.updateSyncKey(data.SyncKey)
         Object.assign(this.user, data.User)
         return this.user
@@ -158,14 +150,15 @@ export default class WechatCore {
   notifyMobile(to) {
     return Promise.resolve().then(() => {
       let params = {
-        pass_ticket: this.PROP.passTicket
+        pass_ticket: this.PROP.passTicket,
+        lang: 'zh_CN'
       }
       let data = {
-        'BaseRequest': this.PROP.baseRequest,
+        'BaseRequest': this.getBaseRequest(),
         'Code': to ? 1 : 3,
         'FromUserName': this.user['UserName'],
         'ToUserName': to || this.user['UserName'],
-        'ClientMsgId': +new Date()
+        'ClientMsgId': getClientMsgId()
       }
       return this.request({
         method: 'POST',
@@ -212,10 +205,11 @@ export default class WechatCore {
       let params = {
         'pass_ticket': this.PROP.passTicket,
         'type': 'ex',
-        'r': +new Date()
+        'r': +new Date(),
+        'lang': 'zh_CN'
       }
       let data = {
-        'BaseRequest': this.PROP.baseRequest,
+        'BaseRequest': this.getBaseRequest(),
         'Count': contacts.length,
         'List': contacts
       }
@@ -251,10 +245,11 @@ export default class WechatCore {
       text = JSON.stringify(text)
       let params = {
         'pass_ticket': this.PROP.passTicket,
-        'fun': 'new'
+        'fun': 'new',
+        'lang': 'zh_CN'
       }
       let data = {
-        'BaseRequest': this.PROP.baseRequest,
+        'BaseRequest': this.getBaseRequest(),
         'Count': 1,
         'List': [{
           'Text': text,
@@ -281,7 +276,7 @@ export default class WechatCore {
         'sid': this.PROP.sid,
         'uin': this.PROP.uin,
         'skey': this.PROP.skey,
-        'deviceid': this.PROP.deviceId,
+        'deviceid': getDeviceID(),
         'synckey': this.PROP.formatedSyncKey
       }
       return this.request({
@@ -308,10 +303,11 @@ export default class WechatCore {
       let params = {
         'sid': this.PROP.sid,
         'skey': this.PROP.skey,
-        'pass_ticket': this.PROP.passTicket
+        'pass_ticket': this.PROP.passTicket,
+        'lang': 'zh_CN'
       }
       let data = {
-        'BaseRequest': this.PROP.baseRequest,
+        'BaseRequest': this.getBaseRequest(),
         'SyncKey': this.PROP.syncKey,
         'rr': ~new Date()
       }
@@ -325,6 +321,7 @@ export default class WechatCore {
         assert.equal(data.BaseResponse.Ret, 0, res)
 
         this.updateSyncKey(data['SyncKey'])
+        this.PROP.skey = data.SKey || this.PROP.skey
         return data
       })
     }).catch(err => {
@@ -347,7 +344,8 @@ export default class WechatCore {
       let params = {
         redirect: 1,
         type: 0,
-        skey: this.PROP.skey
+        skey: this.PROP.skey,
+        lang: 'zh_CN'
       }
 
       // data加上会出错，不加data也能登出
@@ -375,11 +373,13 @@ export default class WechatCore {
   sendText(msg, to) {
     return Promise.resolve().then(() => {
       let params = {
-        'pass_ticket': this.PROP.passTicket
+        'pass_ticket': this.PROP.passTicket,
+        'lang': 'zh_CN'
       }
       let clientMsgId = getClientMsgId()
       let data = {
-        'BaseRequest': this.PROP.baseRequest,
+        'BaseRequest': this.getBaseRequest(),
+        'Scene': 0,
         'Msg': {
           'Type': this.CONF.MSGTYPE_TEXT,
           'Content': msg,
@@ -408,11 +408,13 @@ export default class WechatCore {
     return Promise.resolve().then(() => {
       let params = {
         'fun': 'sys',
-        'pass_ticket': this.PROP.passTicket
+        'pass_ticket': this.PROP.passTicket,
+        'lang': 'zh_CN'
       }
       let clientMsgId = getClientMsgId()
       let data = {
-        'BaseRequest': this.PROP.baseRequest,
+        'BaseRequest': this.getBaseRequest(),
+        'Scene': 0,
         'Msg': {
           'Type': this.CONF.MSGTYPE_EMOTICON,
           'EmojiFlag': 2,
@@ -485,12 +487,13 @@ export default class WechatCore {
       let clientMsgId = getClientMsgId()
 
       let uploadMediaRequest = JSON.stringify({
-        BaseRequest: this.PROP.baseRequest,
+        BaseRequest: this.getBaseRequest(),
         ClientMediaId: clientMsgId,
         TotalLen: size,
         StartPos: 0,
         DataLen: size,
-        MediaType: 4
+        MediaType: 4,
+        UploadType: 2
       })
 
       let form = new FormData()
@@ -543,11 +546,13 @@ export default class WechatCore {
       let params = {
         'pass_ticket': this.PROP.passTicket,
         'fun': 'async',
-        'f': 'json'
+        'f': 'json',
+        'lang': 'zh_CN'
       }
       let clientMsgId = getClientMsgId()
       let data = {
-        'BaseRequest': this.PROP.baseRequest,
+        'BaseRequest': this.getBaseRequest(),
+        'Scene': 0,
         'Msg': {
           'Type': this.CONF.MSGTYPE_IMAGE,
           'MediaId': mediaId,
@@ -577,11 +582,13 @@ export default class WechatCore {
       let params = {
         'pass_ticket': this.PROP.passTicket,
         'fun': 'async',
-        'f': 'json'
+        'f': 'json',
+        'lang': 'zh_CN'
       }
       let clientMsgId = getClientMsgId()
       let data = {
-        'BaseRequest': this.PROP.baseRequest,
+        'BaseRequest': this.getBaseRequest(),
+        'Scene': 0,
         'Msg': {
           'Type': this.CONF.MSGTYPE_VIDEO,
           'MediaId': mediaId,
@@ -611,11 +618,13 @@ export default class WechatCore {
       let params = {
         'pass_ticket': this.PROP.passTicket,
         'fun': 'async',
-        'f': 'json'
+        'f': 'json',
+        'lang': 'zh_CN'
       }
       let clientMsgId = getClientMsgId()
       let data = {
-        'BaseRequest': this.PROP.baseRequest,
+        'BaseRequest': this.getBaseRequest(),
+        'Scene': 0,
         'Msg': {
           'Type': this.CONF.APPMSGTYPE_ATTACH,
           'Content': `<appmsg appid='wxeb7ec651dd0aefa9' sdkver=''><title>${name}</title><des></des><action></action><type>6</type><content></content><url></url><lowurl></lowurl><appattach><totallen>${size}</totallen><attachid>${mediaId}</attachid><fileext>${ext}</fileext></appattach><extinfo></extinfo></appmsg>`,
@@ -738,10 +747,11 @@ export default class WechatCore {
   verifyUser(UserName, Ticket) {
     return Promise.resolve().then(() => {
       let params = {
-        'pass_ticket': this.PROP.passTicket
+        'pass_ticket': this.PROP.passTicket,
+        'lang': 'zh_CN'
       }
       let data = {
-        'BaseRequest': this.PROP.baseRequest,
+        'BaseRequest': this.getBaseRequest(),
         'Opcode': 3,
         'VerifyUserListSize': 1,
         'VerifyUserList': [{
@@ -766,5 +776,14 @@ export default class WechatCore {
       debug(err)
       throw new Error('通过好友请求失败')
     })
+  }
+
+  getBaseRequest() {
+    return {
+      Uin: parseInt(this.PROP.uin),
+      Sid: this.PROP.sid,
+      Skey: this.PROP.skey,
+      DeviceID: getDeviceID()
+    }
   }
 }
