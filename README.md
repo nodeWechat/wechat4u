@@ -2,7 +2,7 @@
 
 ![](http://7xr8pm.com1.z0.glb.clouddn.com/nodeWechat.png)
 
-wechat4u@0.5.x更新了大量API，增强了稳定性
+wechat4u@0.6.x更新了大量API，增强了稳定性
 
 测试服务器
 
@@ -189,6 +189,10 @@ bot.getMsgImg(msg.MsgId).then(res => {
 ##### bot.getVideo(MsgId)
 
 获取小视频或视频
+
+##### bot.verifyUser(UserName, Ticket)
+
+通过好友添加请求
 
 ## 实例事件
 
