@@ -521,7 +521,6 @@ export default class WechatCore {
         data: form
       }).then(res => {
         let data = res.data
-        assert.equal(data.BaseResponse.Ret, 0, res)
         let mediaId = data.MediaId
         assert.ok(mediaId, res)
 
