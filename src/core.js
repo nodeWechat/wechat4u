@@ -778,7 +778,7 @@ export default class WechatCore {
     })
   }
 
-  // fun = 'addmember' or 'delmember'
+  // fun: 'addmember' or 'delmember'
   updateChatroom(ChatRoomName, MemberList, fun) {
     return Promise.resolve().then(() => {
       let params = {
@@ -805,6 +805,33 @@ export default class WechatCore {
     }).catch(err => {
       debug(err)
       throw new Error('邀请或踢出群成员失败')
+    })
+  }
+
+  // OP: 1 联系人置顶 0 取消置顶
+  opLog(UserName, OP) {
+    return Promise.resolve().then(() => {
+      let params = {
+        pass_ticket: this.PROP.passTicket
+      }
+      let data = {
+        BaseRequest: this.getBaseRequest(),
+        CmdId: 3,
+        OP: OP,
+        UserName: UserName
+      }
+      return this.request({
+        method: 'POST',
+        url: this.CONF.API_webwxoplog,
+        params: params,
+        data: data
+      }).then(res => {
+        let data = res.data
+        assert.equal(data.BaseResponse.Ret, 0, res)
+      })
+    }).catch(err => {
+      debug(err)
+      throw new Error('置顶或取消置顶失败')
     })
   }
 
