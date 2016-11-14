@@ -98,8 +98,10 @@ const contactProto = {
 export default function ContactFactory(instance) {
   return {
     extend: function(contactObj) {
-      protoAugment(contactObj, contactProto)
-      return contactObj.init(instance)
+      let contact = Object.create(contactObj)
+      Object.assign(contact, contactProto)
+      contact.init(instance)
+      return contact
     },
     getUserByUserName: function(UserName) {
       return instance.contacts[UserName]

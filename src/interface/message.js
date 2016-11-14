@@ -63,8 +63,10 @@ const messageProto = {
 export default function MessageFactory (instance) {
   return {
     extend: function (messageObj) {
-      protoAugment(messageObj, messageProto)
-      return messageObj.init(instance)
+      let message = Object.create(messageObj)
+      Object.assign(message, messageProto)
+      message.init(instance)
+      return message
     }
   }
 }

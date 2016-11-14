@@ -108,21 +108,29 @@ class Wechat extends WechatCore {
       this.state = this.CONF.STATE.logout
       return
     }
-    this.syncPolling(msg => {
-      if (!msg) {
-        this.emit('logout')
-        this.state = this.CONF.STATE.logout
-      } else if (msg.AddMsgCount) {
-        debug('syncPolling messages count: ', msg.AddMsgCount)
-        this.handleMsg(msg.AddMsgList)
-      }
-    })
+    this.syncPolling(data => this.handleSync(data))
     this.emit('login')
     this.state = this.CONF.STATE.login
   }
 
   stop() {
     this.logout()
+  }
+
+  handleSync(data) {
+    if (!data) {
+      this.emit('logout')
+      this.state = this.CONF.STATE.logout
+      return
+    }
+    if (data.AddMsgCount) {
+      debug('syncPolling messages count: ', data.AddMsgCount)
+      this.handleMsg(data.AddMsgList)
+    }
+    if (data.ModContactCount) {
+      debug('syncPolling ModContactList count: ', data.ModContactCount)
+      this.updateContacts(data.ModContactList)
+    }
   }
 
   handleMsg(data) {
@@ -167,7 +175,19 @@ class Wechat extends WechatCore {
 
   updateContacts(contacts) {
     contacts.forEach(contact => {
-      this.contacts[contact.UserName] = this.Contact.extend(contact)
+      if (this.contacts[contact.UserName]) {
+        let original = this.contacts[contact.UserName]
+        _.forEach(contact, (val, key) => {
+          if (!original[key]) {
+            original[key] = val
+          }
+        })
+        if (contact.UserName.indexOf('@@') == 0 && contact.MemberList[0].Uin != 0) {
+          original.MemberList = contact.MemberList
+        }
+      } else {
+        this.contacts[contact.UserName] = this.Contact.extend(contact)
+      }
     })
     this.emit('contacts-updated', contacts)
   }

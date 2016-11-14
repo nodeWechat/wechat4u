@@ -778,7 +778,7 @@ export default class WechatCore {
     })
   }
 
-  // fun: 'addmember' or 'delmember'
+  // fun: 'addmember' or 'delmember' or 'invitemember'
   updateChatroom(ChatRoomName, MemberList, fun) {
     return Promise.resolve().then(() => {
       let params = {
@@ -790,8 +790,10 @@ export default class WechatCore {
       }
       if (fun == 'addmember') {
         data.AddMemberList = MemberList.toString()
-      } else {
+      } else if (fun == 'delmember') {
         data.DelMemberList = MemberList.toString()
+      } else if (fun == 'invitemember') {
+        data.InviteMemberList = MemberList.toString()
       }
       return this.request({
         method: 'POST',
