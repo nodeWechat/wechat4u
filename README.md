@@ -1,9 +1,9 @@
 # wechat4u.js
 
 ![](http://7xr8pm.com1.z0.glb.clouddn.com/nodeWechat.png)
-=====
-
 [![npm version](https://img.shields.io/npm/v/wechat4u.svg)](https://www.npmjs.org/package/wechat4u)
+
+=====
 
 
 wechat4u@0.6.x更新了大量API，增强了稳定性
@@ -14,7 +14,7 @@ wechat4u@0.6.x更新了大量API，增强了稳定性
 
 具有文本表情自动回复，监控，群发功能
 
-测试微信机器人
+## 测试微信机器人
 
 ![微信号：abotofwechat4u](https://raw.githubusercontent.com/nodeWechat/wechat4u/master/bot-qrcode.jpg)
 
