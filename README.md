@@ -2,19 +2,18 @@
 
 ![](http://7xr8pm.com1.z0.glb.clouddn.com/nodeWechat.png)
 [![npm version](https://img.shields.io/npm/v/wechat4u.svg)](https://www.npmjs.org/package/wechat4u)
-
-=====
-
+[![wechat group](https://img.shields.io/badge/wechat-group-brightgreen.svg)](http://www.qr-code-generator.com/phpqrcode/getCode.php?cht=qr&chl=http%3A%2F%2Fweixin.qq.com%2Fg%2FA1zJ47b19KtgMnAx&chs=180x180&choe=UTF-8&chld=L|0)
 
 wechat4u@0.6.x更新了大量API，增强了稳定性
+=====
 
-测试服务器
+## Have A Try ?
 
-[wechat4u.duapp.com](http://wechat4u.duapp.com)
+* 测试服务器
 
-具有文本表情自动回复，监控，群发功能
+[wechat4u.duapp.com](http://wechat4u.duapp.com), 具有自动回复（文本，表情），监控，群发功能
 
-## 测试微信机器人
+* 测试微信机器人
 
 ![微信号：abotofwechat4u](https://raw.githubusercontent.com/nodeWechat/wechat4u/master/bot-qrcode.jpg)
 
