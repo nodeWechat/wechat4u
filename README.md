@@ -4,7 +4,6 @@
 [![npm version](https://img.shields.io/npm/v/wechat4u.svg)](https://www.npmjs.org/package/wechat4u)
 [![wechat group](https://img.shields.io/badge/wechat-group-brightgreen.svg)](http://www.qr-code-generator.com/phpqrcode/getCode.php?cht=qr&chl=http%3A%2F%2Fweixin.qq.com%2Fg%2FA1zJ47b19KtgMnAx&chs=180x180&choe=UTF-8&chld=L|0)
 
-wechat4u@0.6.x更新了大量API，增强了稳定性
 =====
 
 ## Have A Try ?
@@ -20,6 +19,8 @@ wechat4u@0.6.x更新了大量API，增强了稳定性
 扫描二维码，开启激情果撩，验证消息：**我爱wechat4u**
 
 ## 安装使用
+
+wechat4u@0.6.x更新了大量API，增强了稳定性
 
 ```
 npm install --save wechat4u@latest
