@@ -504,7 +504,9 @@ export default class WechatCore {
         StartPos: 0,
         DataLen: size,
         MediaType: 4,
-        UploadType: 2
+        UploadType: 2,
+        FromUserName: this.user.UserName,
+        ToUserName: this.user.UserName
       })
 
       let form = new FormData()

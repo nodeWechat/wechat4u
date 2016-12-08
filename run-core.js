@@ -34,7 +34,7 @@ bot.on('login', () => {
     })
 
   // 发送图片
-  bot.uploadMedia(fs.createReadStream('./media/test.png'))
+  bot.uploadMedia(fs.createReadStream('./media/test.jpg'))
     .then(res => {
       return bot.sendPic(res.mediaId, ToUserName)
     })
