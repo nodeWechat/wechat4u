@@ -50,7 +50,7 @@ export function getDisplayName(contact) {
     return '[群] ' + (contact.RemarkName || contact.DisplayName || contact.NickName ||
       `${getDisplayName(contact.MemberList[0])}、${getDisplayName(contact.MemberList[1])}`)
   } else {
-    return contact.RemarkName || contact.DisplayName || contact.NickName || contact.UserName
+    return contact.DisplayName || contact.RemarkName || contact.NickName || contact.UserName
   }
 }
 

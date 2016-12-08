@@ -26,7 +26,9 @@ export default class WechatCore {
       passTicket: '',
       formatedSyncKey: '',
       webwxDataTicket: '',
-      syncKey: {}
+      syncKey: {
+        List: []
+      }
     }
 
     this.CONF = getCONF()
@@ -137,7 +139,7 @@ export default class WechatCore {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
         this.PROP.skey = data.SKey || this.PROP.skey
-        this.updateSyncKey(data.SyncKey)
+        this.updateSyncKey(data)
         Object.assign(this.user, data.User)
         return this.user
       })
@@ -261,11 +263,10 @@ export default class WechatCore {
         url: this.CONF.API_webwxreport,
         params: params,
         data: data
-      }).then(() => {
-        return
       })
     }).catch(err => {
       debug(err)
+      throw new Error('状态报告失败')
     })
   }
 
@@ -320,7 +321,7 @@ export default class WechatCore {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
 
-        this.updateSyncKey(data['SyncKey'])
+        this.updateSyncKey(data)
         this.PROP.skey = data.SKey || this.PROP.skey
         return data
       })
@@ -330,13 +331,23 @@ export default class WechatCore {
     })
   }
 
-  updateSyncKey(syncKey) {
-    this.PROP.syncKey = syncKey
-    let synckeylist = []
-    for (let e = this.PROP.syncKey['List'], o = 0, n = e.length; n > o; o++) {
-      synckeylist.push(e[o]['Key'] + '_' + e[o]['Val'])
+  updateSyncKey(data) {
+    if (data.SyncKey) {
+      this.PROP.syncKey = data.SyncKey
     }
-    this.PROP.formatedSyncKey = synckeylist.join('|')
+    if (data.SyncCheckKey) {
+      let synckeylist = []
+      for (let e = data.SyncCheckKey.List, o = 0, n = e.length; n > o; o++) {
+        synckeylist.push(e[o]['Key'] + '_' + e[o]['Val'])
+      }
+      this.PROP.formatedSyncKey = synckeylist.join('|')
+    } else if (!this.PROP.formatedSyncKey && data.SyncKey) {
+      let synckeylist = []
+      for (let e = data.SyncKey.List, o = 0, n = e.length; n > o; o++) {
+        synckeylist.push(e[o]['Key'] + '_' + e[o]['Val'])
+      }
+      this.PROP.formatedSyncKey = synckeylist.join('|')
+    }
   }
 
   logout() {

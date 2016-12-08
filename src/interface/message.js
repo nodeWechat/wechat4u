@@ -37,14 +37,15 @@ const messageProto = {
 
     this.OriginalContent = this.Content
     if (this.FromUserName.indexOf('@@') == 0) {
-      this.Content = this.Content.replace(/^@.*?(?=\:<br\/>)/, match => {
+      this.Content = this.Content.replace(/^@.*?(?=:)/, match => {
         let user = instance.contacts[this.FromUserName].MemberList.find(member => {
           return member.UserName == match
         })
         return user ? instance.Contact.getDisplayName(user) : match
       })
     }
-    this.Content = convertEmoji(this.Content.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/<br\/>/g, '\n'))
+    this.Content = this.Content.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/<br\/>/g, '\n')
+    this.Content = convertEmoji(this.Content)
 
     return this
   },

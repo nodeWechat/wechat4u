@@ -62,8 +62,9 @@ class Wechat extends WechatCore {
       if (+new Date() - this.lastReportTime > 5 * 60 * 1000) {
         debug('Status Report')
         this.notifyMobile(this.user.UserName)
-        this.statReport()
+          .catch(debug)
         this.sendText('心跳：' + new Date().toLocaleString(), 'filehelper')
+          .catch(debug)
         this.lastReportTime = +new Date()
       }
     }).catch(err => {
@@ -176,15 +177,12 @@ class Wechat extends WechatCore {
   updateContacts(contacts) {
     contacts.forEach(contact => {
       if (this.contacts[contact.UserName]) {
-        let original = this.contacts[contact.UserName]
-        _.forEach(contact, (val, key) => {
-          if (!original[key]) {
-            original[key] = val
-          }
-        })
-        if (contact.UserName.indexOf('@@') == 0 && contact.MemberList[0].Uin != 0) {
-          original.MemberList = contact.MemberList
+        let original = this.contacts[contact.UserName].__proto__
+        for (let i in contact) {
+          contact[i] || delete contact[i]
         }
+        Object.assign(original, contact)
+        this.contacts[contact.UserName] = this.Contact.extend(original)
       } else {
         this.contacts[contact.UserName] = this.Contact.extend(contact)
       }
