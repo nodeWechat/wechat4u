@@ -3,6 +3,7 @@ require('babel-register')
 const Wechat = require('./src/wechat.js')
 const qrcode = require('qrcode-terminal')
 const fs = require('fs')
+const request = require('request')
 
 let bot = new Wechat()
 
@@ -34,7 +35,10 @@ bot.on('login', () => {
     })
 
   // 发送图片
-  bot.uploadMedia(fs.createReadStream('./media/test.jpg'))
+  // bot.uploadMedia(buffer, filename)
+  // bot.uploadMedia(fs.createReadStream('./media/test.jpg'))
+  bot.uploadMedia(request('https://raw.githubusercontent.com/nodeWechat/wechat4u/master/bot-qrcode.jpg'),
+      'bot-qrcode.jpg')
     .then(res => {
       return bot.sendPic(res.mediaId, ToUserName)
     })

@@ -196,6 +196,13 @@ bot.getMsgImg(msg.MsgId).then(res => {
 
 通过好友添加请求
 
+##### bot.opLog(UserName, OP)
+
+置顶或取消置顶联系人
+
+OP == 0 取消置顶
+OP == 1 置顶
+
 ## 实例事件
 
 ##### uuid

@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-
+import bl from 'bl'
 import _debug from 'debug'
 import FormData from 'form-data'
 import mime from 'mime'
@@ -458,83 +458,112 @@ export default class WechatCore {
     })
   }
 
-  // file: Stream, File
-  uploadMedia(file) {
+  // file: Stream, Buffer, File
+  uploadMedia(file, filename) {
     return Promise.resolve().then(() => {
-      let name, type, size, lastModifiedDate
-      if (isStandardBrowserEnv) {
-        name = file.name
-        type = file.type
-        size = file.size
-        lastModifiedDate = file.lastModifiedDate
-      } else {
-        name = path.basename(file.path)
-        type = mime.lookup(name)
-        let stat = fs.statSync(file.path)
-        size = stat.size
-        lastModifiedDate = stat.mtime
-      }
+      let name, type, size, ext, mediatype, data
+      return new Promise((resolve, reject) => {
+        if (isStandardBrowserEnv) {
+          name = file.name
+          type = file.type
+          size = file.size
+          data = file
+          return resolve()
+        } else if (Buffer.isBuffer(file)) {
+          if (!filename) {
+            return reject(new Error('文件名未知'))
+          }
+          name = filename
+          type = mime.lookup(name)
+          size = file.length
+          data = file
+          return resolve()
+        } else if (file.readable) {
+          if (!file.path && !filename) {
+            return reject(new Error('文件名未知'))
+          }
+          name = path.basename(file.path || filename)
+          type = mime.lookup(name)
+          file.pipe(bl((err, buffer) => {
+            if (err) {
+              return reject(err)
+            }
+            size = buffer.length
+            data = buffer
+            return resolve()
+          }))
+        }
+      }).then(() => {
+        ext = name.match(/.*\.(.*)/)
+        if (ext) {
+          ext = ext[1]
+        }
 
-      let ext = name.match(/.*\.(.*)/)
-      if (ext) {
-        ext = ext[1]
-      }
+        switch (ext) {
+          case 'bmp':
+          case 'jpeg':
+          case 'jpg':
+          case 'png':
+            mediatype = 'pic'
+            break
+          case 'mp4':
+            mediatype = 'video'
+            break
+          default:
+            mediatype = 'doc'
+        }
 
-      let mediatype
-      switch (ext) {
-        case 'bmp':
-        case 'jpeg':
-        case 'jpg':
-        case 'png':
-          mediatype = 'pic'
-          break
-        case 'mp4':
-          mediatype = 'video'
-          break
-        default:
-          mediatype = 'doc'
-      }
+        let clientMsgId = getClientMsgId()
 
-      let clientMsgId = getClientMsgId()
+        let uploadMediaRequest = JSON.stringify({
+          BaseRequest: this.getBaseRequest(),
+          ClientMediaId: clientMsgId,
+          TotalLen: size,
+          StartPos: 0,
+          DataLen: size,
+          MediaType: 4,
+          UploadType: 2,
+          FromUserName: this.user.UserName,
+          ToUserName: this.user.UserName
+        })
 
-      let uploadMediaRequest = JSON.stringify({
-        BaseRequest: this.getBaseRequest(),
-        ClientMediaId: clientMsgId,
-        TotalLen: size,
-        StartPos: 0,
-        DataLen: size,
-        MediaType: 4,
-        UploadType: 2,
-        FromUserName: this.user.UserName,
-        ToUserName: this.user.UserName
-      })
+        let form = new FormData()
+        form.append('name', name)
+        form.append('type', type)
+        form.append('lastModifiedDate', new Date().toGMTString())
+        form.append('size', size)
+        form.append('mediatype', mediatype)
+        form.append('uploadmediarequest', uploadMediaRequest)
+        form.append('webwx_data_ticket', this.PROP.webwxDataTicket)
+        form.append('pass_ticket', encodeURI(this.PROP.passTicket))
+        form.append('filename', data, {
+          filename: name,
+          contentType: type,
+          knownLength: size
+        })
+        return new Promise((resolve, reject) => {
+          form.pipe(bl((err, buffer) => {
+            if (err) {
+              return reject(err)
+            }
+            return resolve({
+              buffer: buffer,
+              headers: form.getHeaders()
+            })
+          }))
+        })
+      }).then(data => {
+        let params = {
+          f: 'json'
+        }
 
-      let form = new FormData()
-      form.append('id', 'WU_FILE_' + this.mediaSend++)
-      form.append('name', name)
-      form.append('type', type)
-      form.append('lastModifiedDate', lastModifiedDate.toGMTString())
-      form.append('size', size)
-      form.append('mediatype', mediatype)
-      form.append('uploadmediarequest', uploadMediaRequest)
-      form.append('webwx_data_ticket', this.PROP.webwxDataTicket)
-      form.append('pass_ticket', encodeURI(this.PROP.passTicket))
-      form.append('filename', file, {
-        filename: name,
-        contentType: type,
-        knownLength: size
-      })
-
-      let params = {
-        f: 'json'
-      }
-
-      return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxuploadmedia,
-        headers: form.getHeaders(),
-        params: params,
-        data: form
+        return this.request({
+          method: 'POST',
+          url: this.CONF.API_webwxuploadmedia,
+          headers: data.headers,
+          params: params,
+          data: data.buffer
+        })
       }).then(res => {
         let data = res.data
         let mediaId = data.MediaId
