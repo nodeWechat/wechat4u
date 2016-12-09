@@ -68,9 +68,9 @@ export function isPublicContact(contact) {
 
 const contactProto = {
   init: function(instance) {
-    this.NickName = convertEmoji(this.NickName)
-    this.RemarkName = convertEmoji(this.RemarkName)
-    this.DisplayName = convertEmoji(this.DisplayName)
+    this.NickName = convertEmoji(this.__proto__.NickName)
+    this.RemarkName = convertEmoji(this.__proto__.RemarkName)
+    this.DisplayName = convertEmoji(this.__proto__.DisplayName)
 
     this.isSelf = this.UserName === instance.user.UserName
 

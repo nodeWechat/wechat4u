@@ -182,7 +182,7 @@ class Wechat extends WechatCore {
           contact[i] || delete contact[i]
         }
         Object.assign(original, contact)
-        this.contacts[contact.UserName] = this.Contact.extend(original)
+        this.contacts[contact.UserName].init(this)
       } else {
         this.contacts[contact.UserName] = this.Contact.extend(contact)
       }
