@@ -1,4 +1,4 @@
-import {protoAugment, convertEmoji, formatNum} from '../util'
+import {convertEmoji, formatNum} from '../util'
 /* Message Object Example
 {
     "FromUserName": "",
@@ -36,10 +36,10 @@ const messageProto = {
     this.isSendBySelf = this.FromUserName === instance.user.UserName || this.FromUserName === ''
 
     this.OriginalContent = this.Content
-    if (this.FromUserName.indexOf('@@') == 0) {
+    if (this.FromUserName.indexOf('@@') === 0) {
       this.Content = this.Content.replace(/^@.*?(?=:)/, match => {
         let user = instance.contacts[this.FromUserName].MemberList.find(member => {
-          return member.UserName == match
+          return member.UserName === match
         })
         return user ? instance.Contact.getDisplayName(user) : match
       })
