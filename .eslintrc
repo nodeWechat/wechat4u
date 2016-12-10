@@ -1,7 +1,7 @@
 {
   "extends": "standard",
   "parserOptions": {
-    "ecmaVersion": 2018
+    "ecmaVersion": 2017
   },
   "rules": {
     "arrow-parens": [2, "as-needed"]
