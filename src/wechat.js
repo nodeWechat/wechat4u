@@ -177,7 +177,6 @@ class Wechat extends WechatCore {
   updateContacts (contacts) {
     contacts.forEach(contact => {
       if (this.contacts[contact.UserName]) {
-        // res.data: "window.QRLogin.code = xxx; ..."
         // eslint-disable-next-line
         let original = this.contacts[contact.UserName].__proto__
         for (let i in contact) {
