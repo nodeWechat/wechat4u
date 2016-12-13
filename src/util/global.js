@@ -11,13 +11,13 @@ export const isStandardBrowserEnv = (
 
 export const isFunction = val => Object.prototype.toString.call(val) === '[object Function]'
 
-export function protoAugment(obj, proto) {
+export function protoAugment (obj, proto) {
   /* eslint-disable no-proto */
   obj.__proto__ = proto
     /* eslint-enable no-proto */
 }
 
-export function convertEmoji(s) {
+export function convertEmoji (s) {
   return s ? s.replace(/<span.*?class="emoji emoji(.*?)"><\/span>/g, (a, b) => {
     try {
       let s = null
@@ -38,7 +38,7 @@ export function convertEmoji(s) {
   }) : ''
 }
 
-export function formatNum(num, length) {
+export function formatNum (num, length) {
   num = (isNaN(num) ? 0 : num).toString()
   let n = length - num.length
 
@@ -46,7 +46,7 @@ export function formatNum(num, length) {
 }
 
 export const assert = {
-  equal(actual, expected, message) {
+  equal (actual, expected, message) {
     try {
       Assert.equal(actual, expected)
     } catch (e) {
@@ -54,7 +54,7 @@ export const assert = {
       throw message
     }
   },
-  notEqual(actual, expected, message) {
+  notEqual (actual, expected, message) {
     try {
       Assert.notEqual(actual, expected)
     } catch (e) {
@@ -62,7 +62,7 @@ export const assert = {
       throw message
     }
   },
-  ok(actual, message) {
+  ok (actual, message) {
     try {
       Assert.ok(actual)
     } catch (e) {
@@ -72,10 +72,10 @@ export const assert = {
   }
 }
 
-export function getClientMsgId() {
-  return (Date.now() + Math.random().toFixed(3)).replace(".", "")
+export function getClientMsgId () {
+  return (Date.now() + Math.random().toFixed(3)).replace('.', '')
 }
 
-export function getDeviceID() {
-  return "e" + ("" + Math.random().toFixed(15)).substring(2, 17)
+export function getDeviceID () {
+  return 'e' + ('' + Math.random().toFixed(15)).substring(2, 17)
 }

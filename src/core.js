@@ -1,4 +1,3 @@
-import fs from 'fs'
 import path from 'path'
 import bl from 'bl'
 import _debug from 'debug'
@@ -17,7 +16,7 @@ const debug = _debug('core')
 
 export default class WechatCore {
 
-  constructor() {
+  constructor () {
     this.PROP = {
       uuid: '',
       uin: '',
@@ -37,7 +36,7 @@ export default class WechatCore {
     this.request = new Request()
   }
 
-  getUUID() {
+  getUUID () {
     return Promise.resolve().then(() => {
       return this.request({
         method: 'POST',
@@ -46,10 +45,13 @@ export default class WechatCore {
         let window = {
           QRLogin: {}
         }
+        // res.data: "window.QRLogin.code = xxx; ..."
+        // eslint-disable-next-line
         eval(res.data)
         assert.equal(window.QRLogin.code, 200, res)
 
-        return this.PROP.uuid = window.QRLogin.uuid
+        this.PROP.uuid = window.QRLogin.uuid
+        return window.QRLogin.uuid
       })
     }).catch(err => {
       debug(err)
@@ -57,7 +59,7 @@ export default class WechatCore {
     })
   }
 
-  checkLogin() {
+  checkLogin () {
     return Promise.resolve().then(() => {
       let params = {
         'tip': 0,
@@ -70,12 +72,15 @@ export default class WechatCore {
         params: params
       }).then(res => {
         let window = {}
+
+        // eslint-disable-next-line
         eval(res.data)
         assert.notEqual(window.code, 400, res)
-        if (window.code == 200) {
+
+        if (window.code === 200) {
           this.CONF = getCONF(window.redirect_uri.match(/(?:\w+\.)+\w+/)[0])
           this.rediUri = window.redirect_uri
-        } else if (window.code == 201 && window.userAvatar) {
+        } else if (window.code === 201 && window.userAvatar) {
           this.user.userAvatar = window.userAvatar
         }
         return window
@@ -86,7 +91,7 @@ export default class WechatCore {
     })
   }
 
-  login() {
+  login () {
     return Promise.resolve().then(() => {
       return this.request({
         method: 'GET',
@@ -96,7 +101,7 @@ export default class WechatCore {
         }
       }).then(res => {
         let pm = res.data.match(/<ret>(.*)<\/ret>/)
-        if (pm && pm[1] == 0) {
+        if (pm && pm[1] === 0) {
           this.PROP.skey = res.data.match(/<skey>(.*)<\/skey>/)[1]
           this.PROP.sid = res.data.match(/<wxsid>(.*)<\/wxsid>/)[1]
           this.PROP.uin = res.data.match(/<wxuin>(.*)<\/wxuin>/)[1]
@@ -120,7 +125,7 @@ export default class WechatCore {
     })
   }
 
-  init() {
+  init () {
     return Promise.resolve().then(() => {
       let params = {
         'pass_ticket': this.PROP.passTicket,
@@ -149,7 +154,7 @@ export default class WechatCore {
     })
   }
 
-  notifyMobile(to) {
+  notifyMobile (to) {
     return Promise.resolve().then(() => {
       let params = {
         pass_ticket: this.PROP.passTicket,
@@ -177,7 +182,7 @@ export default class WechatCore {
     })
   }
 
-  getContact() {
+  getContact () {
     return Promise.resolve().then(() => {
       let params = {
         'lang': 'zh_CN',
@@ -202,7 +207,7 @@ export default class WechatCore {
     })
   }
 
-  batchGetContact(contacts) {
+  batchGetContact (contacts) {
     return Promise.resolve().then(() => {
       let params = {
         'pass_ticket': this.PROP.passTicket,
@@ -232,15 +237,15 @@ export default class WechatCore {
     })
   }
 
-  statReport(text) {
+  statReport (text) {
     return Promise.resolve().then(() => {
       text = text || {
-        "type": "[action-record]",
-        "data": {
-          "actions": [{
-            "type": "click",
-            "action": "发送框",
-            "time": +new Date()
+        'type': '[action-record]',
+        'data': {
+          'actions': [{
+            'type': 'click',
+            'action': '发送框',
+            'time': +new Date()
           }]
         }
       }
@@ -270,7 +275,7 @@ export default class WechatCore {
     })
   }
 
-  syncCheck() {
+  syncCheck () {
     return Promise.resolve().then(() => {
       let params = {
         'r': +new Date(),
@@ -288,6 +293,8 @@ export default class WechatCore {
         let window = {
           synccheck: {}
         }
+
+        // eslint-disable-next-line
         eval(res.data)
         assert.equal(window.synccheck.retcode, this.CONF.SYNCCHECK_RET_SUCCESS, res)
 
@@ -299,7 +306,7 @@ export default class WechatCore {
     })
   }
 
-  sync() {
+  sync () {
     return Promise.resolve().then(() => {
       let params = {
         'sid': this.PROP.sid,
@@ -331,7 +338,7 @@ export default class WechatCore {
     })
   }
 
-  updateSyncKey(data) {
+  updateSyncKey (data) {
     if (data.SyncKey) {
       this.PROP.syncKey = data.SyncKey
     }
@@ -350,7 +357,7 @@ export default class WechatCore {
     }
   }
 
-  logout() {
+  logout () {
     return Promise.resolve().then(() => {
       let params = {
         redirect: 1,
@@ -377,11 +384,11 @@ export default class WechatCore {
     })
   }
 
-  sendMsg(msg, to) {
+  sendMsg (msg, to) {
     return this.sendText(msg, to)
   }
 
-  sendText(msg, to) {
+  sendText (msg, to) {
     return Promise.resolve().then(() => {
       let params = {
         'pass_ticket': this.PROP.passTicket,
@@ -415,7 +422,7 @@ export default class WechatCore {
     })
   }
 
-  sendEmoticon(id, to) {
+  sendEmoticon (id, to) {
     return Promise.resolve().then(() => {
       let params = {
         'fun': 'sys',
@@ -433,8 +440,7 @@ export default class WechatCore {
           'ToUserName': to,
           'LocalID': clientMsgId,
           'ClientMsgId': clientMsgId
-        },
-        'Scene': 0
+        }
       }
 
       if (id.indexOf('@') === 0) {
@@ -459,7 +465,7 @@ export default class WechatCore {
   }
 
   // file: Stream, Buffer, File
-  uploadMedia(file, filename) {
+  uploadMedia (file, filename) {
     return Promise.resolve().then(() => {
       let name, type, size, ext, mediatype, data
       return new Promise((resolve, reject) => {
@@ -583,7 +589,7 @@ export default class WechatCore {
     })
   }
 
-  sendPic(mediaId, to) {
+  sendPic (mediaId, to) {
     return Promise.resolve().then(() => {
       let params = {
         'pass_ticket': this.PROP.passTicket,
@@ -619,7 +625,7 @@ export default class WechatCore {
     })
   }
 
-  sendVideo(mediaId, to) {
+  sendVideo (mediaId, to) {
     return Promise.resolve().then(() => {
       let params = {
         'pass_ticket': this.PROP.passTicket,
@@ -655,7 +661,7 @@ export default class WechatCore {
     })
   }
 
-  sendDoc(mediaId, name, size, ext, to) {
+  sendDoc (mediaId, name, size, ext, to) {
     return Promise.resolve().then(() => {
       let params = {
         'pass_ticket': this.PROP.passTicket,
@@ -691,7 +697,7 @@ export default class WechatCore {
     })
   }
 
-  getMsgImg(msgId) {
+  getMsgImg (msgId) {
     return Promise.resolve().then(() => {
       let params = {
         MsgID: msgId,
@@ -716,7 +722,7 @@ export default class WechatCore {
     })
   }
 
-  getVideo(msgId) {
+  getVideo (msgId) {
     return Promise.resolve().then(() => {
       let params = {
         MsgID: msgId,
@@ -743,7 +749,7 @@ export default class WechatCore {
     })
   }
 
-  getVoice(msgId) {
+  getVoice (msgId) {
     return Promise.resolve().then(() => {
       let params = {
         MsgID: msgId,
@@ -767,7 +773,7 @@ export default class WechatCore {
     })
   }
 
-  getHeadImg(HeadImgUrl) {
+  getHeadImg (HeadImgUrl) {
     return Promise.resolve().then(() => {
       let url = this.CONF.origin + HeadImgUrl
       return this.request({
@@ -786,7 +792,7 @@ export default class WechatCore {
     })
   }
 
-  verifyUser(UserName, Ticket) {
+  verifyUser (UserName, Ticket) {
     return Promise.resolve().then(() => {
       let params = {
         'pass_ticket': this.PROP.passTicket,
@@ -821,7 +827,7 @@ export default class WechatCore {
   }
 
   // fun: 'addmember' or 'delmember' or 'invitemember'
-  updateChatroom(ChatRoomName, MemberList, fun) {
+  updateChatroom (ChatRoomName, MemberList, fun) {
     return Promise.resolve().then(() => {
       let params = {
         fun: fun
@@ -830,11 +836,11 @@ export default class WechatCore {
         BaseRequest: this.getBaseRequest(),
         ChatRoomName: ChatRoomName
       }
-      if (fun == 'addmember') {
+      if (fun === 'addmember') {
         data.AddMemberList = MemberList.toString()
-      } else if (fun == 'delmember') {
+      } else if (fun === 'delmember') {
         data.DelMemberList = MemberList.toString()
-      } else if (fun == 'invitemember') {
+      } else if (fun === 'invitemember') {
         data.InviteMemberList = MemberList.toString()
       }
       return this.request({
@@ -853,7 +859,7 @@ export default class WechatCore {
   }
 
   // OP: 1 联系人置顶 0 取消置顶
-  opLog(UserName, OP) {
+  opLog (UserName, OP) {
     return Promise.resolve().then(() => {
       let params = {
         pass_ticket: this.PROP.passTicket
@@ -879,7 +885,7 @@ export default class WechatCore {
     })
   }
 
-  getBaseRequest() {
+  getBaseRequest () {
     return {
       Uin: parseInt(this.PROP.uin),
       Sid: this.PROP.sid,
