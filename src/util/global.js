@@ -11,12 +11,6 @@ export const isStandardBrowserEnv = (
 
 export const isFunction = val => Object.prototype.toString.call(val) === '[object Function]'
 
-export function protoAugment (obj, proto) {
-  /* eslint-disable no-proto */
-  obj.__proto__ = proto
-    /* eslint-enable no-proto */
-}
-
 export function convertEmoji (s) {
   return s ? s.replace(/<span.*?class="emoji emoji(.*?)"><\/span>/g, (a, b) => {
     try {
