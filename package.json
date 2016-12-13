@@ -11,7 +11,8 @@
     "clean": "rm -rf lib",
     "unit": "mocha test/unit.js --compilers js:babel-core/register",
     "test": "npm run lint && npm run unit",
-    "core": "cross-env DEBUG=wechat,core node run-core.js"
+    "core": "cross-env DEBUG=wechat,core node run-core.js",
+    "start": "npm run example"
   },
   "dependencies": {
     "assert": "^1.4.1",

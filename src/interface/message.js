@@ -44,6 +44,7 @@ const messageProto = {
         return user ? instance.Contact.getDisplayName(user) : match
       })
     }
+
     this.Content = this.Content.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/<br\/>/g, '\n')
     this.Content = convertEmoji(this.Content)
 
@@ -64,10 +65,10 @@ const messageProto = {
 export default function MessageFactory (instance) {
   return {
     extend: function (messageObj) {
-      let message = Object.create(messageObj)
-      Object.assign(message, messageProto)
-      message.init(instance)
-      return message
+      const messageCopy = Object.assign({}, messageObj)
+      const wechatLayer = Object.setPrototypeOf(messageCopy, messageProto)
+      const messageLayer = Object.setPrototypeOf({}, wechatLayer)
+      return messageLayer.init(instance)
     }
   }
 }

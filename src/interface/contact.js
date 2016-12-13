@@ -67,11 +67,12 @@ export function isPublicContact (contact) {
 
 const contactProto = {
   init: function (instance) {
-    this.NickName = convertEmoji(this.__proto__.NickName)
-    this.RemarkName = convertEmoji(this.__proto__.RemarkName)
-    this.DisplayName = convertEmoji(this.__proto__.DisplayName)
+    const wechatLayer = Object.getPrototypeOf(this)
 
-    this.isSelf = this.UserName === instance.user.UserName
+    wechatLayer.NickName = convertEmoji(wechatLayer.NickName)
+    wechatLayer.RemarkName = convertEmoji(wechatLayer.RemarkName)
+    wechatLayer.DisplayName = convertEmoji(wechatLayer.DisplayName)
+    wechatLayer.isSelf = this.UserName === instance.user.UserName
 
     return this
   },
@@ -97,10 +98,10 @@ const contactProto = {
 export default function ContactFactory (instance) {
   return {
     extend: function (contactObj) {
-      let contact = Object.create(contactObj)
-      Object.assign(contact, contactProto)
-      contact.init(instance)
-      return contact
+      const contactCopy = Object.assign({}, contactObj)
+      const wechatLayer = Object.setPrototypeOf(contactCopy, contactProto)
+      const contactLayer = Object.setPrototypeOf({}, wechatLayer)
+      return contactLayer.init(instance)
     },
     getUserByUserName: function (UserName) {
       return instance.contacts[UserName]
