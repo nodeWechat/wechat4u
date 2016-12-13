@@ -177,7 +177,7 @@ class Wechat extends WechatCore {
   updateContacts (contacts) {
     contacts.forEach(contact => {
       if (this.contacts[contact.UserName]) {
-        let wechatLayer = Object.getPrototypeOf(contacts[contact.UserName])
+        let wechatLayer = Object.getPrototypeOf(this.contacts[contact.UserName])
 
         // 清除无效的字段并更新 wechatLayer
         for (let i in contact) {
