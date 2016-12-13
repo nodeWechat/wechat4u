@@ -1,5 +1,3 @@
-
-
 <template>
 
 <nav role="navigation" class="navbar navbar-default navbar-static-top">
