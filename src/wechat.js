@@ -21,7 +21,7 @@ if (!isStandardBrowserEnv) {
 
 class Wechat extends WechatCore {
 
-  constructor() {
+  constructor () {
     super()
     _.extend(this, new EventEmitter())
     this.state = this.CONF.STATE.init
@@ -32,7 +32,7 @@ class Wechat extends WechatCore {
     this.syncErrorCount = 0
   }
 
-  get friendList() {
+  get friendList () {
     let members = []
 
     for (let key in this.contacts) {
@@ -48,10 +48,10 @@ class Wechat extends WechatCore {
     return members
   }
 
-  syncPolling(callback) {
+  syncPolling (callback) {
     this.syncCheck().then(selector => {
       debug('Sync Check Selector: ', selector)
-      if (selector != this.CONF.SYNCCHECK_SELECTOR_NORMAL) {
+      if (selector !== this.CONF.SYNCCHECK_SELECTOR_NORMAL) {
         return this.sync().then(data => {
           this.syncErrorCount = 0
           callback(data)
@@ -81,8 +81,8 @@ class Wechat extends WechatCore {
     })
   }
 
-  async start() {
-    let ret = undefined
+  async start () {
+    let ret
     try {
       ret = await this.getUUID()
       debug('getUUID: ', ret)
@@ -91,7 +91,7 @@ class Wechat extends WechatCore {
       do {
         ret = await this.checkLogin()
         debug('checkLogin: ', ret)
-        if (ret.code == 201 && ret.userAvatar) {
+        if (ret.code === 201 && ret.userAvatar) {
           this.emit('user-avatar', ret.userAvatar)
         }
       } while (ret.code !== 200)
@@ -114,11 +114,11 @@ class Wechat extends WechatCore {
     this.state = this.CONF.STATE.login
   }
 
-  stop() {
+  stop () {
     this.logout()
   }
 
-  handleSync(data) {
+  handleSync (data) {
     if (!data) {
       this.emit('logout')
       this.state = this.CONF.STATE.logout
@@ -134,7 +134,7 @@ class Wechat extends WechatCore {
     }
   }
 
-  handleMsg(data) {
+  handleMsg (data) {
     data.forEach(msg => {
       Promise.resolve().then(() => {
         if (!this.contacts[msg.FromUserName]) {
@@ -152,7 +152,7 @@ class Wechat extends WechatCore {
       }).then(() => {
         msg = this.Message.extend(msg)
         this.emit('message', msg)
-        if (msg.MsgType == this.CONF.MSGTYPE_STATUSNOTIFY) {
+        if (msg.MsgType === this.CONF.MSGTYPE_STATUSNOTIFY) {
           let userList = msg.StatusNotifyUserName.split(',').map(UserName => {
             return {
               UserName: UserName
@@ -174,14 +174,16 @@ class Wechat extends WechatCore {
     })
   }
 
-  updateContacts(contacts) {
+  updateContacts (contacts) {
     contacts.forEach(contact => {
       if (this.contacts[contact.UserName]) {
-        let original = this.contacts[contact.UserName].__proto__
+        let wechatLayer = Object.getPrototypeOf(this.contacts[contact.UserName])
+
+        // 清除无效的字段并更新 wechatLayer
         for (let i in contact) {
           contact[i] || delete contact[i]
         }
-        Object.assign(original, contact)
+        Object.assign(wechatLayer, contact)
         this.contacts[contact.UserName].init(this)
       } else {
         this.contacts[contact.UserName] = this.Contact.extend(contact)

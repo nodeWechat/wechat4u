@@ -1,4 +1,4 @@
-import {protoAugment, convertEmoji, formatNum} from '../util'
+import {convertEmoji, formatNum} from '../util'
 /* Message Object Example
 {
     "FromUserName": "",
@@ -36,14 +36,15 @@ const messageProto = {
     this.isSendBySelf = this.FromUserName === instance.user.UserName || this.FromUserName === ''
 
     this.OriginalContent = this.Content
-    if (this.FromUserName.indexOf('@@') == 0) {
+    if (this.FromUserName.indexOf('@@') === 0) {
       this.Content = this.Content.replace(/^@.*?(?=:)/, match => {
         let user = instance.contacts[this.FromUserName].MemberList.find(member => {
-          return member.UserName == match
+          return member.UserName === match
         })
         return user ? instance.Contact.getDisplayName(user) : match
       })
     }
+
     this.Content = this.Content.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/<br\/>/g, '\n')
     this.Content = convertEmoji(this.Content)
 
@@ -64,10 +65,10 @@ const messageProto = {
 export default function MessageFactory (instance) {
   return {
     extend: function (messageObj) {
-      let message = Object.create(messageObj)
-      Object.assign(message, messageProto)
-      message.init(instance)
-      return message
+      const messageCopy = Object.assign({}, messageObj)
+      const wechatLayer = Object.setPrototypeOf(messageCopy, messageProto)
+      const messageLayer = Object.setPrototypeOf({}, wechatLayer)
+      return messageLayer.init(instance)
     }
   }
 }

@@ -1,7 +1,7 @@
 {
   "env": {
     "development": {
-      "presets": ["es2015", "es2017"],
+      "presets": ["latest"],
       "plugins": [
         ["transform-runtime", {
           "polyfill": false,
@@ -10,7 +10,7 @@
       ]
     },
     "production": {
-      "presets": ["es2015", "es2017"],
+      "presets": ["latest"],
       "plugins": [
         ["transform-runtime", {
           "polyfill": false,
