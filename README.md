@@ -118,10 +118,11 @@ msg为`Message`对象，具体属性方法见`src/interface/message.js`
 
 发送文本消息，可以包含emoji(😒)和QQ表情([坏笑])
 
-##### bot.uploadMedia(Stream | File)
+##### bot.uploadMedia(Buffer | Stream | File, filename, toUserName)
 
-上传媒体文件，返回:
+上传媒体文件
 
+返回
 ```javascript
 {
   name: name,
@@ -196,11 +197,22 @@ bot.getMsgImg(msg.MsgId).then(res => {
 
 通过好友添加请求
 
+##### bot.updateChatroom(ChatRoomName, MemberList, fun)
+
+更新群成员
+
+ChatRoomName '@@'开头的群UserName
+
+MemberList 数组，联系人UserNa
+
+fun 可选'addmember'，'delmember'，'invitemember'
+
 ##### bot.opLog(UserName, OP)
 
-置顶或取消置顶联系人
+置顶或取消置顶联系人，可通过直接取消置顶群来获取群ChatRoomOwner
 
 OP == 0 取消置顶
+
 OP == 1 置顶
 
 ## 实例事件
