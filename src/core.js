@@ -101,7 +101,7 @@ export default class WechatCore {
         }
       }).then(res => {
         let pm = res.data.match(/<ret>(.*)<\/ret>/)
-        if (pm && pm[1] === 0) {
+        if (pm && pm[1] === '0') {
           this.PROP.skey = res.data.match(/<skey>(.*)<\/skey>/)[1]
           this.PROP.sid = res.data.match(/<wxsid>(.*)<\/wxsid>/)[1]
           this.PROP.uin = res.data.match(/<wxuin>(.*)<\/wxuin>/)[1]
@@ -465,7 +465,7 @@ export default class WechatCore {
   }
 
   // file: Stream, Buffer, File
-  uploadMedia (file, filename) {
+  uploadMedia (file, filename, toUserName) {
     return Promise.resolve().then(() => {
       let name, type, size, ext, mediatype, data
       return new Promise((resolve, reject) => {
@@ -530,7 +530,7 @@ export default class WechatCore {
           MediaType: 4,
           UploadType: 2,
           FromUserName: this.user.UserName,
-          ToUserName: this.user.UserName
+          ToUserName: toUserName || this.user.UserName
         })
 
         let form = new FormData()
