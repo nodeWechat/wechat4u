@@ -215,6 +215,10 @@ OP == 0 取消置顶
 
 OP == 1 置顶
 
+##### bot.updateRemarkName(UserName, RemarkName)
+
+设置联系人备注或标签
+
 ## 实例事件
 
 ##### uuid

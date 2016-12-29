@@ -885,6 +885,33 @@ export default class WechatCore {
     })
   }
 
+  updateRemarkName (UserName, RemarkName) {
+    return Promise.resolve().then(() => {
+      let params = {
+        pass_ticket: this.PROP.passTicket,
+        'lang': 'zh_CN'
+      }
+      let data = {
+        BaseRequest: this.getBaseRequest(),
+        CmdId: 2,
+        RemarkName: RemarkName,
+        UserName: UserName
+      }
+      return this.request({
+        method: 'POST',
+        url: this.CONF.API_webwxoplog,
+        params: params,
+        data: data
+      }).then(res => {
+        let data = res.data
+        assert.equal(data.BaseResponse.Ret, 0, res)
+      })
+    }).catch(err => {
+      debug(err)
+      throw new Error('设置用户标签失败')
+    })
+  }
+
   getBaseRequest () {
     return {
       Uin: parseInt(this.PROP.uin),
