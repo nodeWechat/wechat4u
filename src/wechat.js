@@ -48,6 +48,32 @@ class Wechat extends WechatCore {
     return members
   }
 
+  sendMsg (msg, toUserName) {
+    if (typeof msg === 'string') {
+      return this.sendText(msg, toUserName)
+    } else {
+      return this.uploadMedia(msg.file, msg.filename, toUserName)
+        .then(res => {
+          switch (res.ext) {
+            case 'bmp':
+            case 'jpeg':
+            case 'jpg':
+            case 'png':
+              return this.sendPic(res.mediaId, toUserName)
+              break
+            case 'gif':
+              return this.sendEmoticon(res.mediaId, toUserName)
+              break
+            case 'mp4':
+              return this.sendVideo(res.mediaId, toUserName)
+              break
+            default:
+              return this.sendDoc(res.mediaId, res.name, res.size, res.ext, toUserName)
+          }
+        })
+    }
+  }
+
   syncPolling (callback) {
     this.syncCheck().then(selector => {
       debug('Sync Check Selector: ', selector)
