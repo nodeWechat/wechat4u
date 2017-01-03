@@ -502,7 +502,9 @@ export default class WechatCore {
       }).then(() => {
         ext = name.match(/.*\.(.*)/)
         if (ext) {
-          ext = ext[1]
+          ext = ext[1].toLowerCase()
+        } else {
+          ext = ''
         }
 
         switch (ext) {
