@@ -161,6 +161,24 @@ bot.uploadMedia(fs.createReadStream('test.png'))
 
 以应用卡片的形式发送文件，可以通过这个API发送语音
 
+##### bot.sendMsg(msg, toUserName)
+
+对以上发送消息的方法的封装，是发送消息的通用方法
+
+当msg为string时，发送文本消息
+
+当msg为`{file:xxx,filename:'xxx.ext'}`时，发送对应媒体文件
+
+```javascript
+bot.sendMsg({
+    file: request('https://raw.githubusercontent.com/nodeWechat/wechat4u/master/bot-qrcode.jpg'),
+    filename: 'bot-qrcode.jpg'
+  }, ToUserName)
+  .catch(err => {
+    console.log(err)
+  })
+```
+
 ##### bot.getHeadImg(HeadImgUrl)
 
 获取联系人头像
