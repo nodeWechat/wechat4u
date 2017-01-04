@@ -26,10 +26,14 @@ bot.on('user-avatar', avatar => {
 
 bot.on('login', () => {
   console.log('登录成功')
-  let ToUserName = bot.contacts['filehelper'].UserName
+  let ToUserName = bot.contacts['filehelper'].UserName || 'filehelper'
 
   // 发送文本消息，可以包含emoji(😒)和QQ表情([坏笑])
-  bot.sendText('发送文本消息，可以包含emoji(😒)和QQ表情([坏笑])', ToUserName)
+  // bot.sendText('发送文本消息，可以包含emoji(😒)和QQ表情([坏笑])', ToUserName)
+  //   .catch(err => {
+  //     console.log(err)
+  //   })
+  bot.sendMsg('发送文本消息，可以包含emoji(😒)和QQ表情([坏笑])', ToUserName)
     .catch(err => {
       console.log(err)
     })
@@ -37,11 +41,18 @@ bot.on('login', () => {
   // 发送图片
   // bot.uploadMedia(buffer, filename)
   // bot.uploadMedia(fs.createReadStream('./media/test.jpg'))
-  bot.uploadMedia(request('https://raw.githubusercontent.com/nodeWechat/wechat4u/master/bot-qrcode.jpg'),
-      'bot-qrcode.jpg')
-    .then(res => {
-      return bot.sendPic(res.mediaId, ToUserName)
-    })
+  // bot.uploadMedia(request('https://raw.githubusercontent.com/nodeWechat/wechat4u/master/bot-qrcode.jpg'),
+  //     'bot-qrcode.jpg')
+  //   .then(res => {
+  //     return bot.sendPic(res.mediaId, ToUserName)
+  //   })
+  //   .catch(err => {
+  //     console.log(err)
+  //   })
+  bot.sendMsg({
+      file: request('https://raw.githubusercontent.com/nodeWechat/wechat4u/master/bot-qrcode.jpg'),
+      filename: 'bot-qrcode.jpg'
+    }, ToUserName)
     .catch(err => {
       console.log(err)
     })
@@ -53,28 +64,46 @@ bot.on('login', () => {
     })
 
   // 通过上传本地gif发送表情
-  bot.uploadMedia(fs.createReadStream('./media/test.gif'))
-    .then(res => {
-      return bot.sendEmoticon(res.mediaId, ToUserName)
-    })
+  // bot.uploadMedia(fs.createReadStream('./media/test.gif'))
+  //   .then(res => {
+  //     return bot.sendEmoticon(res.mediaId, ToUserName)
+  //   })
+  //   .catch(err => {
+  //     console.log(err)
+  //   })
+  bot.sendMsg({
+      file: fs.createReadStream('./media/test.gif')
+    }, ToUserName)
     .catch(err => {
       console.log(err)
     })
 
   // 发送视频
-  bot.uploadMedia(fs.createReadStream('./media/test.mp4'))
-    .then(res => {
-      return bot.sendVideo(res.mediaId, ToUserName)
-    })
+  // bot.uploadMedia(fs.createReadStream('./media/test.mp4'))
+  //   .then(res => {
+  //     return bot.sendVideo(res.mediaId, ToUserName)
+  //   })
+  //   .catch(err => {
+  //     console.log(err)
+  //   })
+  bot.sendMsg({
+      file: fs.createReadStream('./media/test.mp4')
+    }, ToUserName)
     .catch(err => {
       console.log(err)
     })
 
   // 发送文件
-  bot.uploadMedia(fs.createReadStream('./media/test.txt'))
-    .then(res => {
-      return bot.sendDoc(res.mediaId, res.name, res.size, res.ext, ToUserName)
-    })
+  // bot.uploadMedia(fs.createReadStream('./media/test.txt'))
+  //   .then(res => {
+  //     return bot.sendDoc(res.mediaId, res.name, res.size, res.ext, ToUserName)
+  //   })
+  //   .catch(err => {
+  //     console.log(err)
+  //   })
+  bot.sendMsg({
+      file: fs.createReadStream('./media/test.txt')
+    }, ToUserName)
     .catch(err => {
       console.log(err)
     })

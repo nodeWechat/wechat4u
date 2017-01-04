@@ -32,7 +32,6 @@ export default class WechatCore {
 
     this.CONF = getCONF()
     this.user = {}
-    this.mediaSend = 0
     this.request = new Request()
   }
 
@@ -101,7 +100,7 @@ export default class WechatCore {
         }
       }).then(res => {
         let pm = res.data.match(/<ret>(.*)<\/ret>/)
-        if (pm && pm[1] === 0) {
+        if (pm && pm[1] === '0') {
           this.PROP.skey = res.data.match(/<skey>(.*)<\/skey>/)[1]
           this.PROP.sid = res.data.match(/<wxsid>(.*)<\/wxsid>/)[1]
           this.PROP.uin = res.data.match(/<wxuin>(.*)<\/wxuin>/)[1]
@@ -464,13 +463,14 @@ export default class WechatCore {
     })
   }
 
-  // file: Stream, Buffer, File
-  uploadMedia (file, filename) {
+  // file: Stream, Buffer, File, Blob
+  uploadMedia (file, filename, toUserName) {
     return Promise.resolve().then(() => {
       let name, type, size, ext, mediatype, data
       return new Promise((resolve, reject) => {
-        if (isStandardBrowserEnv) {
-          name = file.name
+        if ((typeof(File) != 'undefined' && file.constructor == File) ||
+          (typeof(Blob) != 'undefined' && file.constructor == Blob)) {
+          name = file.name || 'file'
           type = file.type
           size = file.size
           data = file
@@ -502,7 +502,9 @@ export default class WechatCore {
       }).then(() => {
         ext = name.match(/.*\.(.*)/)
         if (ext) {
-          ext = ext[1]
+          ext = ext[1].toLowerCase()
+        } else {
+          ext = ''
         }
 
         switch (ext) {
@@ -530,7 +532,7 @@ export default class WechatCore {
           MediaType: 4,
           UploadType: 2,
           FromUserName: this.user.UserName,
-          ToUserName: this.user.UserName
+          ToUserName: toUserName || this.user.UserName
         })
 
         let form = new FormData()
@@ -548,15 +550,22 @@ export default class WechatCore {
           knownLength: size
         })
         return new Promise((resolve, reject) => {
-          form.pipe(bl((err, buffer) => {
-            if (err) {
-              return reject(err)
-            }
+          if (isStandardBrowserEnv) {
             return resolve({
-              buffer: buffer,
-              headers: form.getHeaders()
+              data: form,
+              headers: {}
             })
-          }))
+          } else {
+            form.pipe(bl((err, buffer) => {
+              if (err) {
+                return reject(err)
+              }
+              return resolve({
+                data: buffer,
+                headers: form.getHeaders()
+              })
+            }))
+          }
         })
       }).then(data => {
         let params = {
@@ -568,7 +577,7 @@ export default class WechatCore {
           url: this.CONF.API_webwxuploadmedia,
           headers: data.headers,
           params: params,
-          data: data.buffer
+          data: data.data
         })
       }).then(res => {
         let data = res.data
