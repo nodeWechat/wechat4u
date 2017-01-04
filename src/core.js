@@ -835,6 +835,41 @@ export default class WechatCore {
     })
   }
 
+  // Topic: Chatroom name
+  // MemberList format:
+  // [
+  //   {"UserName":"@250d8d156ad9f8b068c2e3df3464ecf2"},
+  //   {"UserName":"@42d725733741de6ac53cbe3738d8dd2e"}
+  // ]
+  createChatroom (Topic, MemberList) {
+    return Promise.resolve().then(() => {
+      let params = {
+        'pass_ticket': this.PROP.passTicket,
+        'lang': 'zh_CN',
+        'r': ~new Date()
+      }
+      let data = {
+        BaseRequest: this.getBaseRequest(),
+        MemberCount: MemberList.length,
+        MemberList: MemberList,
+        Topic: Topic
+      }
+      return this.request({
+        method: 'POST',
+        url: this.CONF.API_webwxcreatechatroom,
+        params: params,
+        data: data
+      }).then(res => {
+        let data = res.data
+        assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
+      })
+    }).catch(err => {
+      debug(err)
+      throw new Error('创建群失败')
+    })
+  }
+
   // fun: 'addmember' or 'delmember' or 'invitemember'
   updateChatroom (ChatRoomName, MemberList, fun) {
     return Promise.resolve().then(() => {
