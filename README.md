@@ -215,6 +215,19 @@ bot.getMsgImg(msg.MsgId).then(res => {
 
 通过好友添加请求
 
+##### bot.createChatroom(Topic, MemberList)
+
+创建群
+
+Topic 群聊名称
+
+MemberList 数组, 除自己外至少两人的UserName，格式为
+[
+  {"UserName":"@250d8d156ad9f8b068c2e3df3464ecf2"},
+  {"UserName":"@42d725733741de6ac53cbe3738d8dd2e"}
+]
+
+
 ##### bot.updateChatroom(ChatRoomName, MemberList, fun)
 
 更新群成员
