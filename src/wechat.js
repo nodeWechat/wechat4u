@@ -77,7 +77,7 @@ class Wechat extends WechatCore {
   syncPolling (callback) {
     this.syncCheck().then(selector => {
       debug('Sync Check Selector: ', selector)
-      if (selector !== this.CONF.SYNCCHECK_SELECTOR_NORMAL) {
+      if (+selector !== this.CONF.SYNCCHECK_SELECTOR_NORMAL) {
         return this.sync().then(data => {
           this.syncErrorCount = 0
           callback(data)
