@@ -28,8 +28,10 @@ class Wechat extends WechatCore {
     this.contacts = {} // 所有联系人
     this.Contact = ContactFactory(this)
     this.Message = MessageFactory(this)
-    this.lastReportTime = 0
+    this.lastSyncTime = 0
     this.syncErrorCount = 0
+    this.checkPollingId = 0
+    this.retryPollingId = 0
   }
 
   get friendList () {
@@ -60,13 +62,10 @@ class Wechat extends WechatCore {
             case 'jpg':
             case 'png':
               return this.sendPic(res.mediaId, toUserName)
-              break
             case 'gif':
               return this.sendEmoticon(res.mediaId, toUserName)
-              break
             case 'mp4':
               return this.sendVideo(res.mediaId, toUserName)
-              break
             default:
               return this.sendDoc(res.mediaId, res.name, res.size, res.ext, toUserName)
           }
@@ -74,80 +73,135 @@ class Wechat extends WechatCore {
     }
   }
 
-  syncPolling (callback) {
+  syncPolling () {
+    if (this.state !== this.CONF.STATE.login) {
+      return
+    }
     this.syncCheck().then(selector => {
       debug('Sync Check Selector: ', selector)
       if (+selector !== this.CONF.SYNCCHECK_SELECTOR_NORMAL) {
         return this.sync().then(data => {
           this.syncErrorCount = 0
-          callback(data)
+          this.handleSync(data)
         })
       }
     }).then(() => {
-      this.syncPolling(callback)
-      if (+new Date() - this.lastReportTime > 5 * 60 * 1000) {
-        debug('Status Report')
-        this.notifyMobile(this.user.UserName)
-          .catch(debug)
-        this.sendText('心跳：' + new Date().toLocaleString(), 'filehelper')
-          .catch(debug)
-        this.lastReportTime = +new Date()
-      }
+      this.lastSyncTime = Date.now()
+      this.syncPolling()
     }).catch(err => {
-      this.emit('error', err)
-      if (this.syncErrorCount++ > 5) {
-        debug(err)
-        this.logout()
-        callback()
+      if (this.state !== this.CONF.STATE.login) {
+        return
+      }
+      debug(err)
+      if (this.syncErrorCount++ > 3) {
+        this.emit('error', err)
+        debug('syncErrorCount: ', this.syncErrorCount)
+        this.startInit()
+          .then(() => {
+            debug('重新初始化成功')
+            this.syncPolling()
+          }).catch(err => {
+            debug(err)
+            this.stop()
+          })
       } else {
-        setTimeout(() => {
-          this.syncPolling(callback)
+        clearTimeout(this.retryPollingId)
+        this.retryPollingId = setTimeout(() => {
+          this.syncPolling()
         }, 1000 * this.syncErrorCount)
       }
     })
   }
 
-  async start () {
-    let ret
-    try {
-      ret = await this.getUUID()
-      debug('getUUID: ', ret)
-      this.emit('uuid', ret)
-      this.state = this.CONF.STATE.uuid
-      do {
-        ret = await this.checkLogin()
-        debug('checkLogin: ', ret)
-        if (ret.code === 201 && ret.userAvatar) {
-          this.emit('user-avatar', ret.userAvatar)
-        }
-      } while (ret.code !== 200)
-      await this.login()
-      await this.init()
-      await this.notifyMobile()
-      ret = await this.getContact()
-      debug('getContact data length: ', ret.length)
-      this.updateContacts(ret)
-    } catch (err) {
-      this.emit('error', err)
-      debug(err)
-      this.logout()
-      this.emit('logout')
-      this.state = this.CONF.STATE.logout
-      return
+  startLogin () {
+    const checkLogin = () => {
+      return this.checkLogin()
+        .then(res => {
+          if (res.code === 201 && res.userAvatar) {
+            this.emit('user-avatar', res.userAvatar)
+          }
+          if (res.code !== 200) {
+            debug('checkLogin: ', res.code)
+            return checkLogin()
+          } else {
+            return res
+          }
+        })
     }
-    this.syncPolling(data => this.handleSync(data))
-    this.emit('login')
-    this.state = this.CONF.STATE.login
+    return this.getUUID()
+      .then(uuid => {
+        debug('getUUID: ', uuid)
+        this.emit('uuid', uuid)
+        this.state = this.CONF.STATE.uuid
+        return checkLogin()
+      }).then(res => {
+        debug('checkLogin: ', res.redirect_uri)
+      })
+  }
+
+  startInit () {
+    return this.login()
+      .then(() => this.init())
+      .then(() => this.notifyMobile())
+  }
+
+  startGetContact () {
+    return this.getContact()
+      .then(res => {
+        debug('getContact count: ', res.length)
+        this.updateContacts(res)
+      })
+  }
+
+  start () {
+    return this.startLogin()
+      .then(() => this.startInit())
+      .then(() => this.startGetContact())
+      .then(() => {
+        this.emit('login')
+        this.state = this.CONF.STATE.login
+        this.lastSyncTime = Date.now()
+        this.syncPolling()
+        this.checkPolling()
+      }).catch(err => {
+        this.emit('error', err)
+        debug(err)
+        this.stop()
+      })
   }
 
   stop () {
+    this.emit('logout')
+    this.state = this.CONF.STATE.logout
+    clearTimeout(this.retryPollingId)
+    clearTimeout(this.checkPollingId)
     this.logout()
+  }
+
+  checkPolling () {
+    if (this.state !== this.CONF.STATE.login) {
+      return
+    }
+    let interval = Date.now() - this.lastSyncTime
+    if (interval > 1 * 60 * 1000) {
+      debug(`状态同步超过${interval / 1000}s未响应`)
+      this.stop()
+    } else {
+      debug('心跳')
+      this.notifyMobile(this.user.UserName)
+        .catch(debug)
+      this.sendText('心跳：' + new Date().toLocaleString(), 'filehelper')
+        .catch(debug)
+      clearTimeout(this.checkPollingId)
+      this.checkPollingId = setTimeout(() => {
+        this.checkPolling()
+      }, 5 * 60 * 1000)
+    }
   }
 
   handleSync (data) {
     if (!data) {
-      this.emit('logout')
-      this.state = this.CONF.STATE.logout
+      this.stop()
       return
     }
     if (data.AddMsgCount) {
@@ -192,6 +246,10 @@ class Wechat extends WechatCore {
           })).catch(err => {
             debug(err)
           })
+        }
+        if (msg.ToUserName === 'filehelper' && msg.Content === '退出wechat4u' ||
+          /^(.\udf1a\u0020\ud83c.){3}$/.test(msg.Content)) {
+          this.stop()
         }
       }).catch(err => {
         this.emit('error', err)

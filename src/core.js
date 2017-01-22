@@ -468,8 +468,8 @@ export default class WechatCore {
     return Promise.resolve().then(() => {
       let name, type, size, ext, mediatype, data
       return new Promise((resolve, reject) => {
-        if ((typeof(File) != 'undefined' && file.constructor == File) ||
-          (typeof(Blob) != 'undefined' && file.constructor == Blob)) {
+        if ((typeof (File) !== 'undefined' && file.constructor == File) ||
+          (typeof (Blob) !== 'undefined' && file.constructor == Blob)) {
           name = file.name || 'file'
           type = file.type
           size = file.size
