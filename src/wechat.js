@@ -164,6 +164,8 @@ class Wechat extends WechatCore {
         this.lastSyncTime = Date.now()
         this.syncPolling()
         this.checkPolling()
+        this.sendMsg('登录成功，退出请向文件传输助手发送\'退出wechat4u\'', 'filehelper')
+          .catch(debug)
       }).catch(err => {
         this.emit('error', err)
         debug(err)
@@ -191,7 +193,7 @@ class Wechat extends WechatCore {
       debug('心跳')
       this.notifyMobile(this.user.UserName)
         .catch(debug)
-      this.sendText('心跳：' + new Date().toLocaleString(), 'filehelper')
+      this.sendMsg('心跳：' + new Date().toLocaleString(), 'filehelper')
         .catch(debug)
       clearTimeout(this.checkPollingId)
       this.checkPollingId = setTimeout(() => {
