@@ -29,6 +29,7 @@ class Wechat extends WechatCore {
     this.Contact = ContactFactory(this)
     this.Message = MessageFactory(this)
     this.lastSyncTime = 0
+    this.syncPollingId = 0
     this.syncErrorCount = 0
     this.checkPollingId = 0
     this.retryPollingId = 0
@@ -73,8 +74,8 @@ class Wechat extends WechatCore {
     }
   }
 
-  syncPolling () {
-    if (this.state !== this.CONF.STATE.login) {
+  syncPolling (id = ++this.syncPollingId) {
+    if (this.state !== this.CONF.STATE.login || this.syncPollingId !== id) {
       return
     }
     this.syncCheck().then(selector => {
@@ -87,7 +88,7 @@ class Wechat extends WechatCore {
       }
     }).then(() => {
       this.lastSyncTime = Date.now()
-      this.syncPolling()
+      this.syncPolling(id)
     }).catch(err => {
       if (this.state !== this.CONF.STATE.login) {
         return
@@ -99,7 +100,7 @@ class Wechat extends WechatCore {
         this.startInit()
           .then(() => {
             debug('重新初始化成功')
-            this.syncPolling()
+            this.syncPolling(id)
           }).catch(err => {
             debug(err)
             this.stop()
@@ -107,7 +108,7 @@ class Wechat extends WechatCore {
       } else {
         clearTimeout(this.retryPollingId)
         this.retryPollingId = setTimeout(() => {
-          this.syncPolling()
+          this.syncPolling(id)
         }, 1000 * this.syncErrorCount)
       }
     })
@@ -185,7 +186,7 @@ class Wechat extends WechatCore {
     let interval = Date.now() - this.lastSyncTime
     if (interval > 1 * 60 * 1000) {
       debug(`状态同步超过${interval / 1000}s未响应`)
-      this.stop()
+      this.syncPolling()
     } else {
       debug('心跳')
       this.notifyMobile(this.user.UserName)
