@@ -242,9 +242,9 @@ contact.canSearch(keyword)
 此外，wechat4u 在实例上提供 Contact 作为联系人的通用接口，扩展以下属性：
 
 ```javascript
-wechat.contact.isRoomContact()
-wechat.contact.isSpContact()
-wechat.contact.isPublicContact()
+wechat.Contact.isRoomContact()
+wechat.Contact.isSpContact()
+wechat.Contact.isPublicContact()
 
 wechat.Contact.getUserByUserName()
 wechat.Contact.getSearchUser(keyword)
