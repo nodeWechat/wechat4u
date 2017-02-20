@@ -13,6 +13,14 @@ export const isFunction = val => Object.prototype.toString.call(val) === '[objec
 
 export function convertEmoji (s) {
   return s ? s.replace(/<span.*?class="emoji emoji(.*?)"><\/span>/g, (a, b) => {
+    switch (b.toLowerCase()) {
+      case '1f639':
+        b = '1f602'
+        break
+      case '1f64d':
+        b = '1f614'
+        break
+    }
     try {
       let s = null
       if (b.length === 4 || b.length === 5) {
