@@ -903,7 +903,8 @@ export default class WechatCore {
   }
 
   // OP: 1 联系人置顶 0 取消置顶
-  opLog (UserName, OP) {
+  // 若不传RemarkName，则会覆盖以设置的联系人备注名
+  opLog (UserName, OP, RemarkName) {
     return Promise.resolve().then(() => {
       let params = {
         pass_ticket: this.PROP.passTicket
@@ -912,6 +913,7 @@ export default class WechatCore {
         BaseRequest: this.getBaseRequest(),
         CmdId: 3,
         OP: OP,
+        RemarkName: RemarkName,
         UserName: UserName
       }
       return this.request({
