@@ -383,10 +383,6 @@ export default class WechatCore {
     })
   }
 
-  sendMsg (msg, to) {
-    return this.sendText(msg, to)
-  }
-
   sendText (msg, to) {
     return Promise.resolve().then(() => {
       let params = {
@@ -619,6 +615,12 @@ export default class WechatCore {
           'ClientMsgId': clientMsgId
         }
       }
+      // 转发模式
+      if (typeof mediaId === 'object') {
+        data.Scene = mediaId.Scene || 2
+        data.Msg.Content = mediaId.Content
+        delete data.Msg.MediaId
+      }
       return this.request({
         method: 'POST',
         url: this.CONF.API_webwxsendmsgimg,
@@ -654,6 +656,12 @@ export default class WechatCore {
           'LocalID': clientMsgId,
           'ClientMsgId': clientMsgId
         }
+      }
+      // 转发模式
+      if (typeof mediaId === 'object') {
+        data.Scene = mediaId.Scene || 2
+        data.Msg.Content = mediaId.Content
+        delete data.Msg.MediaId
       }
       return this.request({
         method: 'POST',
