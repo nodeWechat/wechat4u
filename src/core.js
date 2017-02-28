@@ -16,7 +16,7 @@ const debug = _debug('core')
 
 export default class WechatCore {
 
-  constructor () {
+  constructor (data) {
     this.PROP = {
       uuid: '',
       uin: '',
@@ -29,10 +29,31 @@ export default class WechatCore {
         List: []
       }
     }
-
     this.CONF = getCONF()
+    this.COOKIE = {}
     this.user = {}
-    this.request = new Request()
+    if (data) {
+      this.botData = data
+    }
+
+    this.request = new Request({
+      Cookie: this.COOKIE
+    })
+  }
+
+  get botData () {
+    return {
+      PROP: this.PROP,
+      CONF: this.CONF,
+      COOKIE: this.COOKIE,
+      user: this.user
+    }
+  }
+
+  set botData (data) {
+    Object.keys(data).forEach(key => {
+      Object.assign(this[key], data[key])
+    })
   }
 
   getUUID () {

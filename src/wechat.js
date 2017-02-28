@@ -21,8 +21,8 @@ if (!isStandardBrowserEnv) {
 
 class Wechat extends WechatCore {
 
-  constructor () {
-    super()
+  constructor (data) {
+    super(data)
     _.extend(this, new EventEmitter())
     this.state = this.CONF.STATE.init
     this.contacts = {} // 所有联系人
@@ -157,10 +157,21 @@ class Wechat extends WechatCore {
   }
 
   start () {
-    return this.startLogin()
-      .then(() => this.startInit())
-      .then(() => this.startGetContact())
+    Promise.resolve(this.PROP.uin ? Promise.resolve() : Promise.reject())
       .then(() => {
+        return this.init()
+          .then(() => this.notifyMobile())
+      })
+      .catch(() => {
+        return this.startLogin()
+          .then(() => this.startInit())
+      })
+      .then(() => {
+        this.startGetContact()
+          .catch(err => {
+            debug(err)
+            bot.emit('error', err)
+          })
         this.emit('login')
         this.state = this.CONF.STATE.login
         this.lastSyncTime = Date.now()

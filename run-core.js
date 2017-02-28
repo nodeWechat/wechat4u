@@ -5,7 +5,15 @@ const qrcode = require('qrcode-terminal')
 const fs = require('fs')
 const request = require('request')
 
-let bot = new Wechat()
+let bot
+/**
+ * 尝试获取本地登录数据，免扫码
+ */
+try {
+  bot = new Wechat(require('./sync-data.json'))
+} catch (e) {
+  bot = new Wechat()
+}
 /**
  * 启动机器人
  */
