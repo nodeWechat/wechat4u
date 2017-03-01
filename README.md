@@ -47,7 +47,7 @@ npm run compile // babel编译
 
 `node run-core.js`
 
-逻辑见代码，简明完整
+逻辑见[代码](https://github.com/nodeWechat/wechat4u/blob/master/run-core.js)，简明完整，一定要看
 
 ## 实例属性
 
@@ -165,9 +165,13 @@ bot.uploadMedia(fs.createReadStream('test.png'))
 
 对以上发送消息的方法的封装，是发送消息的通用方法
 
-当msg为string时，发送文本消息
+当`msg`为string时，发送文本消息
 
-当msg为`{file:xxx,filename:'xxx.ext'}`时，发送对应媒体文件
+当`msg`为`{file:xxx,filename:'xxx.ext'}`时，发送对应媒体文件
+
+##### bot.forwardMsg(msg, toUserName)
+
+转发消息，`msg`为`message`事件传递的`msg`对象
 
 ```javascript
 bot.sendMsg({

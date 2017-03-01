@@ -54,6 +54,8 @@ class Wechat extends WechatCore {
   sendMsg (msg, toUserName) {
     if (typeof msg === 'string') {
       return this.sendText(msg, toUserName)
+    } else if (msg.emoticonMd5) {
+      return this.sendEmoticon(msg.emoticonMd5, toUserName)
     } else {
       return this.uploadMedia(msg.file, msg.filename, toUserName)
         .then(res => {

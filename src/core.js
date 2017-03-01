@@ -615,12 +615,6 @@ export default class WechatCore {
           'ClientMsgId': clientMsgId
         }
       }
-      // 转发模式
-      if (typeof mediaId === 'object') {
-        data.Scene = mediaId.Scene || 2
-        data.Msg.Content = mediaId.Content
-        delete data.Msg.MediaId
-      }
       return this.request({
         method: 'POST',
         url: this.CONF.API_webwxsendmsgimg,
@@ -656,12 +650,6 @@ export default class WechatCore {
           'LocalID': clientMsgId,
           'ClientMsgId': clientMsgId
         }
-      }
-      // 转发模式
-      if (typeof mediaId === 'object') {
-        data.Scene = mediaId.Scene || 2
-        data.Msg.Content = mediaId.Content
-        delete data.Msg.MediaId
       }
       return this.request({
         method: 'POST',
@@ -711,6 +699,80 @@ export default class WechatCore {
     }).catch(err => {
       debug(err)
       throw new Error('发送文件失败')
+    })
+  }
+
+  forwardMsg (msg, to) {
+    return Promise.resolve().then(() => {
+      let params = {
+        'pass_ticket': this.PROP.passTicket,
+        'fun': 'async',
+        'f': 'json',
+        'lang': 'zh_CN'
+      }
+      let clientMsgId = getClientMsgId()
+      let data = {
+        'BaseRequest': this.getBaseRequest(),
+        'Scene': 2,
+        'Msg': {
+          'Type': msg.MsgType,
+          'MediaId': '',
+          'Content': msg.Content.replace(/&lt;/g, '<').replace(/&gt;/g, '>'),
+          'FromUserName': this.user.UserName,
+          'ToUserName': to,
+          'LocalID': clientMsgId,
+          'ClientMsgId': clientMsgId
+        }
+      }
+      let url, pm
+      switch (msg.MsgType) {
+        case this.CONF.MSGTYPE_TEXT:
+          url = this.CONF.API_webwxsendmsg
+          if (msg.SubMsgType === this.CONF.MSGTYPE_LOCATION) {
+            data.Msg.Type = this.CONF.MSGTYPE_LOCATION
+            data.Msg.Content = msg.OriContent.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+          }
+          break
+        case this.CONF.MSGTYPE_IMAGE:
+          url = this.CONF.API_webwxsendmsgimg
+          break
+        case this.CONF.MSGTYPE_EMOTICON:
+          url = this.CONF.API_webwxsendemoticon
+          params.fun = 'sys'
+          data.Msg.EMoticonMd5 = msg.Content.replace(/^[\s\S]*?md5\s?=\s?"(.*?)"[\s\S]*?$/, '$1')
+          if (!data.Msg.EMoticonMd5) {
+            throw new Error('商店表情不能转发')
+          }
+          data.Msg.EmojiFlag = 2
+          data.Scene = 0
+          delete data.Msg.MediaId
+          delete data.Msg.Content
+          break
+        case this.CONF.MSGTYPE_MICROVIDEO:
+        case this.CONF.MSGTYPE_VIDEO:
+          url = this.CONF.API_webwxsendmsgvedio
+          data.Msg.Type = this.CONF.MSGTYPE_VIDEO
+          break
+        case this.CONF.MSGTYPE_APP:
+          url = this.CONF.API_webwxsendappmsg
+          data.Msg.Type = msg.AppMsgType
+          data.Msg.Content = data.Msg.Content.replace(/^[\s\S]*?(<appmsg[\s\S]*?<attachid>)[\s\S]*?(<\/attachid>[\s\S]*?<\/appmsg>)[\s\S]*?$/, `$1${msg.MediaId}$2`)
+          break
+        default:
+          throw new Error('该消息类型不能直接转发')
+      }
+      return this.request({
+        method: 'POST',
+        url: url,
+        params: params,
+        data: data
+      }).then(res => {
+        let data = res.data
+        assert.equal(data.BaseResponse.Ret, 0, res)
+      })
+    }).catch(err => {
+      debug(err)
+      throw new Error('转发消息失败')
     })
   }
 
