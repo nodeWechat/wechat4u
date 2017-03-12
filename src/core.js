@@ -101,7 +101,7 @@ export default class WechatCore {
           this.CONF = getCONF(window.redirect_uri.match(/(?:\w+\.)+\w+/)[0])
           this.rediUri = window.redirect_uri
         } else if (window.code === 201 && window.userAvatar) {
-          this.user.userAvatar = window.userAvatar
+          // this.user.userAvatar = window.userAvatar
         }
         return window
       })
