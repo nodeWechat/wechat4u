@@ -13,6 +13,7 @@ export function Request (defaults) {
     defaults.headers['connection'] = defaults.headers['connection'] || 'close'
   }
 
+  defaults.timeout = 1000 * 60
   defaults.httpAgent = false
   defaults.httpsAgent = false
 
@@ -38,12 +39,13 @@ export function Request (defaults) {
             this.Cookie[pm[1]] = pm[2]
           }
         })
-        this.axios.defaults.headers.common['cookie'] = Object.keys(this.Cookie).map(key => {
-          return `${key}=${this.Cookie[key]}`
-        }).join('; ')
       }
       return res
     }, err => {
+      if (err && err.response) {
+        delete err.response.request
+        delete err.response.config
+      }
       return Promise.reject(err)
     })
   }
