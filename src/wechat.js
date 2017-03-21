@@ -52,7 +52,7 @@ class Wechat extends WechatCore {
   }
 
   sendMsg (msg, toUserName) {
-    if (typeof msg === 'string') {
+    if (typeof msg !== 'object') {
       return this.sendText(msg, toUserName)
     } else if (msg.emoticonMd5) {
       return this.sendEmoticon(msg.emoticonMd5, toUserName)
@@ -279,6 +279,7 @@ class Wechat extends WechatCore {
             })
           })).catch(err => {
             debug(err)
+            this.emit('error', err)
           })
         }
         if (msg.ToUserName === 'filehelper' && msg.Content === '退出wechat4u' ||
