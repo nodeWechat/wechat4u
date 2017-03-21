@@ -38,7 +38,6 @@ bot.start()
 git clone https://github.com/nodeWechat/wechat4u.git
 cd wechat4u
 npm install
-npm run example // web服务器模式
 npm run core // 命令行模式
 npm run compile // babel编译
 ```
