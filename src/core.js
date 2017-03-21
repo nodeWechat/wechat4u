@@ -207,12 +207,12 @@ export default class WechatCore {
     })
   }
 
-  getContact () {
+  getContact (seq = 0) {
     return Promise.resolve().then(() => {
       let params = {
         'lang': 'zh_CN',
         'pass_ticket': this.PROP.passTicket,
-        'seq': 0,
+        'seq': seq,
         'skey': this.PROP.skey,
         'r': +new Date()
       }
@@ -224,7 +224,7 @@ export default class WechatCore {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
 
-        return data.MemberList
+        return data
       })
     }).catch(err => {
       debug(err)

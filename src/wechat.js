@@ -111,9 +111,21 @@ class Wechat extends WechatCore {
   }
 
   _init () {
+    const getContact = (Seq = 0, contacts = []) => {
+      return this.getContact(Seq)
+      .then(res => {
+        contacts = contacts.concat(res.MemberList)
+        if (res.Seq) {
+          return getContact(Seq, contacts)
+        } else {
+          return contacts
+        }
+      })
+    }
+
     return this.init()
       .then(() => this.notifyMobile())
-      .then(() => this.getContact())
+      .then(() => getContact())
       .then(contacts => {
         debug('getContact count: ', contacts.length)
         this.updateContacts(contacts)
