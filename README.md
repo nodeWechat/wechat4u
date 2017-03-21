@@ -34,7 +34,7 @@ bot.start()
 
 ## 开发测试
 
-```
+```shell
 git clone https://github.com/nodeWechat/wechat4u.git
 cd wechat4u
 npm install
@@ -49,9 +49,21 @@ npm run compile // babel编译
 
 逻辑见[代码](https://github.com/nodeWechat/wechat4u/blob/master/run-core.js)，简明完整，一定要看
 
+## 实例化Wechat类
+
+```javascript
+let bot = new Wechat([botData])
+```
+
+若传入`botData`，则使用此机器人信息，重新开始之前的同步
+
 ## 实例属性
 
 所有属性均只读
+
+##### bot.botData
+
+可导出的实例基本信息，在下次new新bot时，可以填入此信息，重新同步
 
 ##### bot.PROP
 
@@ -105,6 +117,10 @@ msg为`Message`对象，具体属性方法见`src/interface/message.js`
 启动实例，登录和保持同步
 
 调用该方法后，通过监听事件来处理消息
+
+##### bot.restart()
+
+利用实例已获取的必要信息，重新登录和进行同步
 
 ##### bot.stop()
 

@@ -96,27 +96,36 @@ class Wechat extends WechatCore {
         return
       }
       debug(err)
-      if (this.syncErrorCount++ > 3) {
+      this.emit('error', err)
+      if (++this.syncErrorCount > 2) {
+        let err = new Error(`连续${this.syncErrorCount}次同步失败，5s后尝试重启`)
+        debug(err)
         this.emit('error', err)
-        debug('syncErrorCount: ', this.syncErrorCount)
-        this.startInit()
-          .then(() => {
-            debug('重新初始化成功')
-            this.syncPolling(id)
-          }).catch(err => {
-            debug(err)
-            this.stop()
-          })
+        clearTimeout(this.retryPollingId)
+        setTimeout(() => this.restart(), 5 * 1000)
       } else {
         clearTimeout(this.retryPollingId)
-        this.retryPollingId = setTimeout(() => {
-          this.syncPolling(id)
-        }, 1000 * this.syncErrorCount)
+        this.retryPollingId = setTimeout(() => this.syncPolling(id), 2000 * this.syncErrorCount)
       }
     })
   }
 
-  startLogin () {
+  _init () {
+    return this.init()
+      .then(() => this.notifyMobile())
+      .then(() => this.getContact())
+      .then(contacts => {
+        debug('getContact count: ', contacts.length)
+        this.updateContacts(contacts)
+        this.state = this.CONF.STATE.login
+        this.lastSyncTime = Date.now()
+        this.syncPolling()
+        this.checkPolling()
+        this.emit('login')
+      })
+  }
+
+  _login () {
     const checkLogin = () => {
       return this.checkLogin()
         .then(res => {
@@ -137,61 +146,52 @@ class Wechat extends WechatCore {
         this.emit('uuid', uuid)
         this.state = this.CONF.STATE.uuid
         return checkLogin()
-      }).then(res => {
-        debug('checkLogin: ', res.redirect_uri)
       })
-  }
-
-  startInit () {
-    return this.login()
-      .then(() => this.init())
-      .then(() => this.notifyMobile())
-  }
-
-  startGetContact () {
-    return this.getContact()
       .then(res => {
-        debug('getContact count: ', res.length)
-        this.updateContacts(res)
+        debug('checkLogin: ', res.redirect_uri)
+        return this.login()
       })
   }
 
   start () {
-    Promise.resolve(this.PROP.uin ? Promise.resolve() : Promise.reject())
-      .then(() => {
-        return this.init()
-          .then(() => this.notifyMobile())
-      })
-      .catch(() => {
-        return this.startLogin()
-          .then(() => this.startInit())
-      })
-      .then(() => {
-        this.startGetContact()
-          .catch(err => {
-            debug(err)
-            bot.emit('error', err)
-          })
-        this.emit('login')
-        this.state = this.CONF.STATE.login
-        this.lastSyncTime = Date.now()
-        this.syncPolling()
-        this.checkPolling()
-        this.sendMsg('登录成功，退出请向文件传输助手发送\'退出wechat4u\'', 'filehelper')
-          .catch(debug)
-      }).catch(err => {
-        this.emit('error', err)
+    debug('启动中...')
+    return this._login()
+      .then(() => this._init())
+      .catch(err => {
         debug(err)
+        this.emit('error', err)
+        this.stop()
+      })
+  }
+
+  restart () {
+    debug('重启中...')
+    return this._init()
+      .catch(err => {
+        if (err.response) {
+          throw err
+        } else {
+          let err = new Error('重启时网络错误，60s后进行最后一次重启')
+          debug(err)
+          this.emit('error', err)
+          return new Promise(resolve => {
+            setTimeout(resolve, 60 * 1000)
+          }).then(() => this.init())
+        }
+      }).catch(err => {
+        debug(err)
+        this.emit('error', err)
         this.stop()
       })
   }
 
   stop () {
-    this.emit('logout')
-    this.state = this.CONF.STATE.logout
+    debug('登出中...')
     clearTimeout(this.retryPollingId)
     clearTimeout(this.checkPollingId)
     this.logout()
+    this.state = this.CONF.STATE.logout
+    this.emit('logout')
   }
 
   checkPolling () {
@@ -200,24 +200,31 @@ class Wechat extends WechatCore {
     }
     let interval = Date.now() - this.lastSyncTime
     if (interval > 1 * 60 * 1000) {
-      debug(`状态同步超过${interval / 1000}s未响应`)
-      this.syncPolling()
+      let err = new Error(`状态同步超过${interval / 1000}s未响应，5s后尝试重启`)
+      debug(err)
+      this.emit('error', err)
+      clearTimeout(this.checkPollingId)
+      setTimeout(() => this.restart(), 5 * 1000)
     } else {
       debug('心跳')
       this.notifyMobile(this.user.UserName)
-        .catch(debug)
+      .catch(err => {
+        debug(err)
+        this.emit('error', err)
+      })
       this.sendMsg('心跳：' + new Date().toLocaleString(), 'filehelper')
-        .catch(debug)
+      .catch(err => {
+        debug(err)
+        this.emit('error', err)
+      })
       clearTimeout(this.checkPollingId)
-      this.checkPollingId = setTimeout(() => {
-        this.checkPolling()
-      }, 5 * 60 * 1000)
+      this.checkPollingId = setTimeout(() => this.checkPolling(), 5 * 60 * 1000)
     }
   }
 
   handleSync (data) {
     if (!data) {
-      this.stop()
+      this.restart()
       return
     }
     if (data.AddMsgCount) {
@@ -236,20 +243,19 @@ class Wechat extends WechatCore {
         if (!this.contacts[msg.FromUserName]) {
           return this.batchGetContact([{
             UserName: msg.FromUserName
-          }]).catch(err => {
-            debug(err)
-            return [{
-              UserName: msg.FromUserName
-            }]
-          }).then(contacts => {
+          }]).then(contacts => {
             this.updateContacts(contacts)
+          }).catch(err => {
+            debug(err)
+            this.emit('error', err)
           })
         }
       }).then(() => {
         msg = this.Message.extend(msg)
         this.emit('message', msg)
         if (msg.MsgType === this.CONF.MSGTYPE_STATUSNOTIFY) {
-          let userList = msg.StatusNotifyUserName.split(',').map(UserName => {
+          let userList = msg.StatusNotifyUserName.split(',').filter(UserName => !this.contacts[UserName])
+          .map(UserName => {
             return {
               UserName: UserName
             }
@@ -275,6 +281,9 @@ class Wechat extends WechatCore {
   }
 
   updateContacts (contacts) {
+    if (!contacts || contacts.length == 0) {
+      return
+    }
     contacts.forEach(contact => {
       if (this.contacts[contact.UserName]) {
         let oldContact = this.contacts[contact.UserName]
