@@ -1028,6 +1028,31 @@ export default class WechatCore {
     })
   }
 
+  updateTopicName (ChatRoomName, NewTopic) {
+    return Promise.resolve().then(() => {
+      let params = {
+        'fun': 'modtopic'
+      }
+      let data = {
+        BaseRequest: this.getBaseRequest(),
+        ChatRoomName: ChatRoomName,
+        NewTopic: NewTopic
+      }
+      return this.request({
+        method: 'POST',
+        url: this.CONF.API_webwxupdatechatroom,
+        params: params,
+        data: data
+      }).then(res => {
+        let data = res.data
+        assert.equal(data.BaseResponse.Ret, 0, res)
+      })
+    }).catch(err => {
+      debug(err)
+      throw new Error('更新群名失败')
+    })
+  }
+
   getBaseRequest () {
     return {
       Uin: parseInt(this.PROP.uin),
