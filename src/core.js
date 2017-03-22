@@ -1028,6 +1028,36 @@ export default class WechatCore {
     })
   }
 
+updateChatroom (ChatRoomName, MemberList, fun) {
+    return Promise.resolve().then(() => {
+      let params = {
+        fun: fun
+      }
+      let data = {
+        BaseRequest: this.getBaseRequest(),
+        ChatRoomName: ChatRoomName
+      }
+      if (fun === 'addmember') {
+        data.AddMemberList = MemberList.toString()
+      } else if (fun === 'delmember') {
+        data.DelMemberList = MemberList.toString()
+      } else if (fun === 'invitemember') {
+        data.InviteMemberList = MemberList.toString()
+      }
+      return this.request({
+        method: 'POST',
+        url: this.CONF.API_webwxupdatechatroom,
+        params: params,
+        data: data
+      }).then(res => {
+        let data = res.data
+        assert.equal(data.BaseResponse.Ret, 0, res)
+      })
+    }).catch(err => {
+      debug(err)
+      throw new Error('邀请或踢出群成员失败')
+    })
+  }
   updateTopicName (ChatRoomName, NewTopic) {
     return Promise.resolve().then(() => {
       let params = {
@@ -1044,6 +1074,7 @@ export default class WechatCore {
         params: params,
         data: data
       }).then(res => {
+        console.log(JSON.stringify(res));
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
       })
