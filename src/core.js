@@ -410,6 +410,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -452,6 +453,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -623,6 +625,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -659,6 +662,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -695,6 +699,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -769,6 +774,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -898,6 +904,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -965,6 +972,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -994,6 +1002,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -1021,6 +1030,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
