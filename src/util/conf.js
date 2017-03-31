@@ -220,5 +220,6 @@ export function getCONF (host) {
   conf.API_webwxsearch = origin + '/cgi-bin/mmwebwx-bin/webwxsearchcontact'
   conf.API_webwxoplog = origin + '/cgi-bin/mmwebwx-bin/webwxoplog'
   conf.API_checkupload = origin + '/cgi-bin/mmwebwx-bin/webwxcheckupload'
+  conf.API_webwxrevokemsg = origin + '/cgi-bin/mmwebwx-bin/webwxrevokemsg'
   return Object.assign(conf, CONF)
 }

@@ -1,20 +1,18 @@
 # wechat4u.js
 
-![](http://7xr8pm.com1.z0.glb.clouddn.com/nodeWechat.png)
-[![npm version](https://img.shields.io/npm/v/wechat4u.svg)](https://www.npmjs.org/package/wechat4u)
-[![wechat group](https://img.shields.io/badge/wechat-group-brightgreen.svg)](http://www.qr-code-generator.com/phpqrcode/getCode.php?cht=qr&chl=http%3A%2F%2Fweixin.qq.com%2Fg%2FA1zJ47b19KtgMnAx&chs=180x180&choe=UTF-8&chld=L|0)
+![](http://7xr8pm.com1.z0.glb.clouddn.com/nodeWechat.png) [![npm version](https://img.shields.io/npm/v/wechat4u.svg)](https://www.npmjs.org/package/wechat4u) [![wechat group](https://img.shields.io/badge/wechat-group-brightgreen.svg)](http://www.qr-code-generator.com/phpqrcode/getCode.php?cht=qr&chl=http%3A%2F%2Fweixin.qq.com%2Fg%2FA1zJ47b19KtgMnAx&chs=180x180&choe=UTF-8&chld=L|0)
 
 ## Have A Try ?
 
-* 测试服务器
+- 测试服务器
 
-[wechat4u.duapp.com](http://wechat4u.duapp.com)，具有自动回复（文本，表情），监控和群发等功能
+  [wechat4u.duapp.com](http://wechat4u.duapp.com)，具有自动回复（文本，表情），监控和群发等功能
 
-* 测试微信机器人
+- 测试微信机器人
 
-![微信号：abotofwechat4u](https://raw.githubusercontent.com/nodeWechat/wechat4u/master/bot-qrcode.jpg)
+  ![微信号：abotofwechat4u](https://raw.githubusercontent.com/nodeWechat/wechat4u/master/bot-qrcode.jpg)
 
-扫描二维码，开启激情果撩，验证消息：**我爱wechat4u**
+  扫描二维码，开启激情果撩，验证消息：**我爱wechat4u**
 
 ## 安装使用
 
@@ -60,15 +58,15 @@ let bot = new Wechat([botData])
 
 所有属性均只读
 
-##### bot.botData
+### bot.botData
 
 可导出的实例基本信息，在下次new新bot时，可以填入此信息，重新同步
 
-##### bot.PROP
+### bot.PROP
 
 保持登录状态的必要信息
 
-##### bot.CONF
+### bot.CONF
 
 配置信息，包括当前服务器地址，API路径和一些常量
 
@@ -87,15 +85,15 @@ msg.MsgType == bot.CONF.MSGTYPE_MICROVIDEO // 小视频消息
 msg.MsgType == bot.CONF.MSGTYPE_VIDEO // 视频消息
 ```
 
-##### bot.state
+### bot.state
 
 当前状态
 
-##### bot.user
+### bot.user
 
 当前登录用户信息
 
-##### bot.contacts
+### bot.contacts
 
 所有联系人，包括通讯录联系人，近期联系群，公众号
 
@@ -103,7 +101,7 @@ key为联系人UserName，UserName是本次登录时每个联系人的UUID，不
 
 value为`Contact`对象，具体属性方法见`src/interface/contact.js`
 
-##### msg
+### msg
 
 登录后接受到的所有消息
 
@@ -111,33 +109,34 @@ msg为`Message`对象，具体属性方法见`src/interface/message.js`
 
 ## 实例API
 
-##### bot.start()
+### bot.start()
 
 启动实例，登录和保持同步
 
 调用该方法后，通过监听事件来处理消息
 
-##### bot.restart()
+### bot.restart()
 
 利用实例已获取的必要信息，重新登录和进行同步
 
-##### bot.stop()
+### bot.stop()
 
 停止实例，退出登录
 
 调用该方法后，通过监听`logout`事件来登出
 
-#### 以下方法均返回Promise
+> 以下方法均返回Promise
 
-##### bot.sendText(msgString, toUserName)
+### bot.sendText(msgString, toUserName)
 
 发送文本消息，可以包含emoji(😒)和QQ表情([坏笑])
 
-##### bot.uploadMedia(Buffer | Stream | File, filename, toUserName)
+### bot.uploadMedia(Buffer | Stream | File, filename, toUserName)
 
 上传媒体文件
 
 返回
+
 ```javascript
 {
   name: name,
@@ -148,7 +147,7 @@ msg为`Message`对象，具体属性方法见`src/interface/message.js`
 }
 ```
 
-##### bot.sendPic(mediaId, toUserName)
+### bot.sendPic(mediaId, toUserName)
 
 发送图片，mediaId为uploadMedia返回的mediaId
 
@@ -162,21 +161,21 @@ bot.uploadMedia(fs.createReadStream('test.png'))
   })
 ```
 
-##### bot.sendEmoticon(md5 | mediaId, toUserName)
+### bot.sendEmoticon(md5 | mediaId, toUserName)
 
 发送表情，可是是表情的MD5或者uploadMedia返回的mediaId
 
 表情的MD5，可以自己计算但是可能不存在在微信服务器中，也可以从微信返回的表情消息中获得
 
-##### bot.sendVideo(mediaId, toUserName)
+### bot.sendVideo(mediaId, toUserName)
 
 发送视频
 
-##### bot.sendDoc(mediaId, name, size, ext, toUserName)
+### bot.sendDoc(mediaId, name, size, ext, toUserName)
 
 以应用卡片的形式发送文件，可以通过这个API发送语音
 
-##### bot.sendMsg(msg, toUserName)
+### bot.sendMsg(msg, toUserName)
 
 对以上发送消息的方法的封装，是发送消息的通用方法
 
@@ -184,9 +183,7 @@ bot.uploadMedia(fs.createReadStream('test.png'))
 
 当`msg`为`{file:xxx,filename:'xxx.ext'}`时，发送对应媒体文件
 
-##### bot.forwardMsg(msg, toUserName)
-
-转发消息，`msg`为`message`事件传递的`msg`对象
+当`msg`为`{emoticonMd5:xxx}`时，发送表情
 
 ```javascript
 bot.sendMsg({
@@ -198,7 +195,27 @@ bot.sendMsg({
   })
 ```
 
-##### bot.getHeadImg(HeadImgUrl)
+### bot.forwardMsg(msg, toUserName)
+
+转发消息，`msg`为`message`事件传递的`msg`对象
+
+### bot.revokeMsg(MsgID, toUserName)
+
+撤回消息
+
+`MsgID`为发送消息后返回的代表消息的ID
+
+```javascript
+bot.sendMsg('测试撤回', toUserName)
+  .then(res => {
+    return bot.revokeMsg(res.MsgID, toUserName)
+  })
+  .catch(err => {
+    console.log(err)
+  })
+```
+
+### bot.getHeadImg(HeadImgUrl)
 
 获取联系人头像
 
@@ -210,7 +227,7 @@ bot.getHeadImg(bot.contacts[UserName].HeadImgUrl).then(res => {
 })
 ```
 
-##### bot.getMsgImg(MsgId)
+### bot.getMsgImg(MsgId)
 
 获取图片或表情
 
@@ -222,42 +239,45 @@ bot.getMsgImg(msg.MsgId).then(res => {
 })
 ```
 
-##### bot.getVoice(MsgId)
+### bot.getVoice(MsgId)
 
 获取语音
 
-##### bot.getVideo(MsgId)
+### bot.getVideo(MsgId)
 
 获取小视频或视频
 
-##### bot.verifyUser(UserName, Ticket)
+### bot.verifyUser(UserName, Ticket)
 
 通过好友添加请求
 
-##### bot.createChatroom(Topic, MemberList)
+### bot.createChatroom(Topic, MemberList)
 
 创建群
 
-Topic 群聊名称
+`Topic` 群聊名称
 
-MemberList 数组, 除自己外至少两人的UserName，格式为
-[
-  {"UserName":"@250d8d156ad9f8b068c2e3df3464ecf2"},
-  {"UserName":"@42d725733741de6ac53cbe3738d8dd2e"}
-]
+`MemberList` 数组, 除自己外至少两人的UserName，格式为 [ {"UserName":"@250d8d156ad9f8b068c2e3df3464ecf2"}, {"UserName":"@42d725733741de6ac53cbe3738d8dd2e"} ]
 
-
-##### bot.updateChatroom(ChatRoomName, MemberList, fun)
+### bot.updateChatroom(ChatRoomUserName, MemberList, fun)
 
 更新群成员
 
-ChatRoomName '@@'开头的群UserName
+`ChatRoomUserName` '@@'开头的群UserName
 
-MemberList 数组，联系人UserNa
+`MemberList` 数组，联系人UserNa
 
-fun 可选'addmember'，'delmember'，'invitemember'
+`fun` 可选'addmember'，'delmember'，'invitemember'
 
-##### bot.opLog(UserName, OP)
+### bot.updateChatRoomName(ChatRoomUserName, NewName)
+
+更新群名称
+
+`ChatRoomUserName` '@@'开头的群UserName
+
+`NewName` 字符串，新的群名称
+
+### bot.opLog(UserName, OP)
 
 置顶或取消置顶联系人，可通过直接取消置顶群来获取群ChatRoomOwner
 
@@ -265,13 +285,13 @@ OP == 0 取消置顶
 
 OP == 1 置顶
 
-##### bot.updateRemarkName(UserName, RemarkName)
+### bot.updateRemarkName(UserName, RemarkName)
 
 设置联系人备注或标签
 
 ## 实例事件
 
-##### uuid
+### uuid
 
 得到uuid，之后可以构造二维码或从微信服务器取得二维码
 
@@ -284,23 +304,23 @@ bot.on('uuid', uuid => {
 })
 ```
 
-##### user-avatar
+### user-avatar
 
 手机扫描后可以得到登录用户头像的Data URL
 
-##### login
+### login
 
 手机确认登录
 
-##### logout
+### logout
 
 成功登出
 
-##### contacts-updated
+### contacts-updated
 
 联系人更新，可得到已更新的联系人列表
 
-##### message
+### message
 
 所有通过同步得到的消息，通过`msg.MsgType`判断消息类型
 
@@ -317,7 +337,7 @@ bot.on('message', msg => {
 })
 ```
 
-##### error
+### error
 
 ## Contact对象和Message对象
 
@@ -352,24 +372,23 @@ message.getPeerUserName() // 获取所属对话的联系人 UserName
 message.getDisplayTime() // 获取形如 12:00 的时间戳信息
 ```
 
-
 ## 相关项目
 
 关于微信网页端机器人的实现，已经有大量的轮子了。感谢各位大神！（排名不分先后。。收录的肯定也不齐。。）
 
-* [Python2 的 WeixinBot](https://github.com/Urinx/WeixinBot)
-* [QT 的 QWX](https://github.com/xiangzhai/qwx)
-* [Node，可能会写成uProxy插件的 uProxy_wechat](https://github.com/LeMasque/uProxy_wechat)
-* [Node，可在shell中直接运行的 wechat-user-bot](https://github.com/HalfdogStudio/wechat-user-bot)
-* [Python3 的 wechat_robot](https://github.com/lyyyuna/wechat_robot)
-* [开放协议 支持 QQ&微信 的 wxagent](https://github.com/kitech/wxagent)
-* [在微信网页版和 IRC 间搭建通道支持 IRC 操作的 wechatircd](https://github.com/MaskRay/wechatircd)
-* [Chrome 插件版的微信机器人](https://github.com/spacelan/weixin-bot-chrome-extension)
+- [Python2 的 WeixinBot](https://github.com/Urinx/WeixinBot)
+- [QT 的 QWX](https://github.com/xiangzhai/qwx)
+- [Node，可能会写成uProxy插件的 uProxy_wechat](https://github.com/LeMasque/uProxy_wechat)
+- [Node，可在shell中直接运行的 wechat-user-bot](https://github.com/HalfdogStudio/wechat-user-bot)
+- [Python3 的 wechat_robot](https://github.com/lyyyuna/wechat_robot)
+- [开放协议 支持 QQ&微信 的 wxagent](https://github.com/kitech/wxagent)
+- [在微信网页版和 IRC 间搭建通道支持 IRC 操作的 wechatircd](https://github.com/MaskRay/wechatircd)
+- [Chrome 插件版的微信机器人](https://github.com/spacelan/weixin-bot-chrome-extension)
 
 关于微信网页端的接口说明，也有好几篇分析的很厉害的文章。
 
-* [Reverland 大神的web 微信与基于node的微信机器人实现](http://reverland.org/javascript/2016/01/15/webchat-user-bot/)
-* [Urinx 大神的 API Map](https://github.com/Urinx/WeixinBot/blob/master/README.md)
-* [聂永 大神的 微信协议简单调研笔记](http://www.blogjava.net/yongboy/archive/2014/03/05/410636.html)
+- [Reverland 大神的web 微信与基于node的微信机器人实现](http://reverland.org/javascript/2016/01/15/webchat-user-bot/)
+- [Urinx 大神的 API Map](https://github.com/Urinx/WeixinBot/blob/master/README.md)
+- [聂永 大神的 微信协议简单调研笔记](http://www.blogjava.net/yongboy/archive/2014/03/05/410636.html)
 
 好了，差不多就这些资料了。如果想要开发个自己的，那就开工吧！
