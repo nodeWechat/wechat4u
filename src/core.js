@@ -950,14 +950,14 @@ export default class WechatCore {
   }
 
   // fun: 'addmember' or 'delmember' or 'invitemember'
-  updateChatroom (ChatRoomName, MemberList, fun) {
+  updateChatroom (ChatRoomUserName, MemberList, fun) {
     return Promise.resolve().then(() => {
       let params = {
         fun: fun
       }
       let data = {
         BaseRequest: this.getBaseRequest(),
-        ChatRoomName: ChatRoomName
+        ChatRoomName: ChatRoomUserName
       }
       if (fun === 'addmember') {
         data.AddMemberList = MemberList.toString()
@@ -1040,6 +1040,32 @@ export default class WechatCore {
     })
   }
 
+  updateChatRoomName (ChatRoomUserName, NewName) {
+    return Promise.resolve().then(() => {
+      let params = {
+        'fun': 'modtopic'
+      }
+      let data = {
+        BaseRequest: this.getBaseRequest(),
+        ChatRoomName: ChatRoomUserName,
+        NewTopic: NewName
+      }
+      return this.request({
+        method: 'POST',
+        url: this.CONF.API_webwxupdatechatroom,
+        params: params,
+        data: data
+      }).then(res => {
+        console.log(JSON.stringify(res));
+        let data = res.data
+        assert.equal(data.BaseResponse.Ret, 0, res)
+      })
+    }).catch(err => {
+      debug(err)
+      throw new Error('更新群名失败')
+    })
+  }
+  
   revokeMsg (msgId, toUserName) {
     return Promise.resolve().then(() => {
       let data = {
