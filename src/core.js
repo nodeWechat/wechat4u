@@ -410,6 +410,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -452,6 +453,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -623,6 +625,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -659,6 +662,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -695,6 +699,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -756,7 +761,9 @@ export default class WechatCore {
         case this.CONF.MSGTYPE_APP:
           url = this.CONF.API_webwxsendappmsg
           data.Msg.Type = msg.AppMsgType
-          data.Msg.Content = data.Msg.Content.replace(/^[\s\S]*?(<appmsg[\s\S]*?<attachid>)[\s\S]*?(<\/attachid>[\s\S]*?<\/appmsg>)[\s\S]*?$/, `$1${msg.MediaId}$2`)
+          data.Msg.Content = data.Msg.Content.replace(
+            /^[\s\S]*?(<appmsg[\s\S]*?<attachid>)[\s\S]*?(<\/attachid>[\s\S]*?<\/appmsg>)[\s\S]*?$/,
+            `$1${msg.MediaId}$2`)
           break
         default:
           throw new Error('该消息类型不能直接转发')
@@ -769,6 +776,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -898,6 +906,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -941,14 +950,14 @@ export default class WechatCore {
   }
 
   // fun: 'addmember' or 'delmember' or 'invitemember'
-  updateChatroom (ChatRoomName, MemberList, fun) {
+  updateChatroom (ChatRoomUserName, MemberList, fun) {
     return Promise.resolve().then(() => {
       let params = {
         fun: fun
       }
       let data = {
         BaseRequest: this.getBaseRequest(),
-        ChatRoomName: ChatRoomName
+        ChatRoomName: ChatRoomUserName
       }
       if (fun === 'addmember') {
         data.AddMemberList = MemberList.toString()
@@ -965,6 +974,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -994,6 +1004,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -1021,6 +1032,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
       })
     }).catch(err => {
       debug(err)
@@ -1028,45 +1040,15 @@ export default class WechatCore {
     })
   }
 
-updateChatroom (ChatRoomName, MemberList, fun) {
-    return Promise.resolve().then(() => {
-      let params = {
-        fun: fun
-      }
-      let data = {
-        BaseRequest: this.getBaseRequest(),
-        ChatRoomName: ChatRoomName
-      }
-      if (fun === 'addmember') {
-        data.AddMemberList = MemberList.toString()
-      } else if (fun === 'delmember') {
-        data.DelMemberList = MemberList.toString()
-      } else if (fun === 'invitemember') {
-        data.InviteMemberList = MemberList.toString()
-      }
-      return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxupdatechatroom,
-        params: params,
-        data: data
-      }).then(res => {
-        let data = res.data
-        assert.equal(data.BaseResponse.Ret, 0, res)
-      })
-    }).catch(err => {
-      debug(err)
-      throw new Error('邀请或踢出群成员失败')
-    })
-  }
-  updateTopicName (ChatRoomName, NewTopic) {
+  updateChatRoomName (ChatRoomUserName, NewName) {
     return Promise.resolve().then(() => {
       let params = {
         'fun': 'modtopic'
       }
       let data = {
         BaseRequest: this.getBaseRequest(),
-        ChatRoomName: ChatRoomName,
-        NewTopic: NewTopic
+        ChatRoomName: ChatRoomUserName,
+        NewTopic: NewName
       }
       return this.request({
         method: 'POST',
@@ -1081,6 +1063,29 @@ updateChatroom (ChatRoomName, MemberList, fun) {
     }).catch(err => {
       debug(err)
       throw new Error('更新群名失败')
+    })
+  }
+  
+  revokeMsg (msgId, toUserName) {
+    return Promise.resolve().then(() => {
+      let data = {
+        BaseRequest: this.getBaseRequest(),
+        SvrMsgId: msgId,
+        ToUserName: toUserName,
+        ClientMsgId: getClientMsgId()
+      }
+      return this.request({
+        method: 'POST',
+        url: this.CONF.API_webwxrevokemsg,
+        data: data
+      }).then(res => {
+        let data = res.data
+        assert.equal(data.BaseResponse.Ret, 0, res)
+        return data
+      })
+    }).catch(err => {
+      debug(err)
+      throw new Error('撤回消息失败')
     })
   }
 
