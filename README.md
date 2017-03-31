@@ -14,9 +14,26 @@
 
   扫描二维码，开启激情果撩，验证消息：**我爱wechat4u**
 
-## 安装使用
+## Announcing wechat4u v0.7.0
 
-wechat4u@0.6.x更新了大量API，增强了稳定性
+### Features
+
+- 导出和导入保持微信登录的必要数据 bot.botData ([#160](https://github.com/nodeWechat/wechat4u/pull/160))
+- 修改联系人备注 bot.updateRemarkName(UserName, RemarkName) ([#121](https://github.com/nodeWechat/wechat4u/pull/121))
+- 修改群名 bot.updateChatRoomName(ChatRoomUserName, NewName) ([#168](https://github.com/nodeWechat/wechat4u/pull/168))
+- 转发消息 bot.forwardMsg(msg, toUserName)
+- 撤回消息 bot.revokeMsg(MsgID, toUserName)
+
+### Changes
+
+- 发送消息的一类方法在成功时会返回完整响应数据
+- bot.user 对象中不再存储用户头像的 base64 数据
+- 移除 example 目录
+- 修复 Contact 和 Message 中数据某些数据不可枚举
+- 向上层代码传递完整的 Error 对象，并将原来的中文错误描述放在 err.tips
+- bot.getContact(Seq) 方法增加 Seq 参数，支持增量获取完整联系人
+
+## 安装使用
 
 ```
 npm install --save wechat4u@latest
@@ -214,6 +231,22 @@ bot.sendMsg('测试撤回', toUserName)
     console.log(err)
   })
 ```
+
+### bot.getContact(Seq)
+
+获取通讯录中的联系人
+
+`Seq` 上一次调用 bot.getContact 后返回的 seq，第一次调用可不传
+
+### bot.batchGetContact(contacts)
+
+批量获取指定联系人数据
+
+`contacts` 数组，指定需要获取的数据
+
+当`contacts`为`[{UserName: xxx}]`时，可获取指定联系人或群信息
+
+当`contacts`为`[{UserName: xxx, EncryChatRoomId: xxx}]`时，可获取指定群内成员详细信息，EncryChatRoomId 可从群信息中获得
 
 ### bot.getHeadImg(HeadImgUrl)
 

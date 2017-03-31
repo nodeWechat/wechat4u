@@ -8,6 +8,7 @@ const request = require('request')
 let bot
 /**
  * 尝试获取本地登录数据，免扫码
+ * 这里演示从本地文件中获取数据
  */
 try {
   bot = new Wechat(require('./sync-data.json'))
@@ -18,6 +19,7 @@ try {
  * 启动机器人
  */
 if (bot.PROP.uin) {
+  // 存在登录数据时，可以随时调用restart进行重启
   bot.restart()
 } else {
   bot.start()
@@ -42,7 +44,7 @@ bot.on('user-avatar', avatar => {
  */
 bot.on('login', () => {
   console.log('登录成功')
-  // 保存数据
+  // 保存数据，将数据序列化之后保存到任意位置
   fs.writeFileSync('./sync-data.json', JSON.stringify(bot.botData))
 })
 /**
@@ -57,13 +59,14 @@ bot.on('logout', () => {
  * 联系人更新事件，参数为被更新的联系人列表
  */
 bot.on('contacts-updated', contacts => {
+  console.log(contacts)
   console.log('联系人数量：', Object.keys(bot.contacts).length)
 })
 /**
  * 错误事件，参数一般为Error对象
  */
 bot.on('error', err => {
-  console.log('错误：', err)
+  console.error('错误：', err)
 })
 /**
  * 如何发送消息
@@ -150,6 +153,18 @@ bot.on('login', () => {
     .catch(err => {
       bot.emit('error', err)
     })
+
+  /**
+   * 发送撤回消息请求
+   */
+  bot.sendMsg('测试撤回', ToUserName)
+     .then(res => {
+       // 需要取得待撤回消息的MsgID
+       return bot.revokeMsg(res.MsgID, ToUserName)
+     })
+     .catch(err => {
+       console.log(err)
+     })
 })
 /**
  * 如何处理会话消息
@@ -237,15 +252,6 @@ bot.on('message', msg => {
 bot.on('message', msg => {
   if (msg.MsgType == bot.CONF.MSGTYPE_APP && msg.AppMsgType == bot.CONF.APPMSGTYPE_TRANSFERS) {
     // 转账
-  }
-})
-/**
- * 如何处理红包消息
- */
-bot.on('message', msg => {
-  if (msg.MsgType == bot.CONF.MSGTYPE_SYS && /红包/.test(msg.Content)) {
-    // 若系统消息中带有‘红包’，则认为是红包消息
-    // wechat4u并不能自动收红包
   }
 })
 /**
