@@ -110,31 +110,37 @@ class Wechat extends WechatCore {
     })
   }
 
-  _init () {
-    const getContact = (Seq = 0, contacts = []) => {
-      return this.getContact(Seq)
-      .then(res => {
-        contacts = contacts.concat(res.MemberList)
-        if (res.Seq) {
-          return getContact(Seq, contacts)
-        } else {
-          return contacts
-        }
-      })
-    }
+  _getContact (Seq = 0, contacts = []) {
+    return this.getContact(Seq)
+    .then(res => {
+      contacts = contacts.concat(res.MemberList)
+      if (res.Seq) {
+        return this._getContact(res.Seq, contacts)
+      } else {
+        return contacts
+      }
+    }).catch(err => {
+      this.emit('error', err)
+      return contacts
+    })
+  }
 
+  _init () {
     return this.init()
-      .then(() => this.notifyMobile())
-      .then(() => getContact())
+    .then(() => {
+      this.notifyMobile()
+      .catch(err => this.emit('error', err))
+      this._getContact()
       .then(contacts => {
         debug('getContact count: ', contacts.length)
         this.updateContacts(contacts)
-        this.state = this.CONF.STATE.login
-        this.lastSyncTime = Date.now()
-        this.syncPolling()
-        this.checkPolling()
-        this.emit('login')
       })
+      this.state = this.CONF.STATE.login
+      this.lastSyncTime = Date.now()
+      this.syncPolling()
+      this.checkPolling()
+      this.emit('login')
+    })
   }
 
   _login () {
@@ -219,7 +225,7 @@ class Wechat extends WechatCore {
       setTimeout(() => this.restart(), 5 * 1000)
     } else {
       debug('心跳')
-      this.notifyMobile(this.user.UserName)
+      this.notifyMobile()
       .catch(err => {
         debug(err)
         this.emit('error', err)
