@@ -16,7 +16,7 @@ const debug = _debug('core')
 
 export default class WechatCore {
 
-  constructor () {
+  constructor (data) {
     this.PROP = {
       uuid: '',
       uin: '',
@@ -29,10 +29,31 @@ export default class WechatCore {
         List: []
       }
     }
-
     this.CONF = getCONF()
+    this.COOKIE = {}
     this.user = {}
-    this.request = new Request()
+    if (data) {
+      this.botData = data
+    }
+
+    this.request = new Request({
+      Cookie: this.COOKIE
+    })
+  }
+
+  get botData () {
+    return {
+      PROP: this.PROP,
+      CONF: this.CONF,
+      COOKIE: this.COOKIE,
+      user: this.user
+    }
+  }
+
+  set botData (data) {
+    Object.keys(data).forEach(key => {
+      Object.assign(this[key], data[key])
+    })
   }
 
   getUUID () {
@@ -54,7 +75,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('获取UUID失败')
+      err.tips = '获取UUID失败'
+      throw err
     })
   }
 
@@ -80,13 +102,14 @@ export default class WechatCore {
           this.CONF = getCONF(window.redirect_uri.match(/(?:\w+\.)+\w+/)[0])
           this.rediUri = window.redirect_uri
         } else if (window.code === 201 && window.userAvatar) {
-          this.user.userAvatar = window.userAvatar
+          // this.user.userAvatar = window.userAvatar
         }
         return window
       })
     }).catch(err => {
       debug(err)
-      throw new Error('获取手机确认登录信息失败')
+      err.tips = '获取手机确认登录信息失败'
+      throw err
     })
   }
 
@@ -120,7 +143,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('登录失败')
+      err.tips = '登录失败'
+      throw err
     })
   }
 
@@ -149,7 +173,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('微信初始化失败')
+      err.tips = '微信初始化失败'
+      throw err
     })
   }
 
@@ -177,16 +202,17 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('手机状态通知失败')
+      err.tips = '手机状态通知失败'
+      throw err
     })
   }
 
-  getContact () {
+  getContact (seq = 0) {
     return Promise.resolve().then(() => {
       let params = {
         'lang': 'zh_CN',
         'pass_ticket': this.PROP.passTicket,
-        'seq': 0,
+        'seq': seq,
         'skey': this.PROP.skey,
         'r': +new Date()
       }
@@ -198,11 +224,12 @@ export default class WechatCore {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
 
-        return data.MemberList
+        return data
       })
     }).catch(err => {
       debug(err)
-      throw new Error('获取通讯录失败')
+      err.tips = '获取通讯录失败'
+      throw err
     })
   }
 
@@ -232,7 +259,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('批量获取联系人失败')
+      err.tips = '批量获取联系人失败'
+      throw err
     })
   }
 
@@ -270,7 +298,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('状态报告失败')
+      err.tips = '状态报告失败'
+      throw err
     })
   }
 
@@ -301,7 +330,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('同步失败')
+      err.tips = '同步失败'
+      throw err
     })
   }
 
@@ -333,7 +363,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('获取新信息失败')
+      err.tips = '获取新信息失败'
+      throw err
     })
   }
 
@@ -414,7 +445,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('发送文本信息失败')
+      err.tips = '发送文本信息失败'
+      throw err
     })
   }
 
@@ -457,7 +489,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('发送表情信息失败')
+      err.tips = '发送表情信息失败'
+      throw err
     })
   }
 
@@ -592,7 +625,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('上传媒体文件失败')
+      err.tips = '上传媒体文件失败'
+      throw err
     })
   }
 
@@ -629,7 +663,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('发送图片失败')
+      err.tips = '发送图片失败'
+      throw err
     })
   }
 
@@ -666,7 +701,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('发送视频失败')
+      err.tips = '发送视频失败'
+      throw err
     })
   }
 
@@ -703,7 +739,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('发送文件失败')
+      err.tips = '发送文件失败'
+      throw err
     })
   }
 
@@ -780,7 +817,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('转发消息失败')
+      err.tips = '转发消息失败'
+      throw err
     })
   }
 
@@ -805,7 +843,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('获取图片或表情失败')
+      err.tips = '获取图片或表情失败'
+      throw err
     })
   }
 
@@ -832,7 +871,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('获取视频失败')
+      err.tips = '获取视频失败'
+      throw err
     })
   }
 
@@ -856,7 +896,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('获取声音失败')
+      err.tips = '获取声音失败'
+      throw err
     })
   }
 
@@ -875,7 +916,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('获取头像失败')
+      err.tips = '获取头像失败'
+      throw err
     })
   }
 
@@ -910,7 +952,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('通过好友请求失败')
+      err.tips = '通过好友请求失败'
+      throw err
     })
   }
 
@@ -945,7 +988,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('创建群失败')
+      err.tips = '创建群失败'
+      throw err
     })
   }
 
@@ -978,7 +1022,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('邀请或踢出群成员失败')
+      err.tips = '邀请或踢出群成员失败'
+      throw err
     })
   }
 
@@ -1008,7 +1053,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('置顶或取消置顶失败')
+      err.tips = '置顶或取消置顶失败'
+      throw err
     })
   }
 
@@ -1036,7 +1082,8 @@ export default class WechatCore {
       })
     }).catch(err => {
       debug(err)
-      throw new Error('设置用户标签失败')
+      err.tips = '设置用户标签失败'
+      throw err
     })
   }
 

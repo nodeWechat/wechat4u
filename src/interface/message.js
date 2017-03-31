@@ -65,10 +65,8 @@ const messageProto = {
 export default function MessageFactory (instance) {
   return {
     extend: function (messageObj) {
-      const messageCopy = Object.assign({}, messageObj)
-      const wechatLayer = Object.setPrototypeOf(messageCopy, messageProto)
-      const messageLayer = Object.setPrototypeOf({}, wechatLayer)
-      return messageLayer.init(instance)
+      messageObj = Object.setPrototypeOf(messageObj, messageProto)
+      return messageObj.init(instance)
     }
   }
 }

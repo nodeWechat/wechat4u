@@ -5,11 +5,23 @@ const qrcode = require('qrcode-terminal')
 const fs = require('fs')
 const request = require('request')
 
-let bot = new Wechat()
+let bot
+/**
+ * 尝试获取本地登录数据，免扫码
+ */
+try {
+  bot = new Wechat(require('./sync-data.json'))
+} catch (e) {
+  bot = new Wechat()
+}
 /**
  * 启动机器人
  */
-bot.start()
+if (bot.PROP.uin) {
+  bot.restart()
+} else {
+  bot.start()
+}
 /**
  * uuid事件，参数为uuid，根据uuid生成二维码
  */
@@ -30,12 +42,16 @@ bot.on('user-avatar', avatar => {
  */
 bot.on('login', () => {
   console.log('登录成功')
+  // 保存数据
+  fs.writeFileSync('./sync-data.json', JSON.stringify(bot.botData))
 })
 /**
  * 登出成功事件
  */
 bot.on('logout', () => {
   console.log('登出成功')
+  // 清除数据
+  fs.unlinkSync('./sync-data.json')
 })
 /**
  * 联系人更新事件，参数为被更新的联系人列表

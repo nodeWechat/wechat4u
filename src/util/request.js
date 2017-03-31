@@ -1,5 +1,4 @@
 import axios from 'axios'
-import CM from 'cookie-manager'
 import {isStandardBrowserEnv} from './global'
 
 const getPgv = c => {
@@ -14,15 +13,19 @@ export function Request (defaults) {
     defaults.headers['connection'] = defaults.headers['connection'] || 'close'
   }
 
+  defaults.timeout = 1000 * 60
   defaults.httpAgent = false
   defaults.httpsAgent = false
 
   this.axios = axios.create(defaults)
   if (!isStandardBrowserEnv) {
-    this.cm = new CM()
-    this.cm.store('', ['pgv_pvi=' + getPgv() + '; Domain=.qq.com; Path=/', 'pgv_si=' + getPgv('s') + '; Domain=.qq.com; Path=/'])
+    this.Cookie = defaults.Cookie || {}
+    this.Cookie['pgv_pvi'] = getPgv()
+    this.Cookie['pgv_si'] = getPgv('s')
     this.axios.interceptors.request.use(config => {
-      config.headers['cookie'] = config.url ? decodeURIComponent(this.cm.prepare(config.url)) : ''
+      config.headers['cookie'] = Object.keys(this.Cookie).map(key => {
+        return `${key}=${this.Cookie[key]}`
+      }).join('; ')
       return config
     }, err => {
       return Promise.reject(err)
@@ -30,12 +33,19 @@ export function Request (defaults) {
     this.axios.interceptors.response.use(res => {
       let setCookie = res.headers['set-cookie']
       if (setCookie) {
-        this.cm.store(res.config.url, setCookie.map(item => {
-          return item.replace(/=\s*?(?=(\w+\.)*(wx\d?\.qq\.com|wechat\.com))/, '=.')
-        }))
+        setCookie.forEach(item => {
+          let pm = item.match(/^(.+?)\s?\=\s?(.+?);/)
+          if (pm) {
+            this.Cookie[pm[1]] = pm[2]
+          }
+        })
       }
       return res
     }, err => {
+      if (err && err.response) {
+        delete err.response.request
+        delete err.response.config
+      }
       return Promise.reject(err)
     })
   }
