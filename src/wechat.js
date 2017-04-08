@@ -230,13 +230,13 @@ class Wechat extends WechatCore {
         debug(err)
         this.emit('error', err)
       })
-      this.sendMsg('心跳：' + new Date().toLocaleString(), 'filehelper')
+      this.sendMsg(this._getHeartbeatMessage(), this._getHeartbeatTarget())
       .catch(err => {
         debug(err)
         this.emit('error', err)
       })
       clearTimeout(this.checkPollingId)
-      this.checkPollingId = setTimeout(() => this.checkPolling(), 5 * 60 * 1000)
+      this.checkPollingId = setTimeout(() => this.checkPolling(), this._getHeartbeatInterval())
     }
   }
 
@@ -318,6 +318,37 @@ class Wechat extends WechatCore {
     })
     this.emit('contacts-updated', contacts)
   }
+
+  _getHeartbeatMessage () {
+    return '心跳：' + new Date().toLocaleString();
+  }
+
+  _getHeartbeatInterval () {
+    return 5 * 60 * 1000;
+  }
+
+  _getHeartbeatTarget () {
+     return 'filehelper';
+  }
+
+  setHeartbeatMessageGetter (func) {
+    if (typeof(func) != "function") return;
+    if (typeof(func()) != "string") return;
+    this._getHeartbeatMessage = func;
+  }
+
+  setHeartbeatIntervalGetter (func) {
+    if (typeof(func) != "function") return;
+    if (typeof(func()) != "number") return;
+    this._getHeartbeatInterval = func;
+  }
+
+  setHeartbeatTargetGetter (func) {
+    if (typeof(func) != "function") return;
+    if (typeof(func()) != "string") return;
+    this._getHeartbeatTarget = func;
+  }
+
 }
 
 Wechat.STATE = getCONF().STATE
