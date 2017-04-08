@@ -319,15 +319,15 @@ class Wechat extends WechatCore {
     this.emit('contacts-updated', contacts)
   }
 
-  _getHeartbeatMessage () {
+  _getHeartbeatMessage () { // Default heartbeat message
     return '心跳：' + new Date().toLocaleString();
   }
 
-  _getHeartbeatInterval () {
+  _getHeartbeatInterval () { // Default heartbeat interval
     return 5 * 60 * 1000;
   }
 
-  _getHeartbeatTarget () {
+  _getHeartbeatTarget () { // Default heartbeat target user
      return 'filehelper';
   }
 
