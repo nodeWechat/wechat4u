@@ -230,13 +230,13 @@ class Wechat extends WechatCore {
         debug(err)
         this.emit('error', err)
       })
-      this.sendMsg(this._getHeartbeatMessage(), this._getHeartbeatTarget())
+      this.sendMsg(this._getPollingMessage(), this._getPollingTarget())
       .catch(err => {
         debug(err)
         this.emit('error', err)
       })
       clearTimeout(this.checkPollingId)
-      this.checkPollingId = setTimeout(() => this.checkPolling(), this._getHeartbeatInterval())
+      this.checkPollingId = setTimeout(() => this.checkPolling(), this._getPollingInterval())
     }
   }
 
@@ -319,34 +319,34 @@ class Wechat extends WechatCore {
     this.emit('contacts-updated', contacts)
   }
 
-  _getHeartbeatMessage () { // Default heartbeat message
+  _getPollingMessage () { // Default polling message
     return '心跳：' + new Date().toLocaleString();
   }
 
-  _getHeartbeatInterval () { // Default heartbeat interval
+  _getPollingInterval () { // Default polling interval
     return 5 * 60 * 1000;
   }
 
-  _getHeartbeatTarget () { // Default heartbeat target user
+  _getPollingTarget () { // Default polling target user
      return 'filehelper';
   }
 
-  setHeartbeatMessageGetter (func) {
+  setPollingMessageGetter (func) {
     if (typeof(func) != "function") return;
     if (typeof(func()) != "string") return;
-    this._getHeartbeatMessage = func;
+    this._getPollingMessage = func;
   }
 
-  setHeartbeatIntervalGetter (func) {
+  setPollingIntervalGetter (func) {
     if (typeof(func) != "function") return;
     if (typeof(func()) != "number") return;
-    this._getHeartbeatInterval = func;
+    this._getPollingInterval = func;
   }
 
-  setHeartbeatTargetGetter (func) {
+  setPollingTargetGetter (func) {
     if (typeof(func) != "function") return;
     if (typeof(func()) != "string") return;
-    this._getHeartbeatTarget = func;
+    this._getPollingTarget = func;
   }
 
 }
