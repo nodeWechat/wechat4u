@@ -142,6 +142,51 @@ msg为`Message`对象，具体属性方法见`src/interface/message.js`
 
 调用该方法后，通过监听`logout`事件来登出
 
+### bot.setPollingMessageGetter(getter)
+
+自定义心跳消息内容
+
+`getter` 函数返回心跳消息内容
+
+`typeof(getter())` 应为 `"string"`
+
+```javascript
+bot.setRollingMessageGetter(function () {
+  //
+  return (new Date()).toJSON();
+});
+```
+
+### bot.setPollingIntervalGetter(getter)
+
+自定义心跳间隔
+
+`getter` 函数返回心跳间隔（以毫秒为单位）
+
+`typeof(getter())` 应为 `"number"`
+
+```javascript
+bot.setRollingIntervalGetter(function () {
+  return 2 * 60 * 1000;
+});
+```
+
+### bot.setPollingTargetGetter(getter)
+
+自定义心跳目标用户
+
+`getter` 函数返回目标用户的 `UserName` （形如 `@xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` ）
+
+`typeof(getter())` 应为 `"string"`
+
+注： 如要使用 `bot.user.UserName` ，需在 `login` 事件后定义目标用户
+
+```javascript
+bot.setRollingmeGetter(function () {
+  return bot.user.UserName;
+});
+```
+
 > 以下方法均返回Promise
 
 ### bot.sendText(msgString, toUserName)
