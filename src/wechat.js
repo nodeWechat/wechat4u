@@ -230,13 +230,13 @@ class Wechat extends WechatCore {
         debug(err)
         this.emit('error', err)
       })
-      this.sendMsg('心跳：' + new Date().toLocaleString(), 'filehelper')
+      this.sendMsg(this._getPollingMessage(), this._getPollingTarget())
       .catch(err => {
         debug(err)
         this.emit('error', err)
       })
       clearTimeout(this.checkPollingId)
-      this.checkPollingId = setTimeout(() => this.checkPolling(), 5 * 60 * 1000)
+      this.checkPollingId = setTimeout(() => this.checkPolling(), this._getPollingInterval())
     }
   }
 
@@ -318,6 +318,37 @@ class Wechat extends WechatCore {
     })
     this.emit('contacts-updated', contacts)
   }
+
+  _getPollingMessage () { // Default polling message
+    return '心跳：' + new Date().toLocaleString();
+  }
+
+  _getPollingInterval () { // Default polling interval
+    return 5 * 60 * 1000;
+  }
+
+  _getPollingTarget () { // Default polling target user
+     return 'filehelper';
+  }
+
+  setPollingMessageGetter (func) {
+    if (typeof(func) != "function") return;
+    if (typeof(func()) != "string") return;
+    this._getPollingMessage = func;
+  }
+
+  setPollingIntervalGetter (func) {
+    if (typeof(func) != "function") return;
+    if (typeof(func()) != "number") return;
+    this._getPollingInterval = func;
+  }
+
+  setPollingTargetGetter (func) {
+    if (typeof(func) != "function") return;
+    if (typeof(func()) != "string") return;
+    this._getPollingTarget = func;
+  }
+
 }
 
 Wechat.STATE = getCONF().STATE
