@@ -957,6 +957,47 @@ export default class WechatCore {
     })
   }
 
+    /**
+     * 添加好友
+     * @param UserName 待添加用户的UserName
+     * @param content
+     * @returns {Promise.<TResult>}
+     */
+    addFriend(UserName, content = "我是" + this.user.NickName) {
+        let params = {
+            'pass_ticket': this.PROP.passTicket,
+            'lang': 'zh_CN'
+        };
+
+        let data = {
+            'BaseRequest': this.getBaseRequest(),
+            'Opcode': 2,
+            'VerifyUserListSize': 1,
+            'VerifyUserList': [{
+                'Value': UserName,
+                'VerifyUserTicket': ""
+            }],
+            'VerifyContent': content,
+            'SceneListCount': 1,
+            'SceneList': [33],
+            'skey': this.PROP.skey
+        };
+
+        return this.request({
+            method: 'POST',
+            url: this.CONF.API_webwxverifyuser,
+            params: params,
+            data: data
+        }).then(res => {
+            let data = res.data;
+            console.log(data);
+        }).catch(err => {
+            debug(err)
+            err.tips = '添加好友失败'
+            throw err
+        })
+    }
+
   // Topic: Chatroom name
   // MemberList format:
   // [
