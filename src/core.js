@@ -989,8 +989,9 @@ export default class WechatCore {
             params: params,
             data: data
         }).then(res => {
-            let data = res.data;
-            console.log(data);
+            let data = res.data
+            assert.equal(data.BaseResponse.Ret, 0, res)
+            return data
         }).catch(err => {
             debug(err)
             err.tips = '添加好友失败'
