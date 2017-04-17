@@ -325,6 +325,14 @@ bot.getMsgImg(msg.MsgId).then(res => {
 
 获取小视频或视频
 
+### bot.addFriend(UserName, Content)
+
+添加好友
+
+`UserName` 一般可从群信息中获得
+
+`Content` 验证信息
+
 ### bot.verifyUser(UserName, Ticket)
 
 通过好友添加请求

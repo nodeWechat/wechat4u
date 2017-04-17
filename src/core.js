@@ -963,41 +963,41 @@ export default class WechatCore {
      * @param content
      * @returns {Promise.<TResult>}
      */
-    addFriend(UserName, content = "我是" + this.user.NickName) {
-        let params = {
-            'pass_ticket': this.PROP.passTicket,
-            'lang': 'zh_CN'
-        };
-
-        let data = {
-            'BaseRequest': this.getBaseRequest(),
-            'Opcode': 2,
-            'VerifyUserListSize': 1,
-            'VerifyUserList': [{
-                'Value': UserName,
-                'VerifyUserTicket': ""
-            }],
-            'VerifyContent': content,
-            'SceneListCount': 1,
-            'SceneList': [33],
-            'skey': this.PROP.skey
-        };
-
-        return this.request({
-            method: 'POST',
-            url: this.CONF.API_webwxverifyuser,
-            params: params,
-            data: data
-        }).then(res => {
-            let data = res.data
-            assert.equal(data.BaseResponse.Ret, 0, res)
-            return data
-        }).catch(err => {
-            debug(err)
-            err.tips = '添加好友失败'
-            throw err
-        })
+  addFriend (UserName, content = '我是' + this.user.NickName) {
+    let params = {
+      'pass_ticket': this.PROP.passTicket,
+      'lang': 'zh_CN'
     }
+
+    let data = {
+      'BaseRequest': this.getBaseRequest(),
+      'Opcode': 2,
+      'VerifyUserListSize': 1,
+      'VerifyUserList': [{
+        'Value': UserName,
+        'VerifyUserTicket': ''
+      }],
+      'VerifyContent': content,
+      'SceneListCount': 1,
+      'SceneList': [33],
+      'skey': this.PROP.skey
+    }
+
+    return this.request({
+      method: 'POST',
+      url: this.CONF.API_webwxverifyuser,
+      params: params,
+      data: data
+    }).then(res => {
+      let data = res.data
+      assert.equal(data.BaseResponse.Ret, 0, res)
+      return data
+    }).catch(err => {
+      debug(err)
+      err.tips = '添加好友失败'
+      throw err
+    })
+  }
 
   // Topic: Chatroom name
   // MemberList format:
@@ -1145,7 +1145,7 @@ export default class WechatCore {
         params: params,
         data: data
       }).then(res => {
-        console.log(JSON.stringify(res));
+        console.log(JSON.stringify(res))
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
       })
@@ -1154,7 +1154,7 @@ export default class WechatCore {
       throw new Error('更新群名失败')
     })
   }
-  
+
   revokeMsg (msgId, toUserName) {
     return Promise.resolve().then(() => {
       let data = {
