@@ -325,6 +325,11 @@ bot.getMsgImg(msg.MsgId).then(res => {
 
 获取小视频或视频
 
+### bot.getDoc(UserName, MediaId, FileName)
+
+获取文件，消息的`MsgType`为49且`AppMsgType`为6时即为文件。
+
+
 ### bot.addFriend(UserName, Content)
 
 添加好友
