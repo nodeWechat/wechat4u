@@ -921,6 +921,34 @@ export default class WechatCore {
     })
   }
 
+  getDoc (FromUserName, MediaId, FileName) {
+    return Promise.resolve().then(() => {
+      let params = {
+        sender: FromUserName,
+        mediaid: MediaId,
+        filename: FileName,
+        fromuser: this.user.UserName,
+        pass_ticket: this.PROP.passTicket,
+        webwx_data_ticket: this.PROP.webwxDataTicket
+      }
+      return this.request({
+        method: 'GET',
+        url: this.CONF.API_webwxdownloadmedia,
+        params: params,
+        responseType: 'arraybuffer'
+      }).then(res => {
+        return {
+          data: res.data,
+          type: res.headers['content-type']
+        }
+      })
+    }).catch(err => {
+      debug(err)
+      err.tips = '获取文件失败'
+      throw err;
+    })
+  }
+
   verifyUser (UserName, Ticket) {
     return Promise.resolve().then(() => {
       let params = {

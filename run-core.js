@@ -233,6 +233,20 @@ bot.on('message', msg => {
         bot.emit('error', err)
       })
       break
+    case bot.CONF.MSGTYPE_APP:
+      if (msg.AppMsgType == 6) {
+        /**
+         * 文件消息
+         */
+        console.log('文件消息，保存到本地')
+        bot.getDoc(msg.FromUserName, msg.MediaId, msg.FileName).then(res => {
+          fs.writeFileSync(`./media/${msg.FileName}`, res.data)
+          console.log(res.type);
+        }).catch(err => {
+          bot.emit('error', err)
+        })
+      }
+      break
     default:
       break
   }
