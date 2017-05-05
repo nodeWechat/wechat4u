@@ -1,6 +1,6 @@
 {
   "name": "wechat4u",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "web wechat lib for user",
   "main": "lib/wechat.js",
   "scripts": {
