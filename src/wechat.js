@@ -110,16 +110,29 @@ class Wechat extends WechatCore {
     })
   }
 
-  _getContact (Seq = 0, contacts = []) {
+  _getContact (Seq = 0) {
+    let contacts = []
     return this.getContact(Seq)
     .then(res => {
-      contacts = contacts.concat(res.MemberList)
+      contacts = res.MemberList || []
       if (res.Seq) {
-        return this._getContact(res.Seq, contacts)
+        return this._getContact(res.Seq)
+        .then(_contacts => contacts = contacts.concat(_contacts || []))
+      }
+    })
+    .then(() => {
+      if (Seq == 0) {
+        let emptyGroup =
+          contacts.filter(contact => contact.UserName.startsWith('@@') && contact.MemberCount == 0)
+        if (emptyGroup.length != 0) {
+          return this.batchGetContact(emptyGroup)
+          .then(_contacts => contacts = contacts.concat(_contacts || []))
+        }
       } else {
         return contacts
       }
-    }).catch(err => {
+    })
+    .catch(err => {
       this.emit('error', err)
       return contacts
     })
@@ -258,7 +271,8 @@ class Wechat extends WechatCore {
   handleMsg (data) {
     data.forEach(msg => {
       Promise.resolve().then(() => {
-        if (!this.contacts[msg.FromUserName]) {
+        if (!this.contacts[msg.FromUserName] ||
+          (msg.FromUserName.startsWith('@@') && this.contacts[msg.FromUserName].MemberCount == 0)) {
           return this.batchGetContact([{
             UserName: msg.FromUserName
           }]).then(contacts => {
@@ -320,33 +334,33 @@ class Wechat extends WechatCore {
   }
 
   _getPollingMessage () { // Default polling message
-    return '心跳：' + new Date().toLocaleString();
+    return '心跳：' + new Date().toLocaleString()
   }
 
   _getPollingInterval () { // Default polling interval
-    return 5 * 60 * 1000;
+    return 5 * 60 * 1000
   }
 
   _getPollingTarget () { // Default polling target user
-     return 'filehelper';
+    return 'filehelper'
   }
 
   setPollingMessageGetter (func) {
-    if (typeof(func) != "function") return;
-    if (typeof(func()) != "string") return;
-    this._getPollingMessage = func;
+    if (typeof (func) !== 'function') return
+    if (typeof (func()) !== 'string') return
+    this._getPollingMessage = func
   }
 
   setPollingIntervalGetter (func) {
-    if (typeof(func) != "function") return;
-    if (typeof(func()) != "number") return;
-    this._getPollingInterval = func;
+    if (typeof (func) !== 'function') return
+    if (typeof (func()) !== 'number') return
+    this._getPollingInterval = func
   }
 
   setPollingTargetGetter (func) {
-    if (typeof(func) != "function") return;
-    if (typeof(func()) != "string") return;
-    this._getPollingTarget = func;
+    if (typeof (func) !== 'function') return
+    if (typeof (func()) !== 'string') return
+    this._getPollingTarget = func
   }
 
 }
