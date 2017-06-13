@@ -46,8 +46,13 @@ export function getUserByUserName (memberList, UserName) {
 
 export function getDisplayName (contact) {
   if (isRoomContact(contact)) {
-    return '[群] ' + (contact.RemarkName || contact.DisplayName || contact.NickName ||
+    if (contact.MemberCount >= 2) {
+      return '[群] ' + (contact.RemarkName || contact.DisplayName || contact.NickName ||
       `${getDisplayName(contact.MemberList[0])}、${getDisplayName(contact.MemberList[1])}`)
+    } else {       
+      return '[群] ' + (contact.RemarkName || contact.DisplayName || contact.NickName ||
+        `${getDisplayName(contact.MemberList[0])}`)
+    }
   } else {
     return contact.DisplayName || contact.RemarkName || contact.NickName || contact.UserName
   }
