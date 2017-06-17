@@ -169,7 +169,7 @@ export default class WechatCore {
         this.PROP.skey = data.SKey || this.PROP.skey
         this.updateSyncKey(data)
         Object.assign(this.user, data.User)
-        return this.user
+        return data
       })
     }).catch(err => {
       debug(err)
