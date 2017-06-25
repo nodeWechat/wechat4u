@@ -72,9 +72,9 @@ export function isPublicContact (contact) {
 
 const contactProto = {
   init: function (instance) {
-    this.OrignalNickName = this.NickName
-    this.OrignalRemarkName = this.RemarkName
-    this.OrignalDisplayName = this.DisplayName
+    this.OriginalNickName = this.NickName
+    this.OriginalRemarkName = this.RemarkName
+    this.OriginalDisplayName = this.DisplayName
     this.NickName = convertEmoji(this.NickName)
     this.RemarkName = convertEmoji(this.RemarkName)
     this.DisplayName = convertEmoji(this.DisplayName)
