@@ -49,7 +49,7 @@ export function getDisplayName (contact) {
     if (contact.MemberCount >= 2) {
       return '[群] ' + (contact.RemarkName || contact.DisplayName || contact.NickName ||
       `${getDisplayName(contact.MemberList[0])}、${getDisplayName(contact.MemberList[1])}`)
-    } else {       
+    } else {
       return '[群] ' + (contact.RemarkName || contact.DisplayName || contact.NickName ||
         `${getDisplayName(contact.MemberList[0])}`)
     }
@@ -72,9 +72,10 @@ export function isPublicContact (contact) {
 
 const contactProto = {
   init: function (instance) {
-    this.OriginalNickName = this.NickName
-    this.OriginalRemarkName = this.RemarkName
-    this.OriginalDisplayName = this.DisplayName
+    // 纠正错误以后保持兼容
+    this.OriginalNickName = this.OrignalNickName = this.NickName
+    this.OriginalRemarkName = this.OrignalRemarkName = this.RemarkName
+    this.OriginalDisplayName = this.OrignalDisplayName = this.DisplayName
     this.NickName = convertEmoji(this.NickName)
     this.RemarkName = convertEmoji(this.RemarkName)
     this.DisplayName = convertEmoji(this.DisplayName)
