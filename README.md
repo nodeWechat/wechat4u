@@ -8,13 +8,13 @@
 
   [wechat4u.duapp.com](http://wechat4u.duapp.com)，具有自动回复（文本，表情），监控和群发等功能
 
-- 测试微信机器人
+- 测试微信机器人 (暂时被微信封杀)
 
   ![微信号：abotofwechat4u](https://raw.githubusercontent.com/nodeWechat/wechat4u/master/bot-qrcode.jpg)
 
   扫描二维码，开启激情果撩，验证消息：**我爱wechat4u**
 
-## Announcing wechat4u v0.7.0
+## Announcing wechat4u v0.7.5
 
 ### Features
 
@@ -482,4 +482,6 @@ message.getDisplayTime() // 获取形如 12:00 的时间戳信息
 - [Urinx 大神的 API Map](https://github.com/Urinx/WeixinBot/blob/master/README.md)
 - [聂永 大神的 微信协议简单调研笔记](http://www.blogjava.net/yongboy/archive/2014/03/05/410636.html)
 
-好了，差不多就这些资料了。如果想要开发个自己的，那就开工吧！
+## License
+
+MIT
