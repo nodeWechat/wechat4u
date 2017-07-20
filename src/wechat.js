@@ -127,6 +127,8 @@ class Wechat extends WechatCore {
         if (emptyGroup.length != 0) {
           return this.batchGetContact(emptyGroup)
           .then(_contacts => contacts = contacts.concat(_contacts || []))
+        } else {
+          return contacts
         }
       } else {
         return contacts
