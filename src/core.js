@@ -326,7 +326,7 @@ export default class WechatCore {
           // eslint-disable-next-line
           eval(res.data)
         } catch (ex) {
-          window.synccheck = {retcode: "0", selector: "0"}
+          window.synccheck = {retcode: '0', selector: '0'}
         }
         assert.equal(window.synccheck.retcode, this.CONF.SYNCCHECK_RET_SUCCESS, res)
 
