@@ -173,18 +173,19 @@ export function getCONF (host) {
   let loginUrl = 'login.weixin.qq.com'
   let fileUrl = 'file.wx.qq.com'
   let pushUrl = 'webpush.weixin.qq.com'
-  host.indexOf('wx2.qq.com') > -1 ? (loginUrl = 'login.wx2.qq.com', fileUrl = 'file.wx2.qq.com',
-    pushUrl =
-    'webpush.wx2.qq.com') : host.indexOf('wx8.qq.com') > -1 ? (loginUrl = 'login.wx8.qq.com',
-    fileUrl =
-    'file.wx8.qq.com', pushUrl = 'webpush.wx8.qq.com') : host.indexOf('qq.com') > -1 ? (
-    loginUrl =
-    'login.wx.qq.com', fileUrl = 'file.wx.qq.com', pushUrl = 'webpush.wx.qq.com') : host.indexOf(
-    'web2.wechat.com') > -1 ? (loginUrl = 'login.web2.wechat.com', fileUrl =
-    'file.web2.wechat.com', pushUrl =
-    'webpush.web2.wechat.com') : host.indexOf('wechat.com') > -1 && (loginUrl =
-    'login.web.wechat.com', fileUrl = 'file.web.wechat.com', pushUrl = 'webpush.web.wechat.com')
-
+  let matchResult = host.match(/(\w+)(.qq.com|.wechat.com)/)
+  if (matchResult && matchResult[1] && matchResult[2]) {
+    let prefix = matchResult[1]
+    let suffix = matchResult[2]
+    if (suffix === '.qq.com') {
+      prefix = ~['wx', 'wx2', 'wx8'].indexOf(prefix) ? prefix : 'wx'
+    } else {
+      prefix = ~['web', 'web2'].indexOf(prefix) ? prefix : 'web'
+    }
+    loginUrl = `login.${prefix}${suffix}`
+    fileUrl = `file.${prefix}${suffix}`
+    pushUrl = `webpush.${prefix}${suffix}`
+  }
   let conf = {}
   conf.origin = origin
   conf.baseUri = origin + '/cgi-bin/mmwebwx-bin'
