@@ -21,7 +21,7 @@ if (!isStandardBrowserEnv) {
 
 class Wechat extends WechatCore {
 
-  constructor (data) {
+  constructor(data) {
     super(data)
     _.extend(this, new EventEmitter())
     this.state = this.CONF.STATE.init
@@ -84,6 +84,9 @@ class Wechat extends WechatCore {
       debug('Sync Check Selector: ', selector)
       if (+selector !== this.CONF.SYNCCHECK_SELECTOR_NORMAL) {
         return this.sync().then(data => {
+          if (!data) {
+            this.stop()
+          }
           this.syncErrorCount = 0
           this.handleSync(data)
         })
@@ -113,54 +116,54 @@ class Wechat extends WechatCore {
   _getContact (Seq = 0) {
     let contacts = []
     return this.getContact(Seq)
-    .then(res => {
-      contacts = res.MemberList || []
-      if (res.Seq) {
-        return this._getContact(res.Seq)
-        .then(_contacts => contacts = contacts.concat(_contacts || []))
-      }
-    })
-    .then(() => {
-      if (Seq == 0) {
-        let emptyGroup =
-          contacts.filter(contact => contact.UserName.startsWith('@@') && contact.MemberCount == 0)
-        if (emptyGroup.length != 0) {
-          return this.batchGetContact(emptyGroup)
-          .then(_contacts => contacts = contacts.concat(_contacts || []))
+      .then(res => {
+        contacts = res.MemberList || []
+        if (res.Seq) {
+          return this._getContact(res.Seq)
+            .then(_contacts => contacts = contacts.concat(_contacts || []))
+        }
+      })
+      .then(() => {
+        if (Seq == 0) {
+          let emptyGroup =
+            contacts.filter(contact => contact.UserName.startsWith('@@') && contact.MemberCount == 0)
+          if (emptyGroup.length != 0) {
+            return this.batchGetContact(emptyGroup)
+              .then(_contacts => contacts = contacts.concat(_contacts || []))
+          } else {
+            return contacts
+          }
         } else {
           return contacts
         }
-      } else {
+      })
+      .catch(err => {
+        this.emit('error', err)
         return contacts
-      }
-    })
-    .catch(err => {
-      this.emit('error', err)
-      return contacts
-    })
+      })
   }
 
   _init () {
     return this.init()
-    .then(data => {
-      // this.getContact() 这个接口返回通讯录中的联系人（包括已保存的群聊）
-      // 临时的群聊会话在初始化的接口中可以获取，因此这里也需要更新一遍 contacts
-      // 否则后面可能会拿不到某个临时群聊的信息
-      this.updateContacts(data.ContactList)
+      .then(data => {
+        // this.getContact() 这个接口返回通讯录中的联系人（包括已保存的群聊）
+        // 临时的群聊会话在初始化的接口中可以获取，因此这里也需要更新一遍 contacts
+        // 否则后面可能会拿不到某个临时群聊的信息
+        this.updateContacts(data.ContactList)
 
-      this.notifyMobile()
-      .catch(err => this.emit('error', err))
-      this._getContact()
-      .then(contacts => {
-        debug('getContact count: ', contacts.length)
-        this.updateContacts(contacts)
+        this.notifyMobile()
+          .catch(err => this.emit('error', err))
+        this._getContact()
+          .then(contacts => {
+            debug('getContact count: ', contacts.length)
+            this.updateContacts(contacts)
+          })
+        this.state = this.CONF.STATE.login
+        this.lastSyncTime = Date.now()
+        this.syncPolling()
+        this.checkPolling()
+        this.emit('login')
       })
-      this.state = this.CONF.STATE.login
-      this.lastSyncTime = Date.now()
-      this.syncPolling()
-      this.checkPolling()
-      this.emit('login')
-    })
   }
 
   _login () {
@@ -204,6 +207,7 @@ class Wechat extends WechatCore {
 
   restart () {
     debug('重启中...')
+    throw new Error('xx')
     return this._init()
       .catch(err => {
         if (err.response) {
@@ -249,15 +253,15 @@ class Wechat extends WechatCore {
     } else {
       debug('心跳')
       this.notifyMobile()
-      .catch(err => {
-        debug(err)
-        this.emit('error', err)
-      })
+        .catch(err => {
+          debug(err)
+          this.emit('error', err)
+        })
       this.sendMsg(this._getPollingMessage(), this._getPollingTarget())
-      .catch(err => {
-        debug(err)
-        this.emit('error', err)
-      })
+        .catch(err => {
+          debug(err)
+          this.emit('error', err)
+        })
       clearTimeout(this.checkPollingId)
       this.checkPollingId = setTimeout(() => this.checkPolling(), this._getPollingInterval())
     }
@@ -297,11 +301,11 @@ class Wechat extends WechatCore {
         this.emit('message', msg)
         if (msg.MsgType === this.CONF.MSGTYPE_STATUSNOTIFY) {
           let userList = msg.StatusNotifyUserName.split(',').filter(UserName => !this.contacts[UserName])
-          .map(UserName => {
-            return {
-              UserName: UserName
-            }
-          })
+            .map(UserName => {
+              return {
+                UserName: UserName
+              }
+            })
           Promise.all(_.chunk(userList, 50).map(list => {
             return this.batchGetContact(list).then(res => {
               debug('batchGetContact data length: ', res.length)

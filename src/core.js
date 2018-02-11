@@ -96,6 +96,7 @@ export default class WechatCore {
 
         // eslint-disable-next-line
         eval(res.data)
+
         assert.notEqual(window.code, 400, res)
 
         if (window.code === 200) {
@@ -165,6 +166,10 @@ export default class WechatCore {
         data: data
       }).then(res => {
         let data = res.data
+        console.log(data.BaseResponse.Ret, this.CONF.SYNCCHECK_RET_LOGOUT)
+        if (data.BaseResponse.Ret == this.CONF.SYNCCHECK_RET_LOGOUT) {
+          throw new Error('already logout')
+        }
         assert.equal(data.BaseResponse.Ret, 0, res)
         this.PROP.skey = data.SKey || this.PROP.skey
         this.updateSyncKey(data)
@@ -364,7 +369,6 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         if (data.BaseResponse.Ret == this.CONF.SYNCCHECK_RET_LOGOUT) {
-          this.emit('logout')
           return
         }
         assert.equal(data.BaseResponse.Ret, 0, res)
