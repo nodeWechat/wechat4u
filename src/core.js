@@ -16,7 +16,7 @@ const debug = _debug('core')
 
 export default class WechatCore {
 
-  constructor (data) {
+  constructor(data) {
     this.PROP = {
       uuid: '',
       uin: '',
@@ -326,7 +326,11 @@ export default class WechatCore {
           // eslint-disable-next-line
           eval(res.data)
         } catch (ex) {
-          window.synccheck = {retcode: '0', selector: '0'}
+          window.synccheck = { retcode: '0', selector: '0' }
+        }
+        if (window.synccheck.retcode == this.CONF.SYNCCHECK_RET_LOGOUT) {
+          this.emit('logout')
+          return
         }
         assert.equal(window.synccheck.retcode, this.CONF.SYNCCHECK_RET_SUCCESS, res)
 
@@ -359,6 +363,10 @@ export default class WechatCore {
         data: data
       }).then(res => {
         let data = res.data
+        if (data.BaseResponse.Ret == this.CONF.SYNCCHECK_RET_LOGOUT) {
+          this.emit('logout')
+          return
+        }
         assert.equal(data.BaseResponse.Ret, 0, res)
 
         this.updateSyncKey(data)
@@ -989,12 +997,12 @@ export default class WechatCore {
     })
   }
 
-    /**
-     * 添加好友
-     * @param UserName 待添加用户的UserName
-     * @param content
-     * @returns {Promise.<TResult>}
-     */
+  /**
+   * 添加好友
+   * @param UserName 待添加用户的UserName
+   * @param content
+   * @returns {Promise.<TResult>}
+   */
   addFriend (UserName, content = '我是' + this.user.NickName) {
     let params = {
       'pass_ticket': this.PROP.passTicket,
