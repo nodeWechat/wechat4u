@@ -13,6 +13,14 @@ import {
 } from './util'
 
 const debug = _debug('core')
+export class AlreadyLogoutError extends Error {
+  constructor(message = 'already logout') {
+    super(message)
+    // fuck the babel
+    this.constructor = AlreadyLogoutError
+    this.__proto__ = AlreadyLogoutError.prototype
+  }
+}
 
 export default class WechatCore {
 
@@ -166,9 +174,8 @@ export default class WechatCore {
         data: data
       }).then(res => {
         let data = res.data
-        console.log(data.BaseResponse.Ret, this.CONF.SYNCCHECK_RET_LOGOUT)
         if (data.BaseResponse.Ret == this.CONF.SYNCCHECK_RET_LOGOUT) {
-          throw new Error('already logout')
+          throw new AlreadyLogoutError()
         }
         assert.equal(data.BaseResponse.Ret, 0, res)
         this.PROP.skey = data.SKey || this.PROP.skey
@@ -334,11 +341,9 @@ export default class WechatCore {
           window.synccheck = { retcode: '0', selector: '0' }
         }
         if (window.synccheck.retcode == this.CONF.SYNCCHECK_RET_LOGOUT) {
-          this.emit('logout')
-          return
+          throw new AlreadyLogoutError()
         }
         assert.equal(window.synccheck.retcode, this.CONF.SYNCCHECK_RET_SUCCESS, res)
-
         return window.synccheck.selector
       })
     }).catch(err => {
@@ -369,7 +374,7 @@ export default class WechatCore {
       }).then(res => {
         let data = res.data
         if (data.BaseResponse.Ret == this.CONF.SYNCCHECK_RET_LOGOUT) {
-          return
+          throw new AlreadyLogoutError()
         }
         assert.equal(data.BaseResponse.Ret, 0, res)
 
@@ -1189,7 +1194,6 @@ export default class WechatCore {
         params: params,
         data: data
       }).then(res => {
-        console.log(JSON.stringify(res))
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
       })

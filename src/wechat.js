@@ -1,4 +1,4 @@
-import WechatCore from './core'
+import WechatCore, { AlreadyLogoutError } from './core'
 import EventEmitter from 'events'
 
 import _ from 'lodash'
@@ -84,9 +84,6 @@ class Wechat extends WechatCore {
       debug('Sync Check Selector: ', selector)
       if (+selector !== this.CONF.SYNCCHECK_SELECTOR_NORMAL) {
         return this.sync().then(data => {
-          if (!data) {
-            this.stop()
-          }
           this.syncErrorCount = 0
           this.handleSync(data)
         })
@@ -99,6 +96,10 @@ class Wechat extends WechatCore {
         return
       }
       debug(err)
+      if (err instanceof AlreadyLogoutError) {
+        this.stop()
+        return
+      }
       this.emit('error', err)
       if (++this.syncErrorCount > 2) {
         let err = new Error(`连续${this.syncErrorCount}次同步失败，5s后尝试重启`)
