@@ -208,7 +208,6 @@ class Wechat extends WechatCore {
 
   restart () {
     debug('重启中...')
-    throw new Error('xx')
     return this._init()
       .catch(err => {
         if (err.response) {
