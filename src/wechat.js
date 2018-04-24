@@ -1,16 +1,12 @@
-import WechatCore, { AlreadyLogoutError } from './core'
-import EventEmitter from 'events'
+import _debug from 'debug';
+import EventEmitter from 'events';
+import _ from 'lodash';
 
-import _ from 'lodash'
-import {
-  getCONF,
-  isStandardBrowserEnv
-} from './util'
+import WechatCore, { AlreadyLogoutError } from './core';
+import ContactFactory from './interface/contact';
+import MessageFactory from './interface/message';
+import { getCONF, isStandardBrowserEnv } from './util';
 
-import ContactFactory from './interface/contact'
-import MessageFactory from './interface/message'
-
-import _debug from 'debug'
 const debug = _debug('wechat')
 
 if (!isStandardBrowserEnv) {
