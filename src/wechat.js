@@ -155,6 +155,7 @@ class Wechat extends WechatCore {
             debug('getContact count: ', contacts.length)
             this.updateContacts(contacts)
           })
+        this.emit('init', data)
         this.state = this.CONF.STATE.login
         this.lastSyncTime = Date.now()
         this.syncPolling()
@@ -206,6 +207,10 @@ class Wechat extends WechatCore {
     debug('重启中...')
     return this._init()
       .catch(err => {
+        if (err instanceof AlreadyLogoutError) {
+          this.emit('logout')
+          return
+        }
         if (err.response) {
           throw err
         } else {
