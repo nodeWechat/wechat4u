@@ -13,10 +13,18 @@ import {
 } from './util'
 
 const debug = _debug('core')
+export class AlreadyLogoutError extends Error {
+  constructor(message = 'already logout') {
+    super(message)
+    // fuck the babel
+    this.constructor = AlreadyLogoutError
+    this.__proto__ = AlreadyLogoutError.prototype
+  }
+}
 
 export default class WechatCore {
 
-  constructor (data) {
+  constructor(data) {
     this.PROP = {
       uuid: '',
       uin: '',
@@ -96,6 +104,7 @@ export default class WechatCore {
 
         // eslint-disable-next-line
         eval(res.data)
+
         assert.notEqual(window.code, 400, res)
 
         if (window.code === 200) {
@@ -165,6 +174,9 @@ export default class WechatCore {
         data: data
       }).then(res => {
         let data = res.data
+        if (data.BaseResponse.Ret == this.CONF.SYNCCHECK_RET_LOGOUT) {
+          throw new AlreadyLogoutError()
+        }
         assert.equal(data.BaseResponse.Ret, 0, res)
         this.PROP.skey = data.SKey || this.PROP.skey
         this.updateSyncKey(data)
@@ -326,10 +338,12 @@ export default class WechatCore {
           // eslint-disable-next-line
           eval(res.data)
         } catch (ex) {
-          window.synccheck = {retcode: '0', selector: '0'}
+          window.synccheck = { retcode: '0', selector: '0' }
+        }
+        if (window.synccheck.retcode == this.CONF.SYNCCHECK_RET_LOGOUT) {
+          throw new AlreadyLogoutError()
         }
         assert.equal(window.synccheck.retcode, this.CONF.SYNCCHECK_RET_SUCCESS, res)
-
         return window.synccheck.selector
       })
     }).catch(err => {
@@ -359,6 +373,9 @@ export default class WechatCore {
         data: data
       }).then(res => {
         let data = res.data
+        if (data.BaseResponse.Ret == this.CONF.SYNCCHECK_RET_LOGOUT) {
+          throw new AlreadyLogoutError()
+        }
         assert.equal(data.BaseResponse.Ret, 0, res)
 
         this.updateSyncKey(data)
@@ -989,12 +1006,12 @@ export default class WechatCore {
     })
   }
 
-    /**
-     * 添加好友
-     * @param UserName 待添加用户的UserName
-     * @param content
-     * @returns {Promise.<TResult>}
-     */
+  /**
+   * 添加好友
+   * @param UserName 待添加用户的UserName
+   * @param content
+   * @returns {Promise.<TResult>}
+   */
   addFriend (UserName, content = '我是' + this.user.NickName) {
     let params = {
       'pass_ticket': this.PROP.passTicket,
@@ -1177,7 +1194,6 @@ export default class WechatCore {
         params: params,
         data: data
       }).then(res => {
-        console.log(JSON.stringify(res))
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
       })
