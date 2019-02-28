@@ -1,11 +1,11 @@
-import _debug from 'debug';
-import EventEmitter from 'events';
-import _ from 'lodash';
+import _debug from 'debug'
+import EventEmitter from 'events'
+import _ from 'lodash'
 
-import WechatCore, { AlreadyLogoutError } from './core';
-import ContactFactory from './interface/contact';
-import MessageFactory from './interface/message';
-import { getCONF, isStandardBrowserEnv } from './util';
+import WechatCore, { AlreadyLogoutError } from './core'
+import ContactFactory from './interface/contact'
+import MessageFactory from './interface/message'
+import { getCONF, isStandardBrowserEnv } from './util'
 
 const debug = _debug('wechat')
 
@@ -16,8 +16,7 @@ if (!isStandardBrowserEnv) {
 }
 
 class Wechat extends WechatCore {
-
-  constructor(data) {
+  constructor (data) {
     super(data)
     _.extend(this, new EventEmitter())
     this.state = this.CONF.STATE.init
@@ -377,7 +376,6 @@ class Wechat extends WechatCore {
     if (typeof (func()) !== 'string') return
     this._getPollingTarget = func
   }
-
 }
 
 Wechat.STATE = getCONF().STATE

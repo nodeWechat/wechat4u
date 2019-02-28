@@ -14,7 +14,7 @@ import {
 
 const debug = _debug('core')
 export class AlreadyLogoutError extends Error {
-  constructor(message = 'already logout') {
+  constructor (message = 'already logout') {
     super(message)
     // fuck the babel
     this.constructor = AlreadyLogoutError
@@ -23,8 +23,7 @@ export class AlreadyLogoutError extends Error {
 }
 
 export default class WechatCore {
-
-  constructor(data) {
+  constructor (data) {
     this.PROP = {
       uuid: '',
       uin: '',
@@ -966,7 +965,7 @@ export default class WechatCore {
     }).catch(err => {
       debug(err)
       err.tips = '获取文件失败'
-      throw err;
+      throw err
     })
   }
 
