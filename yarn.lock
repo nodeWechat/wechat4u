@@ -2137,9 +2137,9 @@ lodash.restparam@^3.0.0:
   resolved "http://registry.npm.taobao.org/lodash.restparam/download/lodash.restparam-3.6.1.tgz#936a4e309ef330a7645ed4145986c85ae5b20805"
 
 lodash@^4.17.11, lodash@^4.17.4, lodash@^4.17.5:
-  version "4.17.13"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.13.tgz#0bdc3a6adc873d2f4e0c4bac285df91b64fc7b93"
-  integrity sha512-vm3/XWXfWtRua0FkUyEHBZy8kCPjErNBT9fJx8Zvs+U6zjqPbTUOpkaoum3O5uiA8sm+yNMHXfYkTUHFoMxFNA==
+  version "4.17.19"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.19.tgz#e48ddedbe30b3321783c5b4301fbd353bc1e4a4b"
+  integrity sha512-JNvd8XER9GQX0v2qJgsaN/mzFCNA5BRe/j8JN9d+tWyGLSodKQHKFicdwNYzWwI3wjRnaKPsGj1XkBjx/F96DQ==
 
 log-symbols@2.2.0:
   version "2.2.0"
