@@ -13,7 +13,7 @@
     "core": "cross-env DEBUG=wechat,core node run-core.js"
   },
   "dependencies": {
-    "axios": "^0.18.1",
+    "axios": "^0.21.1",
     "bl": "^1.1.2",
     "debug": "^2.2.0",
     "form-data": "^2.1.2",
