@@ -27,6 +27,8 @@ coverage
 
 # Dependency directory
 node_modules
+package-lock.json
+yarn.lock
 
 # Optional npm cache directory
 .npm
