@@ -122,7 +122,7 @@ class Wechat extends WechatCore {
       })
       .then(() => {
         if (Seq === 0) {
-          let emptyGroup =
+          const emptyGroup =
             contacts.filter(contact => contact.UserName.startsWith('@@') && contact.MemberCount === 0)
           if (emptyGroup.length !== 0) {
             return this.batchGetContact(emptyGroup)
@@ -303,7 +303,6 @@ class Wechat extends WechatCore {
         }
       }).then(() => {
         msg = this.Message.extend(msg)
-        this.emit('message', msg)
         if (msg.MsgType === this.CONF.MSGTYPE_STATUSNOTIFY) {
           const userList = msg.StatusNotifyUserName.split(',').filter(UserName => !this.contacts[UserName])
             .map(UserName => {
@@ -326,6 +325,7 @@ class Wechat extends WechatCore {
           /^(.\udf1a\u0020\ud83c.){3}$/.test(msg.Content)) {
           this.stop()
         }
+        this.emit('message', msg)
       }).catch(err => {
         this.emit('error', err)
         debug(err)

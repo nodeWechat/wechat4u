@@ -37,12 +37,10 @@ const messageProto = {
 
     this.OriginalContent = this.Content
     if (this.FromUserName.indexOf('@@') === 0) {
-      this.Content = this.Content.replace(/^@.*?(?=:)/, match => {
-        let user = instance.contacts[this.FromUserName].MemberList.find(member => {
-          return member.UserName === match
-        })
-        return user ? instance.Contact.getDisplayName(user) : match
-      })
+      this.ChatRoomName = this.FromUserName
+      this.Content = this.Content.split(':<br/>')
+      this.FromUserName = this.Content.shift()
+      this.Content = this.Content.join(':<br/>')
     }
 
     this.Content = this.Content.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/<br\/>/g, '\n')
@@ -57,7 +55,7 @@ const messageProto = {
     return this.isSendBySelf ? this.ToUserName : this.FromUserName
   },
   getDisplayTime: function () {
-    var time = new Date(1e3 * this.CreateTime)
+    const time = new Date(1e3 * this.CreateTime);
     return time.getHours() + ':' + formatNum(time.getMinutes(), 2)
   }
 }
