@@ -31,14 +31,14 @@ class Wechat extends WechatCore {
   }
 
   get friendList () {
-    let members = []
+    const members = []
 
-    for (let key in this.contacts) {
-      let member = this.contacts[key]
+    for (const key in this.contacts) {
+      const member = this.contacts[key]
       members.push({
-        username: member['UserName'],
+        username: member.UserName,
         nickname: this.Contact.getDisplayName(member),
-        py: member['RemarkPYQuanPin'] ? member['RemarkPYQuanPin'] : member['PYQuanPin'],
+        py: member.RemarkPYQuanPin ? member.RemarkPYQuanPin : member.PYQuanPin,
         avatar: member.AvatarUrl
       })
     }
@@ -97,7 +97,7 @@ class Wechat extends WechatCore {
       }
       this.emit('error', err)
       if (++this.syncErrorCount > 2) {
-        let err = new Error(`连续${this.syncErrorCount}次同步失败，5s后尝试重启`)
+        const err = new Error(`连续${this.syncErrorCount}次同步失败，5s后尝试重启`)
         debug(err)
         this.emit('error', err)
         clearTimeout(this.retryPollingId)
@@ -116,15 +116,17 @@ class Wechat extends WechatCore {
         contacts = res.MemberList || []
         if (res.Seq) {
           return this._getContact(res.Seq)
+            // eslint-disable-next-line no-return-assign
             .then(_contacts => contacts = contacts.concat(_contacts || []))
         }
       })
       .then(() => {
-        if (Seq == 0) {
-          let emptyGroup =
-            contacts.filter(contact => contact.UserName.startsWith('@@') && contact.MemberCount == 0)
-          if (emptyGroup.length != 0) {
+        if (Seq === 0) {
+          const emptyGroup =
+            contacts.filter(contact => contact.UserName.startsWith('@@') && contact.MemberCount === 0)
+          if (emptyGroup.length !== 0) {
             return this.batchGetContact(emptyGroup)
+              // eslint-disable-next-line no-return-assign
               .then(_contacts => contacts = contacts.concat(_contacts || []))
           } else {
             return contacts
@@ -140,26 +142,29 @@ class Wechat extends WechatCore {
   }
 
   _init () {
+    let initData = null
     return this.init()
       .then(data => {
+        initData = data
         // this.getContact() 这个接口返回通讯录中的联系人（包括已保存的群聊）
         // 临时的群聊会话在初始化的接口中可以获取，因此这里也需要更新一遍 contacts
         // 否则后面可能会拿不到某个临时群聊的信息
         this.updateContacts(data.ContactList)
-
-        this.notifyMobile()
-          .catch(err => this.emit('error', err))
-        this._getContact()
-          .then(contacts => {
-            debug('getContact count: ', contacts.length)
-            this.updateContacts(contacts)
-          })
-        this.emit('init', data)
+        return this.notifyMobile()
+      }).then(() => {
+        return this._getContact()
+      }).then(contacts => {
+        debug('getContact count: ', contacts.length)
+        this.updateContacts(contacts)
+      }).then(() => {
+        this.emit('init', initData)
         this.state = this.CONF.STATE.login
         this.lastSyncTime = Date.now()
         this.syncPolling()
         this.checkPolling()
         this.emit('login')
+      }).catch(err => {
+        this.emit('error', err)
       })
   }
 
@@ -213,7 +218,7 @@ class Wechat extends WechatCore {
         if (err.response) {
           throw err
         } else {
-          let err = new Error('重启时网络错误，60s后进行最后一次重启')
+          const err = new Error('重启时网络错误，60s后进行最后一次重启')
           debug(err)
           this.emit('error', err)
           return new Promise(resolve => {
@@ -243,9 +248,9 @@ class Wechat extends WechatCore {
     if (this.state !== this.CONF.STATE.login) {
       return
     }
-    let interval = Date.now() - this.lastSyncTime
+    const interval = Date.now() - this.lastSyncTime
     if (interval > 1 * 60 * 1000) {
-      let err = new Error(`状态同步超过${interval / 1000}s未响应，5s后尝试重启`)
+      const err = new Error(`状态同步超过${interval / 1000}s未响应，5s后尝试重启`)
       debug(err)
       this.emit('error', err)
       clearTimeout(this.checkPollingId)
@@ -286,7 +291,7 @@ class Wechat extends WechatCore {
     data.forEach(msg => {
       Promise.resolve().then(() => {
         if (!this.contacts[msg.FromUserName] ||
-          (msg.FromUserName.startsWith('@@') && this.contacts[msg.FromUserName].MemberCount == 0)) {
+          (msg.FromUserName.startsWith('@@') && this.contacts[msg.FromUserName].MemberCount === 0)) {
           return this.batchGetContact([{
             UserName: msg.FromUserName
           }]).then(contacts => {
@@ -298,9 +303,8 @@ class Wechat extends WechatCore {
         }
       }).then(() => {
         msg = this.Message.extend(msg)
-        this.emit('message', msg)
         if (msg.MsgType === this.CONF.MSGTYPE_STATUSNOTIFY) {
-          let userList = msg.StatusNotifyUserName.split(',').filter(UserName => !this.contacts[UserName])
+          const userList = msg.StatusNotifyUserName.split(',').filter(UserName => !this.contacts[UserName])
             .map(UserName => {
               return {
                 UserName: UserName
@@ -316,10 +320,12 @@ class Wechat extends WechatCore {
             this.emit('error', err)
           })
         }
+        // eslint-disable-next-line no-mixed-operators
         if (msg.ToUserName === 'filehelper' && msg.Content === '退出wechat4u' ||
           /^(.\udf1a\u0020\ud83c.){3}$/.test(msg.Content)) {
           this.stop()
         }
+        this.emit('message', msg)
       }).catch(err => {
         this.emit('error', err)
         debug(err)
@@ -328,20 +334,23 @@ class Wechat extends WechatCore {
   }
 
   updateContacts (contacts) {
-    if (!contacts || contacts.length == 0) {
+    if (!contacts || contacts.length === 0) {
       return
     }
     contacts.forEach(contact => {
       if (this.contacts[contact.UserName]) {
-        let oldContact = this.contacts[contact.UserName]
+        const oldContact = this.contacts[contact.UserName]
         // 清除无效的字段
-        for (let i in contact) {
+        for (const i in contact) {
           contact[i] || delete contact[i]
         }
         Object.assign(oldContact, contact)
         this.Contact.extend(oldContact)
       } else {
         this.contacts[contact.UserName] = this.Contact.extend(contact)
+      }
+      if (contact.MemberList) {
+        this.updateContacts(contact.MemberList)
       }
     })
     this.emit('contacts-updated', contacts)

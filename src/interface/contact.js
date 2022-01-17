@@ -90,7 +90,7 @@ const contactProto = {
     if (!keyword) return false
     keyword = keyword.toUpperCase()
 
-    let isSatisfy = key => (key || '').toUpperCase().indexOf(keyword) >= 0
+    const isSatisfy = key => (key || '').toUpperCase().indexOf(keyword) >= 0
     return (
       isSatisfy(this.RemarkName) ||
       isSatisfy(this.RemarkPYQuanPin) ||
@@ -112,8 +112,8 @@ export default function ContactFactory (instance) {
       return instance.contacts[UserName]
     },
     getSearchUser: function (keyword) {
-      let users = []
-      for (let key in instance.contacts) {
+      const users = []
+      for (const key in instance.contacts) {
         if (instance.contacts[key].canSearch(keyword)) {
           users.push(instance.contacts[key])
         }
