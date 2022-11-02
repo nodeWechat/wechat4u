@@ -45,6 +45,15 @@ export function Request (defaults) {
       if (err && err.response) {
         delete err.response.request
         delete err.response.config
+        let setCookie = err.response.headers['set-cookie']
+        if (err.response.status === 301 && setCookie) {
+          setCookie.forEach(item => {
+            let pm = item.match(/^(.+?)\s?\=\s?(.+?);/)
+            if (pm) {
+              this.Cookie[pm[1]] = pm[2]
+            }
+          })
+        }
       }
       return Promise.reject(err)
     })
