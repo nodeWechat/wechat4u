@@ -171,7 +171,7 @@ export const CONF = {
 export function getCONF (host) {
   host = host || 'wx.qq.com'
   let origin = `https://${host}`
-  let loginUrl = 'login.weixin.qq.com'
+  let loginUrl = 'login.wx.qq.com'
   let fileUrl = 'file.wx.qq.com'
   let pushUrl = 'webpush.weixin.qq.com'
   let matchResult = host.match(/(\w+)(.qq.com|.wechat.com)/)
@@ -190,7 +190,7 @@ export function getCONF (host) {
   let conf = {}
   conf.origin = origin
   conf.baseUri = origin + '/cgi-bin/mmwebwx-bin'
-  conf.API_jsLogin = 'https://' + loginUrl + '/jslogin?appid=wx782c26e4c19acffb&fun=new&lang=zh-CN'
+  conf.API_jsLogin = 'https://' + loginUrl + '/jslogin?appid=wx782c26e4c19acffb&fun=new&lang=zh-CN&redirect_uri=https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage?mod=desktop'
   conf.API_login = 'https://' + loginUrl + '/cgi-bin/mmwebwx-bin/login'
   conf.API_synccheck = 'https://' + pushUrl + '/cgi-bin/mmwebwx-bin/synccheck'
   conf.API_webwxdownloadmedia = 'https://' + fileUrl + '/cgi-bin/mmwebwx-bin/webwxgetmedia'

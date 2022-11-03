@@ -92,7 +92,8 @@ export default class WechatCore {
       let params = {
         'tip': 0,
         'uuid': this.PROP.uuid,
-        'loginicon': true
+        'loginicon': true,
+        'r': ~new Date()
       }
       return this.request({
         method: 'GET',
@@ -123,30 +124,44 @@ export default class WechatCore {
 
   login () {
     return Promise.resolve().then(() => {
+      let headers = {}
+      headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36'
+      headers['client-version'] = '2.0.0'
+      headers['referer'] = 'https://wx.qq.com/?&lang=zh_CN&target=t'
+      headers['extspam'] = 'Go8FCIkFEokFCggwMDAwMDAwMRAGGvAESySibk50w5Wb3uTl2c2h64jVVrV7gNs06GFlWplHQbY/5FfiO++1yH4ykCyNPWKXmco+wfQzK5R98D3so7rJ5LmGFvBLjGceleySrc3SOf2Pc1gVehzJgODeS0lDL3/I/0S2SSE98YgKleq6Uqx6ndTy9yaL9qFxJL7eiA/R3SEfTaW1SBoSITIu+EEkXff+Pv8NHOk7N57rcGk1w0ZzRrQDkXTOXFN2iHYIzAAZPIOY45Lsh+A4slpgnDiaOvRtlQYCt97nmPLuTipOJ8Qc5pM7ZsOsAPPrCQL7nK0I7aPrFDF0q4ziUUKettzW8MrAaiVfmbD1/VkmLNVqqZVvBCtRblXb5FHmtS8FxnqCzYP4WFvz3T0TcrOqwLX1M/DQvcHaGGw0B0y4bZMs7lVScGBFxMj3vbFi2SRKbKhaitxHfYHAOAa0X7/MSS0RNAjdwoyGHeOepXOKY+h3iHeqCvgOH6LOifdHf/1aaZNwSkGotYnYScW8Yx63LnSwba7+hESrtPa/huRmB9KWvMCKbDThL/nne14hnL277EDCSocPu3rOSYjuB9gKSOdVmWsj9Dxb/iZIe+S6AiG29Esm+/eUacSba0k8wn5HhHg9d4tIcixrxveflc8vi2/wNQGVFNsGO6tB5WF0xf/plngOvQ1/ivGV/C1Qpdhzznh0ExAVJ6dwzNg7qIEBaw+BzTJTUuRcPk92Sn6QDn2Pu3mpONaEumacjW4w6ipPnPw+g2TfywJjeEcpSZaP4Q3YV5HG8D6UjWA4GSkBKculWpdCMadx0usMomsSS/74QgpYqcPkmamB4nVv1JxczYITIqItIKjD35IGKAUwAA=='
       return this.request({
         method: 'GET',
         url: this.rediUri,
-        params: {
-          fun: 'new'
-        }
+        maxRedirects: 0,
+        headers: headers
       }).then(res => {
-        let pm = res.data.match(/<ret>(.*)<\/ret>/)
-        if (pm && pm[1] === '0') {
-          this.PROP.skey = res.data.match(/<skey>(.*)<\/skey>/)[1]
-          this.PROP.sid = res.data.match(/<wxsid>(.*)<\/wxsid>/)[1]
-          this.PROP.uin = res.data.match(/<wxuin>(.*)<\/wxuin>/)[1]
-          this.PROP.passTicket = res.data.match(/<pass_ticket>(.*)<\/pass_ticket>/)[1]
-        }
-        if (res.headers['set-cookie']) {
-          res.headers['set-cookie'].forEach(item => {
-            if (/webwx.*?data.*?ticket/i.test(item)) {
-              this.PROP.webwxDataTicket = item.match(/=(.*?);/)[1]
-            } else if (/wxuin/i.test(item)) {
-              this.PROP.uin = item.match(/=(.*?);/)[1]
-            } else if (/wxsid/i.test(item)) {
-              this.PROP.sid = item.match(/=(.*?);/)[1]
-            }
-          })
+
+      }).catch(error => {
+        if (error.response.status === 301) {
+          let data = error.response.data
+          let pm = data.match(/<ret>(.*)<\/ret>/)
+          if (pm && pm[1] === '0') {
+            this.PROP.skey = data.match(/<skey>(.*)<\/skey>/)[1]
+            this.PROP.sid = data.match(/<wxsid>(.*)<\/wxsid>/)[1]
+            this.PROP.uin = data.match(/<wxuin>(.*)<\/wxuin>/)[1]
+            this.PROP.passTicket = data.match(/<pass_ticket>(.*)<\/pass_ticket>/)[1]
+          }
+          if (error.response.headers['set-cookie']) {
+            console.log('error.response.headers[\'set-cookie\']', error.response.headers['set-cookie'])
+            error.response.headers['set-cookie'].forEach(item => {
+              if (/webwx.*?data.*?ticket/i.test(item)) {
+                this.PROP.webwxDataTicket = item.match(/=(.*?);/)[1]
+              } else if (/wxuin/i.test(item)) {
+                this.PROP.uin = item.match(/=(.*?);/)[1]
+              } else if (/wxsid/i.test(item)) {
+                this.PROP.sid = item.match(/=(.*?);/)[1]
+              } else if (/pass_ticket/i.test(item)) {
+                this.PROP.passTicket = item.match(/=(.*?);/)[1]
+              }
+            })
+          }
+        } else {
+          throw error
         }
       })
     }).catch(err => {
@@ -158,10 +173,11 @@ export default class WechatCore {
 
   init () {
     return Promise.resolve().then(() => {
+      let t = Date.now()
+      let r = t / -1579
       let params = {
         'pass_ticket': this.PROP.passTicket,
-        'skey': this.PROP.skey,
-        'r': ~new Date()
+        'r': Math.ceil(r)
       }
       let data = {
         BaseRequest: this.getBaseRequest()
@@ -200,7 +216,7 @@ export default class WechatCore {
         'Code': to ? 1 : 3,
         'FromUserName': this.user['UserName'],
         'ToUserName': to || this.user['UserName'],
-        'ClientMsgId': getClientMsgId()
+        'ClientMsgId': Date.now()
       }
       return this.request({
         method: 'POST',
@@ -221,20 +237,18 @@ export default class WechatCore {
   getContact (seq = 0) {
     return Promise.resolve().then(() => {
       let params = {
-        'lang': 'zh_CN',
-        'pass_ticket': this.PROP.passTicket,
+        // 'pass_ticket': this.PROP.passTicket,
         'seq': seq,
         'skey': this.PROP.skey,
         'r': +new Date()
       }
       return this.request({
-        method: 'POST',
+        method: 'GET',
         url: this.CONF.API_webwxgetcontact,
         params: params
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
-
         return data
       })
     }).catch(err => {
@@ -1210,10 +1224,14 @@ export default class WechatCore {
         ToUserName: toUserName,
         ClientMsgId: getClientMsgId()
       }
+      let headers = {}
+      headers['ContentType'] = 'application/json; charset=UTF-8'
+      headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36'
       return this.request({
         method: 'POST',
         url: this.CONF.API_webwxrevokemsg,
-        data: data
+        data: data,
+        headers: headers
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
