@@ -793,7 +793,7 @@ export default class WechatCore {
         'Msg': {
           'Type': msg.MsgType,
           'MediaId': '',
-          'Content': msg.Content.replace(/&lt;/g, '<').replace(/&gt;/g, '>'),
+          'Content': msg.Content.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/^.*:\n/,''),
           'FromUserName': this.user.UserName,
           'ToUserName': to,
           'LocalID': clientMsgId,
