@@ -147,7 +147,6 @@ export default class WechatCore {
             this.PROP.passTicket = data.match(/<pass_ticket>(.*)<\/pass_ticket>/)[1]
           }
           if (error.response.headers['set-cookie']) {
-            console.log('error.response.headers[\'set-cookie\']', error.response.headers['set-cookie'])
             error.response.headers['set-cookie'].forEach(item => {
               if (/webwx.*?data.*?ticket/i.test(item)) {
                 this.PROP.webwxDataTicket = item.match(/=(.*?);/)[1]
