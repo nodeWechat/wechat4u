@@ -257,11 +257,13 @@ class Wechat extends WechatCore {
           debug(err)
           this.emit('error', err)
         })
-      this.sendMsg(this._getPollingMessage(), this._getPollingTarget())
+      if(this._getPollingTarget()) {
+        this.sendMsg(this._getPollingMessage(), this._getPollingTarget())
         .catch(err => {
           debug(err)
           this.emit('error', err)
         })
+      }
       clearTimeout(this.checkPollingId)
       this.checkPollingId = setTimeout(() => this.checkPolling(), this._getPollingInterval())
     }
