@@ -70,6 +70,11 @@ export function isPublicContact (contact) {
   return contact.VerifyFlag & CONF.MM_USERATTRVERIFYFALG_BIZ_BRAND
 }
 
+export function isMuted(concat) {
+  return isRoomContact(concat) ? concat.Statues === CONF.CHATROOM_NOTIFY_CLOSE : 
+    concat.ContactFlag & CONF.CONTACTFLAG_NOTIFYCLOSECONTACT;
+}
+
 const contactProto = {
   init: function (instance) {
     // 纠正错误以后保持兼容
@@ -126,6 +131,7 @@ export default function ContactFactory (instance) {
     getDisplayName,
     isRoomContact,
     isPublicContact,
-    isSpContact
+    isSpContact,
+    isMuted
   }
 }
