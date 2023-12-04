@@ -2,7 +2,7 @@
 
 ![](http://7xr8pm.com1.z0.glb.clouddn.com/nodeWechat.png) [![npm version](https://img.shields.io/npm/v/wechat4u.svg)](https://www.npmjs.org/package/wechat4u) [![wechat group](https://img.shields.io/badge/wechat-group-brightgreen.svg)](http://www.qr-code-generator.com/phpqrcode/getCode.php?cht=qr&chl=http%3A%2F%2Fweixin.qq.com%2Fg%2FA1zJ47b19KtgMnAx&chs=180x180&choe=UTF-8&chld=L|0)
 
-## Announcing wechat4u v0.7.12
+## Announcing wechat4u v0.7.13
 
 ### Features
 
@@ -14,6 +14,7 @@
 
 ### Changes
 
+- 修复大文件上传失败问题
 - 支持uos协议，所有微信均可使用，请先微信实名认证后使用
 - 发送消息的一类方法在成功时会返回完整响应数据
 - bot.user 对象中不再存储用户头像的 base64 数据
