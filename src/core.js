@@ -188,7 +188,7 @@ export default class WechatCore {
         data: data
       }).then(res => {
         let data = res.data
-        if (data.BaseResponse.Ret == this.CONF.SYNCCHECK_RET_LOGOUT) {
+        if (data.BaseResponse.Ret === this.CONF.SYNCCHECK_RET_LOGOUT) {
           throw new AlreadyLogoutError()
         }
         assert.equal(data.BaseResponse.Ret, 0, res)
@@ -352,7 +352,7 @@ export default class WechatCore {
         } catch (ex) {
           window.synccheck = { retcode: '0', selector: '0' }
         }
-        if (window.synccheck.retcode == this.CONF.SYNCCHECK_RET_LOGOUT) {
+        if (window.synccheck.retcode === this.CONF.SYNCCHECK_RET_LOGOUT) {
           throw new AlreadyLogoutError()
         }
         assert.equal(window.synccheck.retcode, this.CONF.SYNCCHECK_RET_SUCCESS, res)
@@ -385,7 +385,7 @@ export default class WechatCore {
         data: data
       }).then(res => {
         let data = res.data
-        if (data.BaseResponse.Ret == this.CONF.SYNCCHECK_RET_LOGOUT) {
+        if (data.BaseResponse.Ret === this.CONF.SYNCCHECK_RET_LOGOUT) {
           throw new AlreadyLogoutError()
         }
         assert.equal(data.BaseResponse.Ret, 0, res)
@@ -602,8 +602,8 @@ export default class WechatCore {
     return Promise.resolve().then(() => {
       let name, type, size, ext, mediatype, data
       return new Promise((resolve, reject) => {
-        if ((typeof (File) !== 'undefined' && file.constructor == File) ||
-          (typeof (Blob) !== 'undefined' && file.constructor == Blob)) {
+        if ((typeof (File) !== 'undefined' && file.constructor === File) ||
+          (typeof (Blob) !== 'undefined' && file.constructor === Blob)) {
           name = file.name || 'file'
           type = file.type
           size = file.size
@@ -888,7 +888,7 @@ export default class WechatCore {
           'ClientMsgId': clientMsgId
         }
       }
-      let url, pm
+      let url
       switch (msg.MsgType) {
         case this.CONF.MSGTYPE_TEXT:
           url = this.CONF.API_webwxsendmsg

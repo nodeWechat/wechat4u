@@ -120,10 +120,10 @@ class Wechat extends WechatCore {
         }
       })
       .then(() => {
-        if (Seq == 0) {
+        if (Seq === 0) {
           let emptyGroup =
-            contacts.filter(contact => contact.UserName.startsWith('@@') && contact.MemberCount == 0)
-          if (emptyGroup.length != 0) {
+            contacts.filter(contact => contact.UserName.startsWith('@@') && contact.MemberCount === 0)
+          if (emptyGroup.length !== 0) {
             return this.batchGetContact(emptyGroup)
               .then(_contacts => contacts = contacts.concat(_contacts || []))
           } else {
@@ -288,7 +288,7 @@ class Wechat extends WechatCore {
     data.forEach(msg => {
       Promise.resolve().then(() => {
         if (!this.contacts[msg.FromUserName] ||
-          (msg.FromUserName.startsWith('@@') && this.contacts[msg.FromUserName].MemberCount == 0)) {
+          (msg.FromUserName.startsWith('@@') && this.contacts[msg.FromUserName].MemberCount === 0)) {
           return this.batchGetContact([{
             UserName: msg.FromUserName
           }]).then(contacts => {
@@ -330,7 +330,7 @@ class Wechat extends WechatCore {
   }
 
   updateContacts (contacts) {
-    if (!contacts || contacts.length == 0) {
+    if (!contacts || contacts.length === 0) {
       return
     }
     contacts.forEach(contact => {
