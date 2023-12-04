@@ -21,7 +21,7 @@ export class AlreadyLogoutError extends Error {
     this.__proto__ = AlreadyLogoutError.prototype
   }
 }
-
+const CHUNK_SIZE = 0.5 * 1024 * 1024 // 0.5 MB
 export default class WechatCore {
   constructor (data) {
     this.PROP = {
@@ -527,6 +527,76 @@ export default class WechatCore {
     })
   }
 
+  // 根据文件大小切割form
+  getMediaFormStreamData ({ name, data, type, mediatype, size, toUserName }) {
+    let uploadMediaRequest = JSON.stringify({
+      BaseRequest: this.getBaseRequest(),
+      ClientMediaId: getClientMsgId(),
+      TotalLen: size,
+      StartPos: 0,
+      DataLen: size,
+      MediaType: 4,
+      UploadType: 2,
+      FromUserName: this.user.UserName,
+      ToUserName: toUserName || this.user.UserName
+    })
+
+    // 小于0.5mb的文件直接返回form
+    if (size <= CHUNK_SIZE) {
+      let form = new FormData()
+      form.append('name', name)
+      form.append('type', type)
+      form.append('lastModifiedDate', new Date().toGMTString())
+      form.append('size', size)
+      form.append('mediatype', mediatype)
+      form.append('uploadmediarequest', uploadMediaRequest)
+      form.append('webwx_data_ticket', this.PROP.webwxDataTicket)
+      form.append('pass_ticket', encodeURI(this.PROP.passTicket))
+      form.append('filename', data, {
+        filename: name,
+        contentType: type,
+        knownLength: size
+      })
+
+      return form
+    }
+
+    // 大于0.5mb的文件要切割 chunk
+    const totalChunksNum = Math.ceil(size / CHUNK_SIZE)
+    const formList = []
+
+    for (let i = 0; i < totalChunksNum; i++) {
+      let startPos = i * CHUNK_SIZE
+      let endPos = Math.min(size, startPos + CHUNK_SIZE)
+      let chunk = data.slice(startPos, endPos)
+
+      // 创建每个块的 FormData
+      const form = new FormData()
+      form.append('name', name)
+      form.append('type', type)
+      form.append('lastModifiedDate', new Date().toGMTString())
+      form.append('size', size)
+      form.append('mediatype', mediatype)
+      form.append('uploadmediarequest', uploadMediaRequest)
+      form.append('webwx_data_ticket', this.PROP.webwxDataTicket)
+      form.append('pass_ticket', encodeURI(this.PROP.passTicket))
+      form.append('id', 'WU_FILE_0')
+      form.append('chunk', i)
+      form.append('chunks', totalChunksNum)
+      form.append('filename', chunk, {
+        filename: name,
+        contentType: type,
+        knownLength: chunk.length
+      })
+      formList.push({
+        data: form,
+        headers: form.getHeaders()
+      })
+    }
+
+    return formList
+  }
+
   // file: Stream, Buffer, File, Blob
   uploadMedia (file, filename, toUserName) {
     return Promise.resolve().then(() => {
@@ -585,48 +655,35 @@ export default class WechatCore {
             mediatype = 'doc'
         }
 
-        let clientMsgId = getClientMsgId()
+        const formOrFormList = this.getMediaFormStreamData({ name, data, type, mediatype, size, toUserName })
 
-        let uploadMediaRequest = JSON.stringify({
-          BaseRequest: this.getBaseRequest(),
-          ClientMediaId: clientMsgId,
-          TotalLen: size,
-          StartPos: 0,
-          DataLen: size,
-          MediaType: 4,
-          UploadType: 2,
-          FromUserName: this.user.UserName,
-          ToUserName: toUserName || this.user.UserName
-        })
-
-        let form = new FormData()
-        form.append('name', name)
-        form.append('type', type)
-        form.append('lastModifiedDate', new Date().toGMTString())
-        form.append('size', size)
-        form.append('mediatype', mediatype)
-        form.append('uploadmediarequest', uploadMediaRequest)
-        form.append('webwx_data_ticket', this.PROP.webwxDataTicket)
-        form.append('pass_ticket', encodeURI(this.PROP.passTicket))
-        form.append('filename', data, {
-          filename: name,
-          contentType: type,
-          knownLength: size
-        })
         return new Promise((resolve, reject) => {
           if (isStandardBrowserEnv) {
             return resolve({
-              data: form,
+              data: formOrFormList,
               headers: {}
             })
+          } else if (Array.isArray(formOrFormList)) {
+            const bufferList = formOrFormList.reduce((arr, formObj) => {
+              formObj.data.pipe(bl((err, buffer) => {
+                if (err) {
+                  return reject(err)
+                }
+
+                arr.push({ data: buffer, headers: formObj.headers })
+              }))
+              return arr
+            }, [])
+
+            return resolve({ data: bufferList })
           } else {
-            form.pipe(bl((err, buffer) => {
+            formOrFormList.pipe(bl((err, buffer) => {
               if (err) {
                 return reject(err)
               }
               return resolve({
                 data: buffer,
-                headers: form.getHeaders()
+                headers: formOrFormList.getHeaders()
               })
             }))
           }
@@ -636,13 +693,45 @@ export default class WechatCore {
           f: 'json'
         }
 
-        return this.request({
-          method: 'POST',
-          url: this.CONF.API_webwxuploadmedia,
-          headers: data.headers,
-          params: params,
-          data: data.data
-        })
+        // 单块文件上传
+        if (!Array.isArray(data.data)) {
+          return this.request({
+            method: 'POST',
+            url: this.CONF.API_webwxuploadmedia,
+            headers: data.headers,
+            params,
+            data: data.data
+          })
+        }
+
+        const bufferList = data.data
+        let currentChunkIndex = 0
+
+        // 分块上传逻辑
+        const processChunk = res => {
+          if (currentChunkIndex < bufferList.length) {
+            const chunkObj = bufferList[currentChunkIndex]
+            return this.request({
+              method: 'POST',
+              url: this.CONF.API_webwxuploadmedia,
+              headers: chunkObj.headers,
+              params,
+              data: chunkObj.data
+            }).then(res => {
+              currentChunkIndex++
+              // 递归处理下一个块
+              return processChunk(res)
+            })
+          } else {
+            // 所有块上传完成
+            return Promise.resolve({data: {
+              MediaId: res.data.MediaId
+            }})
+          }
+        }
+
+        // 开始处理第一个块
+        return processChunk()
       }).then(res => {
         let data = res.data
         let mediaId = data.MediaId
