@@ -62,6 +62,7 @@ export function Request (defaults) {
   this.request = options => {
     return this.axios.request(options)
   }
-
+  // expose axios for user inject interceptors
+  this.request.axios = this.axios;
   return this.request
 }
