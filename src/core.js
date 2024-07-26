@@ -3,16 +3,10 @@ import bl from 'bl'
 import _debug from 'debug'
 import FormData from 'form-data'
 import mime from 'mime'
-import {
-  getCONF,
-  Request,
-  isStandardBrowserEnv,
-  assert,
-  getClientMsgId,
-  getDeviceID
-} from './util'
+import { assert, getClientMsgId, getCONF, getDeviceID, isStandardBrowserEnv, randomUuid, Request } from './util'
 
 const debug = _debug('core')
+
 export class AlreadyLogoutError extends Error {
   constructor (message = 'already logout') {
     super(message)
@@ -21,18 +15,12 @@ export class AlreadyLogoutError extends Error {
     this.__proto__ = AlreadyLogoutError.prototype
   }
 }
+
 const CHUNK_SIZE = 0.5 * 1024 * 1024 // 0.5 MB
 export default class WechatCore {
   constructor (data) {
     this.PROP = {
-      uuid: '',
-      uin: '',
-      sid: '',
-      skey: '',
-      passTicket: '',
-      formatedSyncKey: '',
-      webwxDataTicket: '',
-      syncKey: {
+      uuid: '', uin: '', sid: '', skey: '', passTicket: '', formatedSyncKey: '', webwxDataTicket: '', syncKey: {
         List: []
       }
     }
@@ -50,10 +38,7 @@ export default class WechatCore {
 
   get botData () {
     return {
-      PROP: this.PROP,
-      CONF: this.CONF,
-      COOKIE: this.COOKIE,
-      user: this.user
+      PROP: this.PROP, CONF: this.CONF, COOKIE: this.COOKIE, user: this.user
     }
   }
 
@@ -66,8 +51,7 @@ export default class WechatCore {
   getUUID () {
     return Promise.resolve().then(() => {
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_jsLogin
+        method: 'POST', url: this.CONF.API_jsLogin
       }).then(res => {
         let window = {
           QRLogin: {}
@@ -90,15 +74,10 @@ export default class WechatCore {
   checkLogin () {
     return Promise.resolve().then(() => {
       let params = {
-        'tip': 0,
-        'uuid': this.PROP.uuid,
-        'loginicon': true,
-        'r': ~new Date()
+        'tip': 0, 'uuid': this.PROP.uuid, 'loginicon': true, 'r': ~new Date()
       }
       return this.request({
-        method: 'GET',
-        url: this.CONF.API_login,
-        params: params
+        method: 'GET', url: this.CONF.API_login, params: params
       }).then(res => {
         let window = {}
 
@@ -130,10 +109,7 @@ export default class WechatCore {
       headers['referer'] = 'https://wx.qq.com/?&lang=zh_CN&target=t'
       headers['extspam'] = 'Go8FCIkFEokFCggwMDAwMDAwMRAGGvAESySibk50w5Wb3uTl2c2h64jVVrV7gNs06GFlWplHQbY/5FfiO++1yH4ykCyNPWKXmco+wfQzK5R98D3so7rJ5LmGFvBLjGceleySrc3SOf2Pc1gVehzJgODeS0lDL3/I/0S2SSE98YgKleq6Uqx6ndTy9yaL9qFxJL7eiA/R3SEfTaW1SBoSITIu+EEkXff+Pv8NHOk7N57rcGk1w0ZzRrQDkXTOXFN2iHYIzAAZPIOY45Lsh+A4slpgnDiaOvRtlQYCt97nmPLuTipOJ8Qc5pM7ZsOsAPPrCQL7nK0I7aPrFDF0q4ziUUKettzW8MrAaiVfmbD1/VkmLNVqqZVvBCtRblXb5FHmtS8FxnqCzYP4WFvz3T0TcrOqwLX1M/DQvcHaGGw0B0y4bZMs7lVScGBFxMj3vbFi2SRKbKhaitxHfYHAOAa0X7/MSS0RNAjdwoyGHeOepXOKY+h3iHeqCvgOH6LOifdHf/1aaZNwSkGotYnYScW8Yx63LnSwba7+hESrtPa/huRmB9KWvMCKbDThL/nne14hnL277EDCSocPu3rOSYjuB9gKSOdVmWsj9Dxb/iZIe+S6AiG29Esm+/eUacSba0k8wn5HhHg9d4tIcixrxveflc8vi2/wNQGVFNsGO6tB5WF0xf/plngOvQ1/ivGV/C1Qpdhzznh0ExAVJ6dwzNg7qIEBaw+BzTJTUuRcPk92Sn6QDn2Pu3mpONaEumacjW4w6ipPnPw+g2TfywJjeEcpSZaP4Q3YV5HG8D6UjWA4GSkBKculWpdCMadx0usMomsSS/74QgpYqcPkmamB4nVv1JxczYITIqItIKjD35IGKAUwAA=='
       return this.request({
-        method: 'GET',
-        url: this.rediUri,
-        maxRedirects: 0,
-        headers: headers
+        method: 'GET', url: this.rediUri, maxRedirects: 0, headers: headers
       }).then(res => {
 
       }).catch(error => {
@@ -175,17 +151,13 @@ export default class WechatCore {
       let t = Date.now()
       let r = t / -1579
       let params = {
-        'pass_ticket': this.PROP.passTicket,
-        'r': Math.ceil(r)
+        'pass_ticket': this.PROP.passTicket, 'r': Math.ceil(r)
       }
       let data = {
         BaseRequest: this.getBaseRequest()
       }
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxinit,
-        params: params,
-        data: data
+        method: 'POST', url: this.CONF.API_webwxinit, params: params, data: data
       }).then(res => {
         let data = res.data
         if (data.BaseResponse.Ret === this.CONF.SYNCCHECK_RET_LOGOUT) {
@@ -207,8 +179,7 @@ export default class WechatCore {
   notifyMobile (to) {
     return Promise.resolve().then(() => {
       let params = {
-        pass_ticket: this.PROP.passTicket,
-        lang: 'zh_CN'
+        pass_ticket: this.PROP.passTicket, lang: 'zh_CN'
       }
       let data = {
         'BaseRequest': this.getBaseRequest(),
@@ -218,10 +189,7 @@ export default class WechatCore {
         'ClientMsgId': Date.now()
       }
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxstatusnotify,
-        params: params,
-        data: data
+        method: 'POST', url: this.CONF.API_webwxstatusnotify, params: params, data: data
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
@@ -237,14 +205,10 @@ export default class WechatCore {
     return Promise.resolve().then(() => {
       let params = {
         // 'pass_ticket': this.PROP.passTicket,
-        'seq': seq,
-        'skey': this.PROP.skey,
-        'r': +new Date()
+        'seq': seq, 'skey': this.PROP.skey, 'r': +new Date()
       }
       return this.request({
-        method: 'GET',
-        url: this.CONF.API_webwxgetcontact,
-        params: params
+        method: 'GET', url: this.CONF.API_webwxgetcontact, params: params
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
@@ -260,21 +224,13 @@ export default class WechatCore {
   batchGetContact (contacts) {
     return Promise.resolve().then(() => {
       let params = {
-        'pass_ticket': this.PROP.passTicket,
-        'type': 'ex',
-        'r': +new Date(),
-        'lang': 'zh_CN'
+        'pass_ticket': this.PROP.passTicket, 'type': 'ex', 'r': +new Date(), 'lang': 'zh_CN'
       }
       let data = {
-        'BaseRequest': this.getBaseRequest(),
-        'Count': contacts.length,
-        'List': contacts
+        'BaseRequest': this.getBaseRequest(), 'Count': contacts.length, 'List': contacts
       }
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxbatchgetcontact,
-        params: params,
-        data: data
+        method: 'POST', url: this.CONF.API_webwxbatchgetcontact, params: params, data: data
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
@@ -291,34 +247,23 @@ export default class WechatCore {
   statReport (text) {
     return Promise.resolve().then(() => {
       text = text || {
-        'type': '[action-record]',
-        'data': {
+        'type': '[action-record]', 'data': {
           'actions': [{
-            'type': 'click',
-            'action': '发送框',
-            'time': +new Date()
+            'type': 'click', 'action': '发送框', 'time': +new Date()
           }]
         }
       }
       text = JSON.stringify(text)
       let params = {
-        'pass_ticket': this.PROP.passTicket,
-        'fun': 'new',
-        'lang': 'zh_CN'
+        'pass_ticket': this.PROP.passTicket, 'fun': 'new', 'lang': 'zh_CN'
       }
       let data = {
-        'BaseRequest': this.getBaseRequest(),
-        'Count': 1,
-        'List': [{
-          'Text': text,
-          'Type': 1
+        'BaseRequest': this.getBaseRequest(), 'Count': 1, 'List': [{
+          'Text': text, 'Type': 1
         }]
       }
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxreport,
-        params: params,
-        data: data
+        method: 'POST', url: this.CONF.API_webwxreport, params: params, data: data
       })
     }).catch(err => {
       debug(err)
@@ -338,9 +283,7 @@ export default class WechatCore {
         'synckey': this.PROP.formatedSyncKey
       }
       return this.request({
-        method: 'GET',
-        url: this.CONF.API_synccheck,
-        params: params
+        method: 'GET', url: this.CONF.API_synccheck, params: params
       }).then(res => {
         let window = {
           synccheck: {}
@@ -368,21 +311,13 @@ export default class WechatCore {
   sync () {
     return Promise.resolve().then(() => {
       let params = {
-        'sid': this.PROP.sid,
-        'skey': this.PROP.skey,
-        'pass_ticket': this.PROP.passTicket,
-        'lang': 'zh_CN'
+        'sid': this.PROP.sid, 'skey': this.PROP.skey, 'pass_ticket': this.PROP.passTicket, 'lang': 'zh_CN'
       }
       let data = {
-        'BaseRequest': this.getBaseRequest(),
-        'SyncKey': this.PROP.syncKey,
-        'rr': ~new Date()
+        'BaseRequest': this.getBaseRequest(), 'SyncKey': this.PROP.syncKey, 'rr': ~new Date()
       }
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxsync,
-        params: params,
-        data: data
+        method: 'POST', url: this.CONF.API_webwxsync, params: params, data: data
       }).then(res => {
         let data = res.data
         if (data.BaseResponse.Ret === this.CONF.SYNCCHECK_RET_LOGOUT) {
@@ -423,10 +358,7 @@ export default class WechatCore {
   logout () {
     return Promise.resolve().then(() => {
       let params = {
-        redirect: 1,
-        type: 0,
-        skey: this.PROP.skey,
-        lang: 'zh_CN'
+        redirect: 1, type: 0, skey: this.PROP.skey, lang: 'zh_CN'
       }
 
       // data加上会出错，不加data也能登出
@@ -435,9 +367,7 @@ export default class WechatCore {
       //   uin: this.PROP.uin
       // }
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxlogout,
-        params: params
+        method: 'POST', url: this.CONF.API_webwxlogout, params: params
       }).then(res => {
         return '登出成功'
       }).catch(err => {
@@ -450,14 +380,11 @@ export default class WechatCore {
   sendText (msg, to) {
     return Promise.resolve().then(() => {
       let params = {
-        'pass_ticket': this.PROP.passTicket,
-        'lang': 'zh_CN'
+        'pass_ticket': this.PROP.passTicket, 'lang': 'zh_CN'
       }
       let clientMsgId = getClientMsgId()
       let data = {
-        'BaseRequest': this.getBaseRequest(),
-        'Scene': 0,
-        'Msg': {
+        'BaseRequest': this.getBaseRequest(), 'Scene': 0, 'Msg': {
           'Type': this.CONF.MSGTYPE_TEXT,
           'Content': msg,
           'FromUserName': this.user['UserName'],
@@ -467,10 +394,7 @@ export default class WechatCore {
         }
       }
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxsendmsg,
-        params: params,
-        data: data
+        method: 'POST', url: this.CONF.API_webwxsendmsg, params: params, data: data
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
@@ -486,15 +410,11 @@ export default class WechatCore {
   sendEmoticon (id, to) {
     return Promise.resolve().then(() => {
       let params = {
-        'fun': 'sys',
-        'pass_ticket': this.PROP.passTicket,
-        'lang': 'zh_CN'
+        'fun': 'sys', 'pass_ticket': this.PROP.passTicket, 'lang': 'zh_CN'
       }
       let clientMsgId = getClientMsgId()
       let data = {
-        'BaseRequest': this.getBaseRequest(),
-        'Scene': 0,
-        'Msg': {
+        'BaseRequest': this.getBaseRequest(), 'Scene': 0, 'Msg': {
           'Type': this.CONF.MSGTYPE_EMOTICON,
           'EmojiFlag': 2,
           'FromUserName': this.user['UserName'],
@@ -511,10 +431,7 @@ export default class WechatCore {
       }
 
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxsendemoticon,
-        params: params,
-        data: data
+        method: 'POST', url: this.CONF.API_webwxsendemoticon, params: params, data: data
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
@@ -538,7 +455,7 @@ export default class WechatCore {
       MediaType: 4,
       UploadType: 2,
       FromUserName: this.user.UserName,
-      ToUserName: toUserName || this.user.UserName
+      ToUserName: toUserName || this.user.UserName,
     })
 
     // 小于0.5mb的文件直接返回form
@@ -553,9 +470,7 @@ export default class WechatCore {
       form.append('webwx_data_ticket', this.PROP.webwxDataTicket)
       form.append('pass_ticket', encodeURI(this.PROP.passTicket))
       form.append('filename', data, {
-        filename: name,
-        contentType: type,
-        knownLength: size
+        filename: name, contentType: type, knownLength: size
       })
 
       return form
@@ -565,36 +480,37 @@ export default class WechatCore {
     const totalChunksNum = Math.ceil(size / CHUNK_SIZE)
     const formList = []
 
-    for (let i = 0; i < totalChunksNum; i++) {
-      let startPos = i * CHUNK_SIZE
-      let endPos = Math.min(size, startPos + CHUNK_SIZE)
-      let chunk = data.slice(startPos, endPos)
+    const getFormList = () => {
+      for (let i = 0; i < totalChunksNum; i++) {
+        let startPos = i * CHUNK_SIZE
+        let endPos = Math.min(size, startPos + CHUNK_SIZE)
+        let chunk = data.slice(startPos, endPos)
 
-      // 创建每个块的 FormData
-      const form = new FormData()
-      form.append('name', name)
-      form.append('type', type)
-      form.append('lastModifiedDate', new Date().toGMTString())
-      form.append('size', size)
-      form.append('mediatype', mediatype)
-      form.append('uploadmediarequest', uploadMediaRequest)
-      form.append('webwx_data_ticket', this.PROP.webwxDataTicket)
-      form.append('pass_ticket', encodeURI(this.PROP.passTicket))
-      form.append('id', 'WU_FILE_0')
-      form.append('chunk', i)
-      form.append('chunks', totalChunksNum)
-      form.append('filename', chunk, {
-        filename: name,
-        contentType: type,
-        knownLength: chunk.length
-      })
-      formList.push({
-        data: form,
-        headers: form.getHeaders()
-      })
+        // 创建每个块的 FormData
+        const form = new FormData()
+        form.append('name', name)
+        form.append('type', type)
+        form.append('lastModifiedDate', new Date().toGMTString())
+        form.append('size', size)
+        form.append('mediatype', mediatype)
+        form.append('uploadmediarequest', uploadMediaRequest)
+        form.append('webwx_data_ticket', this.PROP.webwxDataTicket)
+        form.append('pass_ticket', encodeURI(this.PROP.passTicket))
+        form.append('id', 'WU_FILE_0')
+        form.append('chunk', i)
+        form.append('chunks', totalChunksNum)
+        form.append('filename', chunk, {
+          filename: name, contentType: type, knownLength: chunk.length
+        })
+        formList.push({
+          data: form, headers: form.getHeaders()
+        })
+      }
+
+      return formList
     }
 
-    return formList
+    return getFormList()
   }
 
   // file: Stream, Buffer, File, Blob
@@ -602,8 +518,7 @@ export default class WechatCore {
     return Promise.resolve().then(() => {
       let name, type, size, ext, mediatype, data
       return new Promise((resolve, reject) => {
-        if ((typeof (File) !== 'undefined' && file.constructor === File) ||
-          (typeof (Blob) !== 'undefined' && file.constructor === Blob)) {
+        if ((typeof (File) !== 'undefined' && file.constructor === File) || (typeof (Blob) !== 'undefined' && file.constructor === Blob)) {
           name = file.name || 'file'
           type = file.type
           size = file.size
@@ -660,8 +575,7 @@ export default class WechatCore {
         return new Promise((resolve, reject) => {
           if (isStandardBrowserEnv) {
             return resolve({
-              data: formOrFormList,
-              headers: {}
+              data: formOrFormList, headers: {}
             })
           } else if (Array.isArray(formOrFormList)) {
             const bufferList = formOrFormList.reduce((arr, formObj) => {
@@ -682,8 +596,7 @@ export default class WechatCore {
                 return reject(err)
               }
               return resolve({
-                data: buffer,
-                headers: formOrFormList.getHeaders()
+                data: buffer, headers: formOrFormList.getHeaders()
               })
             }))
           }
@@ -696,11 +609,7 @@ export default class WechatCore {
         // 单块文件上传
         if (!Array.isArray(data.data)) {
           return this.request({
-            method: 'POST',
-            url: this.CONF.API_webwxuploadmedia,
-            headers: data.headers,
-            params,
-            data: data.data
+            method: 'POST', url: this.CONF.API_webwxuploadmedia, headers: data.headers, params, data: data.data
           })
         }
 
@@ -708,7 +617,7 @@ export default class WechatCore {
         let currentChunkIndex = 0
 
         // 分块上传逻辑
-        const processChunk = res => {
+        const processChunk = (res, signature) => {
           if (currentChunkIndex < bufferList.length) {
             const chunkObj = bufferList[currentChunkIndex]
             return this.request({
@@ -720,29 +629,96 @@ export default class WechatCore {
             }).then(res => {
               currentChunkIndex++
               // 递归处理下一个块
-              return processChunk(res)
+              return processChunk(res, signature)
             })
           } else {
             // 所有块上传完成
-            return Promise.resolve({data: {
-              MediaId: res.data.MediaId
-            }})
+            return Promise.resolve({
+              data: {
+                MediaId: res.data.MediaId,
+                Signature: signature
+              }
+            })
           }
         }
 
-        // 开始处理第一个块
-        return processChunk()
+        // 大于大概22MB的文件上传会失败 具体没测试
+        if (size > 22 * 1024 * 1024) {
+
+          const fileMd5 = randomUuid()
+          let assign = {
+            BaseRequest: this.getBaseRequest(),
+            FromUserName: this.user.UserName,
+            ToUserName: toUserName || this.user.UserName,
+            FileSize: size,
+            FileMd5: fileMd5,
+            FileName: name,
+            FileType: 7,
+          }
+
+          console.log('checkupload', JSON.stringify(assign))
+          let headers = Object.assign({}, bufferList[0].headers, {
+            'Content-Type': 'application/json; charset=UTF-8',
+            'extspam': 'Go8FCIkFEokFCggwMDAwMDAwMRAGGvAESySibk50w5Wb3uTl2c2h64jVVrV7gNs06GFlWplHQbY/5FfiO++1yH4ykCyNPWKXmco+wfQzK5R98D3so7rJ5LmGFvBLjGceleySrc3SOf2Pc1gVehzJgODeS0lDL3/I/0S2SSE98YgKleq6Uqx6ndTy9yaL9qFxJL7eiA/R3SEfTaW1SBoSITIu+EEkXff+Pv8NHOk7N57rcGk1w0ZzRrQDkXTOXFN2iHYIzAAZPIOY45Lsh+A4slpgnDiaOvRtlQYCt97nmPLuTipOJ8Qc5pM7ZsOsAPPrCQL7nK0I7aPrFDF0q4ziUUKettzW8MrAaiVfmbD1/VkmLNVqqZVvBCtRblXb5FHmtS8FxnqCzYP4WFvz3T0TcrOqwLX1M/DQvcHaGGw0B0y4bZMs7lVScGBFxMj3vbFi2SRKbKhaitxHfYHAOAa0X7/MSS0RNAjdwoyGHeOepXOKY+h3iHeqCvgOH6LOifdHf/1aaZNwSkGotYnYScW8Yx63LnSwba7+hESrtPa/huRmB9KWvMCKbDThL/nne14hnL277EDCSocPu3rOSYjuB9gKSOdVmWsj9Dxb/iZIe+S6AiG29Esm+/eUacSba0k8wn5HhHg9d4tIcixrxveflc8vi2/wNQGVFNsGO6tB5WF0xf/plngOvQ1/ivGV/C1Qpdhzznh0ExAVJ6dwzNg7qIEBaw+BzTJTUuRcPk92Sn6QDn2Pu3mpONaEumacjW4w6ipPnPw+g2TfywJjeEcpSZaP4Q3YV5HG8D6UjWA4GSkBKculWpdCMadx0usMomsSS/74QgpYqcPkmamB4nVv1JxczYITIqItIKjD35IGKAUwAA=='
+          })
+          return this.request({
+            method: 'POST', url: this.CONF.API_checkupload, headers: headers, params: {
+              'lang': 'zh_CN', 'pass_ticket': this.PROP.passTicket,
+            }, data: assign
+          }).then(res => {
+            assert.equal(res.data.BaseResponse.Ret, 0, res)
+            bufferList.forEach(it => {
+              let buffer = Buffer.from(it.data)
+              let number = buffer.indexOf('Content-Disposition: form-data; name="uploadmediarequest"')
+              if (number) {
+                let start = number
+                let end = start
+                let endFlagCount = 0
+                while (start < buffer.length) {
+                  if (buffer[start] === '{'.charCodeAt(0)) {
+                    while (end < buffer.length) {
+                      if (buffer[end] === '}'.charCodeAt(0)) {
+                        end++
+                        endFlagCount++
+                        if (endFlagCount === 2) {
+                          break
+                        }
+                      } else {
+                        end++
+                      }
+                    }
+                    break
+                  } else {
+                    start++
+                  }
+                }
+                let oldJson = JSON.parse(buffer.toString('utf8', start, end))
+                let startBuff = buffer.subarray(0, start)
+                let endBuff = buffer.subarray(end)
+                oldJson.AESKey = res.data.AESKey
+                oldJson.Signature = res.data.Signature
+                oldJson.FileMd5 = fileMd5
+                let newBuffer = Buffer.from(JSON.stringify(oldJson), 'utf8')
+                it.data = Buffer.concat([startBuff, newBuffer, endBuff])
+              }
+            })
+            return processChunk(null, res.data.Signature)
+          }).catch(err => {
+            debug(err)
+            err.tips = '上传媒体文件失败'
+            throw err
+          })
+        } else {
+          // 开始处理第一个块
+          return processChunk()
+        }
       }).then(res => {
         let data = res.data
         let mediaId = data.MediaId
         assert.ok(mediaId, res)
 
         return {
-          name: name,
-          size: size,
-          ext: ext,
-          mediatype: mediatype,
-          mediaId: mediaId
+          name: name, size: size, ext: ext, mediatype: mediatype, mediaId: mediaId, signature: data.Signature,
         }
       })
     }).catch(err => {
@@ -755,16 +731,11 @@ export default class WechatCore {
   sendPic (mediaId, to) {
     return Promise.resolve().then(() => {
       let params = {
-        'pass_ticket': this.PROP.passTicket,
-        'fun': 'async',
-        'f': 'json',
-        'lang': 'zh_CN'
+        'pass_ticket': this.PROP.passTicket, 'fun': 'async', 'f': 'json', 'lang': 'zh_CN'
       }
       let clientMsgId = getClientMsgId()
       let data = {
-        'BaseRequest': this.getBaseRequest(),
-        'Scene': 0,
-        'Msg': {
+        'BaseRequest': this.getBaseRequest(), 'Scene': 0, 'Msg': {
           'Type': this.CONF.MSGTYPE_IMAGE,
           'MediaId': mediaId,
           'FromUserName': this.user.UserName,
@@ -774,10 +745,7 @@ export default class WechatCore {
         }
       }
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxsendmsgimg,
-        params: params,
-        data: data
+        method: 'POST', url: this.CONF.API_webwxsendmsgimg, params: params, data: data
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
@@ -793,16 +761,11 @@ export default class WechatCore {
   sendVideo (mediaId, to) {
     return Promise.resolve().then(() => {
       let params = {
-        'pass_ticket': this.PROP.passTicket,
-        'fun': 'async',
-        'f': 'json',
-        'lang': 'zh_CN'
+        'pass_ticket': this.PROP.passTicket, 'fun': 'async', 'f': 'json', 'lang': 'zh_CN'
       }
       let clientMsgId = getClientMsgId()
       let data = {
-        'BaseRequest': this.getBaseRequest(),
-        'Scene': 0,
-        'Msg': {
+        'BaseRequest': this.getBaseRequest(), 'Scene': 0, 'Msg': {
           'Type': this.CONF.MSGTYPE_VIDEO,
           'MediaId': mediaId,
           'FromUserName': this.user.UserName,
@@ -812,10 +775,7 @@ export default class WechatCore {
         }
       }
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxsendmsgvedio,
-        params: params,
-        data: data
+        method: 'POST', url: this.CONF.API_webwxsendmsgvedio, params: params, data: data
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
@@ -828,32 +788,25 @@ export default class WechatCore {
     })
   }
 
-  sendDoc (mediaId, name, size, ext, to) {
+  sendDoc (mediaId, name, size, ext, to, signature) {
     return Promise.resolve().then(() => {
       let params = {
-        'pass_ticket': this.PROP.passTicket,
-        'fun': 'async',
-        'f': 'json',
-        'lang': 'zh_CN'
+        'pass_ticket': this.PROP.passTicket, 'fun': 'async', 'f': 'json', 'lang': 'zh_CN'
       }
       let clientMsgId = getClientMsgId()
       let data = {
-        'BaseRequest': this.getBaseRequest(),
-        'Scene': 0,
-        'Msg': {
+        'BaseRequest': this.getBaseRequest(), 'Scene': 0, 'Msg': {
           'Type': this.CONF.APPMSGTYPE_ATTACH,
           'Content': `<appmsg appid='wxeb7ec651dd0aefa9' sdkver=''><title>${name}</title><des></des><action></action><type>6</type><content></content><url></url><lowurl></lowurl><appattach><totallen>${size}</totallen><attachid>${mediaId}</attachid><fileext>${ext}</fileext></appattach><extinfo></extinfo></appmsg>`,
           'FromUserName': this.user.UserName,
           'ToUserName': to,
           'LocalID': clientMsgId,
-          'ClientMsgId': clientMsgId
+          'ClientMsgId': clientMsgId,
+          'Signature': signature
         }
       }
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxsendappmsg,
-        params: params,
-        data: data
+        method: 'POST', url: this.CONF.API_webwxsendappmsg, params: params, data: data
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
@@ -869,16 +822,11 @@ export default class WechatCore {
   forwardMsg (msg, to) {
     return Promise.resolve().then(() => {
       let params = {
-        'pass_ticket': this.PROP.passTicket,
-        'fun': 'async',
-        'f': 'json',
-        'lang': 'zh_CN'
+        'pass_ticket': this.PROP.passTicket, 'fun': 'async', 'f': 'json', 'lang': 'zh_CN'
       }
       let clientMsgId = getClientMsgId()
       let data = {
-        'BaseRequest': this.getBaseRequest(),
-        'Scene': 2,
-        'Msg': {
+        'BaseRequest': this.getBaseRequest(), 'Scene': 2, 'Msg': {
           'Type': msg.MsgType,
           'MediaId': '',
           'Content': msg.Content.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/^.*:\n/, ''),
@@ -920,18 +868,13 @@ export default class WechatCore {
         case this.CONF.MSGTYPE_APP:
           url = this.CONF.API_webwxsendappmsg
           data.Msg.Type = msg.AppMsgType
-          data.Msg.Content = data.Msg.Content.replace(
-            /^[\s\S]*?(<appmsg[\s\S]*?<attachid>)[\s\S]*?(<\/attachid>[\s\S]*?<\/appmsg>)[\s\S]*?$/,
-            `$1${msg.MediaId}$2`)
+          data.Msg.Content = data.Msg.Content.replace(/^[\s\S]*?(<appmsg[\s\S]*?<attachid>)[\s\S]*?(<\/attachid>[\s\S]*?<\/appmsg>)[\s\S]*?$/, `$1${msg.MediaId}$2`)
           break
         default:
           throw new Error('该消息类型不能直接转发')
       }
       return this.request({
-        method: 'POST',
-        url: url,
-        params: params,
-        data: data
+        method: 'POST', url: url, params: params, data: data
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
@@ -947,20 +890,14 @@ export default class WechatCore {
   getMsgImg (msgId) {
     return Promise.resolve().then(() => {
       let params = {
-        MsgID: msgId,
-        skey: this.PROP.skey,
-        type: 'big'
+        MsgID: msgId, skey: this.PROP.skey, type: 'big'
       }
 
       return this.request({
-        method: 'GET',
-        url: this.CONF.API_webwxgetmsgimg,
-        params: params,
-        responseType: 'arraybuffer'
+        method: 'GET', url: this.CONF.API_webwxgetmsgimg, params: params, responseType: 'arraybuffer'
       }).then(res => {
         return {
-          data: res.data,
-          type: res.headers['content-type']
+          data: res.data, type: res.headers['content-type']
         }
       })
     }).catch(err => {
@@ -973,22 +910,16 @@ export default class WechatCore {
   getVideo (msgId) {
     return Promise.resolve().then(() => {
       let params = {
-        MsgID: msgId,
-        skey: this.PROP.skey
+        MsgID: msgId, skey: this.PROP.skey
       }
 
       return this.request({
-        method: 'GET',
-        url: this.CONF.API_webwxgetvideo,
-        headers: {
+        method: 'GET', url: this.CONF.API_webwxgetvideo, headers: {
           'Range': 'bytes=0-'
-        },
-        params: params,
-        responseType: 'arraybuffer'
+        }, params: params, responseType: 'arraybuffer'
       }).then(res => {
         return {
-          data: res.data,
-          type: res.headers['content-type']
+          data: res.data, type: res.headers['content-type']
         }
       })
     }).catch(err => {
@@ -1001,19 +932,14 @@ export default class WechatCore {
   getVoice (msgId) {
     return Promise.resolve().then(() => {
       let params = {
-        MsgID: msgId,
-        skey: this.PROP.skey
+        MsgID: msgId, skey: this.PROP.skey
       }
 
       return this.request({
-        method: 'GET',
-        url: this.CONF.API_webwxgetvoice,
-        params: params,
-        responseType: 'arraybuffer'
+        method: 'GET', url: this.CONF.API_webwxgetvoice, params: params, responseType: 'arraybuffer'
       }).then(res => {
         return {
-          data: res.data,
-          type: res.headers['content-type']
+          data: res.data, type: res.headers['content-type']
         }
       })
     }).catch(err => {
@@ -1027,13 +953,10 @@ export default class WechatCore {
     return Promise.resolve().then(() => {
       let url = this.CONF.origin + HeadImgUrl
       return this.request({
-        method: 'GET',
-        url: url,
-        responseType: 'arraybuffer'
+        method: 'GET', url: url, responseType: 'arraybuffer'
       }).then(res => {
         return {
-          data: res.data,
-          type: res.headers['content-type']
+          data: res.data, type: res.headers['content-type']
         }
       })
     }).catch(err => {
@@ -1054,14 +977,10 @@ export default class WechatCore {
         webwx_data_ticket: this.PROP.webwxDataTicket
       }
       return this.request({
-        method: 'GET',
-        url: this.CONF.API_webwxdownloadmedia,
-        params: params,
-        responseType: 'arraybuffer'
+        method: 'GET', url: this.CONF.API_webwxdownloadmedia, params: params, responseType: 'arraybuffer'
       }).then(res => {
         return {
-          data: res.data,
-          type: res.headers['content-type']
+          data: res.data, type: res.headers['content-type']
         }
       })
     }).catch(err => {
@@ -1074,27 +993,15 @@ export default class WechatCore {
   verifyUser (UserName, Ticket) {
     return Promise.resolve().then(() => {
       let params = {
-        'pass_ticket': this.PROP.passTicket,
-        'lang': 'zh_CN'
+        'pass_ticket': this.PROP.passTicket, 'lang': 'zh_CN'
       }
       let data = {
-        'BaseRequest': this.getBaseRequest(),
-        'Opcode': 3,
-        'VerifyUserListSize': 1,
-        'VerifyUserList': [{
-          'Value': UserName,
-          'VerifyUserTicket': Ticket
-        }],
-        'VerifyContent': '',
-        'SceneListCount': 1,
-        'SceneList': [33],
-        'skey': this.PROP.skey
+        'BaseRequest': this.getBaseRequest(), 'Opcode': 3, 'VerifyUserListSize': 1, 'VerifyUserList': [{
+          'Value': UserName, 'VerifyUserTicket': Ticket
+        }], 'VerifyContent': '', 'SceneListCount': 1, 'SceneList': [33], 'skey': this.PROP.skey
       }
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxverifyuser,
-        params: params,
-        data: data
+        method: 'POST', url: this.CONF.API_webwxverifyuser, params: params, data: data
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
@@ -1115,29 +1022,17 @@ export default class WechatCore {
    */
   addFriend (UserName, content = '我是' + this.user.NickName) {
     let params = {
-      'pass_ticket': this.PROP.passTicket,
-      'lang': 'zh_CN'
+      'pass_ticket': this.PROP.passTicket, 'lang': 'zh_CN'
     }
 
     let data = {
-      'BaseRequest': this.getBaseRequest(),
-      'Opcode': 2,
-      'VerifyUserListSize': 1,
-      'VerifyUserList': [{
-        'Value': UserName,
-        'VerifyUserTicket': ''
-      }],
-      'VerifyContent': content,
-      'SceneListCount': 1,
-      'SceneList': [33],
-      'skey': this.PROP.skey
+      'BaseRequest': this.getBaseRequest(), 'Opcode': 2, 'VerifyUserListSize': 1, 'VerifyUserList': [{
+        'Value': UserName, 'VerifyUserTicket': ''
+      }], 'VerifyContent': content, 'SceneListCount': 1, 'SceneList': [33], 'skey': this.PROP.skey
     }
 
     return this.request({
-      method: 'POST',
-      url: this.CONF.API_webwxverifyuser,
-      params: params,
-      data: data
+      method: 'POST', url: this.CONF.API_webwxverifyuser, params: params, data: data
     }).then(res => {
       let data = res.data
       assert.equal(data.BaseResponse.Ret, 0, res)
@@ -1158,21 +1053,13 @@ export default class WechatCore {
   createChatroom (Topic, MemberList) {
     return Promise.resolve().then(() => {
       let params = {
-        'pass_ticket': this.PROP.passTicket,
-        'lang': 'zh_CN',
-        'r': ~new Date()
+        'pass_ticket': this.PROP.passTicket, 'lang': 'zh_CN', 'r': ~new Date()
       }
       let data = {
-        BaseRequest: this.getBaseRequest(),
-        MemberCount: MemberList.length,
-        MemberList: MemberList,
-        Topic: Topic
+        BaseRequest: this.getBaseRequest(), MemberCount: MemberList.length, MemberList: MemberList, Topic: Topic
       }
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxcreatechatroom,
-        params: params,
-        data: data
+        method: 'POST', url: this.CONF.API_webwxcreatechatroom, params: params, data: data
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
@@ -1192,8 +1079,7 @@ export default class WechatCore {
         fun: fun
       }
       let data = {
-        BaseRequest: this.getBaseRequest(),
-        ChatRoomName: ChatRoomUserName
+        BaseRequest: this.getBaseRequest(), ChatRoomName: ChatRoomUserName
       }
       if (fun === 'addmember') {
         data.AddMemberList = MemberList.toString()
@@ -1203,10 +1089,7 @@ export default class WechatCore {
         data.InviteMemberList = MemberList.toString()
       }
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxupdatechatroom,
-        params: params,
-        data: data
+        method: 'POST', url: this.CONF.API_webwxupdatechatroom, params: params, data: data
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
@@ -1227,17 +1110,10 @@ export default class WechatCore {
         pass_ticket: this.PROP.passTicket
       }
       let data = {
-        BaseRequest: this.getBaseRequest(),
-        CmdId: 3,
-        OP: OP,
-        RemarkName: RemarkName,
-        UserName: UserName
+        BaseRequest: this.getBaseRequest(), CmdId: 3, OP: OP, RemarkName: RemarkName, UserName: UserName
       }
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxoplog,
-        params: params,
-        data: data
+        method: 'POST', url: this.CONF.API_webwxoplog, params: params, data: data
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
@@ -1253,20 +1129,13 @@ export default class WechatCore {
   updateRemarkName (UserName, RemarkName) {
     return Promise.resolve().then(() => {
       let params = {
-        pass_ticket: this.PROP.passTicket,
-        'lang': 'zh_CN'
+        pass_ticket: this.PROP.passTicket, 'lang': 'zh_CN'
       }
       let data = {
-        BaseRequest: this.getBaseRequest(),
-        CmdId: 2,
-        RemarkName: RemarkName,
-        UserName: UserName
+        BaseRequest: this.getBaseRequest(), CmdId: 2, RemarkName: RemarkName, UserName: UserName
       }
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxoplog,
-        params: params,
-        data: data
+        method: 'POST', url: this.CONF.API_webwxoplog, params: params, data: data
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
@@ -1285,15 +1154,10 @@ export default class WechatCore {
         'fun': 'modtopic'
       }
       let data = {
-        BaseRequest: this.getBaseRequest(),
-        ChatRoomName: ChatRoomUserName,
-        NewTopic: NewName
+        BaseRequest: this.getBaseRequest(), ChatRoomName: ChatRoomUserName, NewTopic: NewName
       }
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxupdatechatroom,
-        params: params,
-        data: data
+        method: 'POST', url: this.CONF.API_webwxupdatechatroom, params: params, data: data
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
@@ -1307,19 +1171,13 @@ export default class WechatCore {
   revokeMsg (msgId, toUserName) {
     return Promise.resolve().then(() => {
       let data = {
-        BaseRequest: this.getBaseRequest(),
-        SvrMsgId: msgId,
-        ToUserName: toUserName,
-        ClientMsgId: getClientMsgId()
+        BaseRequest: this.getBaseRequest(), SvrMsgId: msgId, ToUserName: toUserName, ClientMsgId: getClientMsgId()
       }
       let headers = {}
       headers['ContentType'] = 'application/json; charset=UTF-8'
       headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36'
       return this.request({
-        method: 'POST',
-        url: this.CONF.API_webwxrevokemsg,
-        data: data,
-        headers: headers
+        method: 'POST', url: this.CONF.API_webwxrevokemsg, data: data, headers: headers
       }).then(res => {
         let data = res.data
         assert.equal(data.BaseResponse.Ret, 0, res)
@@ -1333,10 +1191,7 @@ export default class WechatCore {
 
   getBaseRequest () {
     return {
-      Uin: parseInt(this.PROP.uin),
-      Sid: this.PROP.sid,
-      Skey: this.PROP.skey,
-      DeviceID: getDeviceID()
+      Uin: parseInt(this.PROP.uin), Sid: this.PROP.sid, Skey: this.PROP.skey, DeviceID: getDeviceID()
     }
   }
 }

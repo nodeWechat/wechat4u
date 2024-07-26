@@ -65,7 +65,7 @@ class Wechat extends WechatCore {
             case 'mp4':
               return this.sendVideo(res.mediaId, toUserName)
             default:
-              return this.sendDoc(res.mediaId, res.name, res.size, res.ext, toUserName)
+              return this.sendDoc(res.mediaId, res.name, res.size, res.ext, toUserName, res.signature)
           }
         })
     }

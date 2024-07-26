@@ -59,7 +59,7 @@ bot.on('logout', () => {
  * 联系人更新事件，参数为被更新的联系人列表
  */
 bot.on('contacts-updated', contacts => {
-  console.log(contacts)
+  // console.log(contacts)
   console.log('联系人数量：', Object.keys(bot.contacts).length)
 })
 /**
@@ -144,15 +144,26 @@ bot.on('login', () => {
     })
 
   /**
+   * 发送大文件 测试
+   */
+  // bot.sendMsg({
+  //   file: fs.createReadStream('./media/21mb.zip'),
+  //   filename: '21mb.zip'
+  // }, ToUserName)
+  //   .catch(err => {
+  //     bot.emit('error', err)
+  //   })
+
+  /**
    * 发送文件
    */
-  bot.sendMsg({
-    file: fs.createReadStream('./media/test.txt'),
-    filename: 'test.txt'
-  }, ToUserName)
-    .catch(err => {
-      bot.emit('error', err)
-    })
+  // bot.sendMsg({
+  //   file: fs.createReadStream('./media/2mb.mp4'),
+  //   filename: '2mb.mp4'
+  // }, ToUserName)
+  //   .catch(err => {
+  //     bot.emit('error', err)
+  //   })
 
   /**
    * 发送撤回消息请求

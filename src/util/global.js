@@ -1,6 +1,8 @@
 'use strict'
 import Assert from 'assert'
 import _debug from 'debug'
+import crypto from 'crypto'
+
 const debug = _debug('util')
 
 export const isStandardBrowserEnv = (
@@ -86,4 +88,8 @@ export function getClientMsgId () {
 
 export function getDeviceID () {
   return 'e' + ('' + Math.random().toFixed(15)).substring(2, 17)
+}
+
+export function randomUuid () {
+  return crypto.randomUUID().replace(/-/g, '')
 }
